@@ -4,7 +4,7 @@ import {
   Text,
   ScrollView,
   ActivityIndicator,
-  Dimensions,
+  RefreshControl,
 } from "react-native";
 
 import {
@@ -14,13 +14,11 @@ import {
   Bike,
 } from "lucide-react-native";
 
-import { LineChart } from "react-native-chart-kit";
 import { get } from "../services/api";
-
-const screenWidth = Dimensions.get("window").width;
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [dashboard, setDashboard] = useState<any>(null);
 
   useEffect(() => {
@@ -32,17 +30,23 @@ const Dashboard = () => {
       const data = await get("/dashboard");
       setDashboard(data);
     } catch (err) {
-      console.log(err);
+      console.log("Dashboard Error:", err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchDashboard();
   };
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-950">
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="text-white mt-3">
+      <View className="flex-1 justify-center items-center bg-slate-950">
+        <ActivityIndicator size="large" color="#14B8A6" />
+        <Text className="text-white mt-3 text-base">
           Loading Dashboard...
         </Text>
       </View>
@@ -50,115 +54,136 @@ const Dashboard = () => {
   }
 
   const cards = dashboard?.cards || {};
-  const charts = dashboard?.charts || {};
 
   return (
     <ScrollView
       className="flex-1 bg-slate-950"
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      }
       showsVerticalScrollIndicator={false}
     >
       <View className="p-4">
 
         {/* Header */}
 
-        <Text className="text-white text-3xl font-bold mb-6">
+        <Text className="text-white text-3xl font-bold">
           Dashboard
         </Text>
 
-        {/* Cards */}
+        <Text className="text-slate-400 mt-1 mb-6">
+          Welcome Back Franchise Admin
+        </Text>
+
+        {/* Users */}
 
         <View className="flex-row flex-wrap justify-between">
 
           <View className="w-[48%] bg-slate-900 rounded-3xl p-4 mb-4">
-            <Users color="#8B5CF6" size={28} />
+            <Users size={28} color="#8B5CF6" />
+
             <Text className="text-slate-400 mt-3">
-              Users
+              Total Users
             </Text>
-            <Text className="text-white text-2xl font-bold">
+
+            <Text className="text-white text-2xl font-bold mt-1">
               {cards.totalUsers || 0}
             </Text>
           </View>
 
+          {/* Orders */}
+
           <View className="w-[48%] bg-slate-900 rounded-3xl p-4 mb-4">
-            <ShoppingBag color="#3B82F6" size={28} />
+            <ShoppingBag size={28} color="#3B82F6" />
+
             <Text className="text-slate-400 mt-3">
               Orders
             </Text>
-            <Text className="text-white text-2xl font-bold">
+
+            <Text className="text-white text-2xl font-bold mt-1">
               {cards.totalOrders || 0}
             </Text>
           </View>
 
+          {/* Restaurants */}
+
           <View className="w-[48%] bg-slate-900 rounded-3xl p-4 mb-4">
-            <Store color="#10B981" size={28} />
+            <Store size={28} color="#10B981" />
+
             <Text className="text-slate-400 mt-3">
               Restaurants
             </Text>
-            <Text className="text-white text-2xl font-bold">
+
+            <Text className="text-white text-2xl font-bold mt-1">
               {cards.totalRestaurants || 0}
             </Text>
           </View>
 
+          {/* Delivery */}
+
           <View className="w-[48%] bg-slate-900 rounded-3xl p-4 mb-4">
-            <Bike color="#F59E0B" size={28} />
+            <Bike size={28} color="#F59E0B" />
+
             <Text className="text-slate-400 mt-3">
-              Delivery
+              Delivery Partners
             </Text>
-            <Text className="text-white text-2xl font-bold">
+
+            <Text className="text-white text-2xl font-bold mt-1">
               {cards.totalDeliveryPartners || 0}
             </Text>
           </View>
-
         </View>
 
-        {/* Revenue Card */}
+        {/* Revenue */}
 
         <View className="bg-emerald-600 rounded-3xl p-5 mt-2">
-          <Text className="text-emerald-100">
+          <Text className="text-emerald-100 text-base">
             Total Revenue
           </Text>
 
-          <Text className="text-white text-3xl font-bold mt-2">
+          <Text className="text-white text-4xl font-bold mt-2">
             ₹{cards.totalRevenue || 0}
           </Text>
         </View>
 
-        {/* Revenue Chart */}
+        {/* Home Chef */}
 
-        {charts?.revenueAnalytics?.length > 0 && (
-          <View className="bg-slate-900 rounded-3xl mt-5 p-4">
+        <View className="bg-slate-900 rounded-3xl p-5 mt-4">
+          <Text className="text-slate-400">
+            Total Home Chefs
+          </Text>
 
-            <Text className="text-white text-lg font-bold mb-4">
-              Revenue Trends
-            </Text>
+          <Text className="text-white text-3xl font-bold mt-2">
+            {cards.totalHomeChefs || 0}
+          </Text>
+        </View>
 
-            <LineChart
-              data={{
-                labels: charts.revenueAnalytics.map(
-                  (item: any) => item.name
-                ),
-                datasets: [
-                  {
-                    data: charts.revenueAnalytics.map(
-                      (item: any) => item.revenue
-                    ),
-                  },
-                ],
-              }}
-              width={screenWidth - 64}
-              height={220}
-              bezier
-              chartConfig={{
-                backgroundGradientFrom: "#0f172a",
-                backgroundGradientTo: "#0f172a",
-                decimalPlaces: 0,
-                color: (opacity = 1) =>
-                  `rgba(16,185,129,${opacity})`,
-                labelColor: () => "#fff",
-              }}
-            />
-          </View>
-        )}
+        {/* Products */}
+
+        <View className="bg-slate-900 rounded-3xl p-5 mt-4">
+          <Text className="text-slate-400">
+            Total Products
+          </Text>
+
+          <Text className="text-white text-3xl font-bold mt-2">
+            {cards.totalProducts || 0}
+          </Text>
+        </View>
+
+        {/* Pending Approvals */}
+
+        <View className="bg-slate-900 rounded-3xl p-5 mt-4 mb-10">
+          <Text className="text-slate-400">
+            Pending Approvals
+          </Text>
+
+          <Text className="text-white text-3xl font-bold mt-2">
+            {cards.pendingApprovals || 0}
+          </Text>
+        </View>
 
       </View>
     </ScrollView>
