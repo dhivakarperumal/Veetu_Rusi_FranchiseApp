@@ -91,3 +91,4 @@ export async function del(path: string) {
     method: "DELETE",
   });
 }
+
