@@ -13,6 +13,7 @@ import HomeChef from "./src/tabs/homechef";
 import FoodProducts from "./src/tabs/foodproducts";
 import FoodOrders from "./src/tabs/foodorders";
 import AddHomeChef from "./src/pages/AddHomeChef";
+import Register from "./src/auth/register";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -97,6 +98,11 @@ export default function App() {
             <Stack.Screen
               name="AddHomeChef"
               component={AddHomeChef}
+            />
+
+            <Stack.Screen
+              name="Register"
+              component={Register}
             />
           </Stack.Group>
         </Stack.Navigator>
