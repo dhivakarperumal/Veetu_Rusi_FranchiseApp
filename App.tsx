@@ -3,42 +3,105 @@ import {
   SafeAreaView,
   View,
   Text,
+  StyleSheet,
   StatusBar,
+  ScrollView,
 } from 'react-native';
-import { styled } from 'nativewind';
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 export default function App(): React.JSX.Element {
   return (
     <>
       <StatusBar backgroundColor="#FF6B00" barStyle="light-content" />
 
-      <StyledSafeAreaView className="flex-1 bg-orange-50 justify-center items-center">
-        <StyledView className="w-11/12 bg-white rounded-2xl p-6 items-center shadow-lg">
-          <StyledText className="text-6xl mb-2">🍲</StyledText>
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.card}>
+            <Text style={styles.logo}>🍲</Text>
 
-          <StyledText className="text-2xl font-bold text-orange-600 text-center">
-            VeetuRusi Franchise Admin
-          </StyledText>
+            <Text style={styles.title}>
+              VeetuRusi Franchise Admin
+            </Text>
 
-          <StyledText className="text-base text-gray-600 mt-2 text-center">
-            Welcome to the Franchise Dashboard
-          </StyledText>
+            <Text style={styles.subtitle}>
+              Welcome to the Franchise Dashboard
+            </Text>
 
-          <StyledView className="bg-orange-600 mt-5 px-7 py-3 rounded-lg">
-            <StyledText className="text-base text-white font-bold text-center">
-              Login
-            </StyledText>
-          </StyledView>
+            <View style={styles.buttonContainer}>
+              <Text style={styles.buttonText}>Login</Text>
+            </View>
 
-          <StyledText className="text-xs text-gray-400 mt-4">
-            Version 1.0
-          </StyledText>
-        </StyledView>
-      </StyledSafeAreaView>
+            <Text style={styles.footerText}>Version 1.0</Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF7F0',
+  },
+  
+  scrollContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '100%',
+    paddingVertical: 20,
+  },
+
+  card: {
+    width: '90%',
+    maxWidth: 400,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+
+  logo: {
+    fontSize: 60,
+    marginBottom: 16,
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF6B00',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+
+  subtitle: {
+    fontSize: 16,
+    color: '#666666',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+
+  buttonContainer: {
+    backgroundColor: '#FF6B00',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+
+  buttonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+
+  footerText: {
+    fontSize: 12,
+    color: '#999999',
+  },
+});
