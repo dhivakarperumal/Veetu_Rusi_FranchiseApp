@@ -1,45 +1,67 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import React from 'react';
 import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+  SafeAreaView,
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+} from 'react-native';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
+export default function App(): React.JSX.Element {
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
+    <>
+      <StatusBar backgroundColor="#FF6B00" barStyle="light-content" />
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+      <SafeAreaView style={styles.container}>
+        <View style={styles.card}>
+          <Text style={styles.logo}>🍲</Text>
 
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
+          <Text style={styles.title}>
+            VeetuRusi Franchise Admin
+          </Text>
+
+          <Text style={styles.subtitle}>
+            Welcome to the Franchise Dashboard
+          </Text>
+        </View>
+      </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFF7F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  card: {
+    width: '90%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    elevation: 5,
+  },
+
+  logo: {
+    fontSize: 60,
+    marginBottom: 10,
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF6B00',
+    textAlign: 'center',
+  },
+
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
-
-export default App;
