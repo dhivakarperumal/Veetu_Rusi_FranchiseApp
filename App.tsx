@@ -23,6 +23,12 @@ export default function App(): React.JSX.Element {
           <Text style={styles.subtitle}>
             Welcome to the Franchise Dashboard
           </Text>
+
+          <View style={styles.buttonContainer}>
+            <Text style={styles.button}>Login</Text>
+          </View>
+
+          <Text style={styles.footerText}>Version 1.0</Text>
         </View>
       </SafeAreaView>
     </>
@@ -63,5 +69,26 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 10,
     textAlign: 'center',
+  },
+
+  buttonContainer: {
+    backgroundColor: '#FF6B00',
+    marginTop: 20,
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+
+  button: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  footerText: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 15,
   },
 });
