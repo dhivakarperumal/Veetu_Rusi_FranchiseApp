@@ -7,10 +7,13 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 
 import { get } from "../services/api";
+import { TouchableOpacity } from "react-native";
 
 const HomeChef = () => {
+  const navigation = useNavigation<any>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [chefs, setChefs] = useState<any[]>([]);
@@ -65,14 +68,25 @@ const HomeChef = () => {
 
       {/* Header */}
 
-      <View className="px-4 pt-6 pb-4">
-        <Text className="text-white text-3xl font-bold">
-          Home Chefs
-        </Text>
+      <View className="flex-row justify-between items-center px-4 pt-6 pb-4">
+        <View>
+          <Text className="text-white text-3xl font-bold">
+            Home Chefs
+          </Text>
 
-        <Text className="text-slate-400 mt-1">
-          Total Home Chefs: {chefs.length}
-        </Text>
+          <Text className="text-slate-400 mt-1">
+            Total Home Chefs: {chefs.length}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate("AddHomeChef")}
+          className="bg-emerald-600 px-4 py-3 rounded-xl"
+        >
+          <Text className="text-white font-bold">
+            Add Chef
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -113,15 +127,14 @@ const HomeChef = () => {
 
             <View className="mt-3">
               <Text
-                className={`font-bold ${
-                  item.status === "Approved"
+                className={`font-bold ${item.status === "Approved"
                     ? "text-green-400"
                     : item.status === "Pending"
-                    ? "text-yellow-400"
-                    : item.status === "Suspended"
-                    ? "text-red-400"
-                    : "text-slate-400"
-                }`}
+                      ? "text-yellow-400"
+                      : item.status === "Suspended"
+                        ? "text-red-400"
+                        : "text-slate-400"
+                  }`}
               >
                 Status: {item.status || "-"}
               </Text>
