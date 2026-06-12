@@ -12,6 +12,7 @@ import DeliveryPartners from "./src/tabs/deliverypartners";
 import HomeChef from "./src/tabs/homechef";
 import FoodProducts from "./src/tabs/foodproducts";
 import FoodOrders from "./src/tabs/foodorders";
+import AddHomeChef from "./src/pages/AddHomeChef";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -86,6 +87,18 @@ export default function App() {
             name="Main"
             component={MainTabs}
           />
+
+          <Stack.Group
+            screenOptions={{
+              presentation: "modal",
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen
+              name="AddHomeChef"
+              component={AddHomeChef}
+            />
+          </Stack.Group>
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
