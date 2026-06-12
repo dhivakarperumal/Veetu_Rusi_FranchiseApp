@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { get } from "../services/api";
 
@@ -42,17 +43,25 @@ const HomeChef = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-slate-950">
-        <ActivityIndicator size="large" color="#14b8a6" />
-        <Text className="text-white mt-3">
-          Loading Home Chefs...
-        </Text>
-      </View>
+      <SafeAreaView
+        edges={["top", "bottom"]}
+        className="flex-1 bg-slate-950"
+      >
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#14b8a6" />
+          <Text className="text-white mt-3">
+            Loading Home Chefs...
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-slate-950">
+    <SafeAreaView
+      edges={["top", "bottom"]}
+      className="flex-1 bg-slate-950"
+    >
 
       {/* Header */}
 
@@ -127,7 +136,7 @@ const HomeChef = () => {
           </View>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

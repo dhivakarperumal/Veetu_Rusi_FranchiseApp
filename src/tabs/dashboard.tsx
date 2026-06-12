@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   Users,
@@ -44,29 +45,38 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-slate-950">
-        <ActivityIndicator size="large" color="#14B8A6" />
-        <Text className="text-white mt-3 text-base">
-          Loading Dashboard...
-        </Text>
-      </View>
+      <SafeAreaView
+        edges={["top", "bottom"]}
+        className="flex-1 bg-slate-950"
+      >
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#14B8A6" />
+          <Text className="text-white mt-3 text-base">
+            Loading Dashboard...
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   const cards = dashboard?.cards || {};
 
   return (
-    <ScrollView
+    <SafeAreaView
+      edges={["top", "bottom"]}
       className="flex-1 bg-slate-950"
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />
-      }
-      showsVerticalScrollIndicator={false}
     >
-      <View className="p-4">
+      <ScrollView
+        className="flex-1"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="p-4 pt-6">
 
         {/* Header */}
 
@@ -184,9 +194,9 @@ const Dashboard = () => {
             {cards.pendingApprovals || 0}
           </Text>
         </View>
-
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
