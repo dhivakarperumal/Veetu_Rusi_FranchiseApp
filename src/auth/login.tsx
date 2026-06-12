@@ -52,15 +52,7 @@ const LoginScreen = ({ navigation }: any) => {
 
             const role = res?.user?.role;
 
-            if (role === "superadmin") {
-                navigation.replace("SuperAdmin");
-            } else if (role === "admin") {
-                navigation.replace("Admin");
-            } else if (role === "delivery_partner") {
-                navigation.replace("Delivery");
-            } else {
-                navigation.replace("Home");
-            }
+            navigation.replace("Dashboard");
         } catch (error: any) {
             Alert.alert(
                 "Login Failed",
