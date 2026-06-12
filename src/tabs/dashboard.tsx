@@ -15,7 +15,7 @@ import {
 } from "lucide-react-native";
 
 import { LineChart } from "react-native-chart-kit";
-import api from "../api";
+import { get } from "../services/api";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -29,8 +29,8 @@ const Dashboard = () => {
 
   const fetchDashboard = async () => {
     try {
-      const res = await api.get("/dashboard");
-      setDashboard(res.data);
+      const data = await get("/dashboard");
+      setDashboard(data);
     } catch (err) {
       console.log(err);
     } finally {

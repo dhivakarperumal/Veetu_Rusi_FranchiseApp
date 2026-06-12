@@ -17,9 +17,14 @@ async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const token = await AsyncStorage.getItem("token");
+
   const response = await fetch(`${BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
+      ...(token
+        ? { Authorization: `Bearer ${token}` }
+        : {}),
       ...(options.headers || {}),
     },
     ...options,
@@ -52,4 +57,37 @@ export async function login(payload: LoginPayload) {
   }
 
   return data;
+}
+
+
+export async function get(path: string) {
+  return request(path, {
+    method: "GET",
+  });
+}
+
+export async function post(
+  path: string,
+  payload: any
+) {
+  return request(path, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function put(
+  path: string,
+  payload: any
+) {
+  return request(path, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function del(path: string) {
+  return request(path, {
+    method: "DELETE",
+  });
 }
