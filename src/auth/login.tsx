@@ -52,7 +52,7 @@ const LoginScreen = ({ navigation }: any) => {
 
             const role = res?.user?.role;
 
-            navigation.replace("Dashboard");
+            navigation.replace("Main");
         } catch (error: any) {
             Alert.alert(
                 "Login Failed",
