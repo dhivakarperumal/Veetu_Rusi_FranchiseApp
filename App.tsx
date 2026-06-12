@@ -3,92 +3,42 @@ import {
   SafeAreaView,
   View,
   Text,
-  StyleSheet,
   StatusBar,
 } from 'react-native';
+import { styled } from 'nativewind';
+
+const StyledView = styled(View);
+const StyledText = styled(Text);
+const StyledSafeAreaView = styled(SafeAreaView);
 
 export default function App(): React.JSX.Element {
   return (
     <>
       <StatusBar backgroundColor="#FF6B00" barStyle="light-content" />
 
-      <SafeAreaView style={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.logo}>🍲</Text>
+      <StyledSafeAreaView className="flex-1 bg-orange-50 justify-center items-center">
+        <StyledView className="w-11/12 bg-white rounded-2xl p-6 items-center shadow-lg">
+          <StyledText className="text-6xl mb-2">🍲</StyledText>
 
-          <Text style={styles.title}>
+          <StyledText className="text-2xl font-bold text-orange-600 text-center">
             VeetuRusi Franchise Admin
-          </Text>
+          </StyledText>
 
-          <Text style={styles.subtitle}>
+          <StyledText className="text-base text-gray-600 mt-2 text-center">
             Welcome to the Franchise Dashboard
-          </Text>
+          </StyledText>
 
-          <View style={styles.buttonContainer}>
-            <Text style={styles.button}>Login</Text>
-          </View>
+          <StyledView className="bg-orange-600 mt-5 px-7 py-3 rounded-lg">
+            <StyledText className="text-base text-white font-bold text-center">
+              Login
+            </StyledText>
+          </StyledView>
 
-          <Text style={styles.footerText}>Version 1.0</Text>
-        </View>
-      </SafeAreaView>
+          <StyledText className="text-xs text-gray-400 mt-4">
+            Version 1.0
+          </StyledText>
+        </StyledView>
+      </StyledSafeAreaView>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF7F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  card: {
-    width: '90%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    elevation: 5,
-  },
-
-  logo: {
-    fontSize: 60,
-    marginBottom: 10,
-  },
-
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF6B00',
-    textAlign: 'center',
-  },
-
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 10,
-    textAlign: 'center',
-  },
-
-  buttonContainer: {
-    backgroundColor: '#FF6B00',
-    marginTop: 20,
-    paddingHorizontal: 30,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-
-  button: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-
-  footerText: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 15,
-  },
-});
