@@ -99,7 +99,7 @@ const AddDeliveryPartner = ({ navigation }: any) => {
 
 
         < Text className="text-white text-3xl font-bold mt-5" >
-            Add Home Chef
+            Add Delivery Partner
         </Text >
 
         <Text className="text-slate-400 mb-6">
@@ -680,9 +680,9 @@ const AddDeliveryPartner = ({ navigation }: any) => {
             </View>
         )}
 
-        <View className="flex-row justify-between mt-8 mb-10">
+        <View className="flex-row justify-between items-center mt-8 mb-10">
 
-            {step > 1 && (
+            {step > 1 ? (
                 <TouchableOpacity
                     onPress={() => setStep(step - 1)}
                     className="bg-slate-700 px-6 py-4 rounded-xl"
@@ -691,58 +691,31 @@ const AddDeliveryPartner = ({ navigation }: any) => {
                         Previous
                     </Text>
                 </TouchableOpacity>
+            ) : (
+                <View />
             )}
 
-            {step === 9 && (
-                <View className="gap-4">
-
-                    <TouchableOpacity
-                        onPress={() =>
-                            setForm({
-                                ...form,
-                                otp_verified: !form.otp_verified,
-                            })
-                        }
-                        className="bg-slate-800 p-4 rounded-xl"
-                    >
-                        <Text className="text-white">
-                            OTP Verification :{" "}
-                            {form.otp_verified ? "Yes" : "No"}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={() =>
-                            setForm({
-                                ...form,
-                                face_verified: !form.face_verified,
-                            })
-                        }
-                        className="bg-slate-800 p-4 rounded-xl"
-                    >
-                        <Text className="text-white">
-                            Face Verification :{" "}
-                            {form.face_verified ? "Yes" : "No"}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={() =>
-                            setForm({
-                                ...form,
-                                location_verified:
-                                    !form.location_verified,
-                            })
-                        }
-                        className="bg-slate-800 p-4 rounded-xl"
-                    >
-                        <Text className="text-white">
-                            Location Verification :{" "}
-                            {form.location_verified ? "Yes" : "No"}
-                        </Text>
-                    </TouchableOpacity>
-
-                </View>
+            {step < 9 ? (
+                <TouchableOpacity
+                    onPress={() => setStep(step + 1)}
+                    className="bg-emerald-600 px-6 py-4 rounded-xl"
+                >
+                    <Text className="text-white font-bold">
+                        Next
+                    </Text>
+                </TouchableOpacity>
+            ) : (
+                <TouchableOpacity
+                    onPress={handleSubmit}
+                    disabled={loading}
+                    className="bg-emerald-600 px-6 py-4 rounded-xl"
+                >
+                    <Text className="text-white font-bold">
+                        {loading
+                            ? "Saving..."
+                            : "Save Delivery Partner"}
+                    </Text>
+                </TouchableOpacity>
             )}
 
         </View>
