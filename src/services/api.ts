@@ -60,8 +60,8 @@ export async function login(payload: LoginPayload) {
 }
 
 
-export async function get(path: string) {
-  return request(path, {
+export async function get<T>(path: string): Promise<T> {
+  return request<T>(path, {
     method: "GET",
   });
 }
@@ -92,3 +92,12 @@ export async function del(path: string) {
   });
 }
 
+export async function patch(
+  path: string,
+  payload: any
+) {
+  return request(path, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
