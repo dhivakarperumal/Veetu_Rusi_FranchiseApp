@@ -11,6 +11,8 @@ import {
     RefreshControl,
     Alert,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import InnerHeader from "../components/InnerHeader";
 
 import {
     Users,
@@ -43,6 +45,7 @@ interface User {
 }
 
 const UserManagement = () => {
+    const navigation = useNavigation<any>();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -519,6 +522,7 @@ const UserManagement = () => {
                 backgroundColor: "#f8fafc",
             }}
         >
+            <InnerHeader title="User Management" navigation={navigation} />
             <FlatList
                 data={paginatedUsers}
                 keyExtractor={(item) => item.id.toString()}

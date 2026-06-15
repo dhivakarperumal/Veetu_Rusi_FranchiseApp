@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { post } from "../services/api";
+import InnerHeader from "../components/InnerHeader";
 
 const AddDeliveryPartner = ({ navigation }: any) => {
     const [step, setStep] = useState(1);
@@ -95,16 +96,13 @@ const AddDeliveryPartner = ({ navigation }: any) => {
         }
     };
 
-    return (<SafeAreaView className="flex-1 bg-slate-950"> <ScrollView className="flex-1 px-5">
-
-
-        < Text className="text-white text-3xl font-bold mt-5" >
-            Add Delivery Partner
-        </Text >
-
-        <Text className="text-slate-400 mb-6">
-            Step {step} of 9
-        </Text>
+    return (
+        <SafeAreaView className="flex-1 bg-slate-950">
+            <InnerHeader title="Add Delivery Partner" navigation={navigation} />
+            <ScrollView className="flex-1 px-5">
+                <Text className="text-slate-400 mb-6 mt-5">
+                    Step {step} of 9
+                </Text>
 
         {/* STEP 1 */}
         {step === 1 && (
