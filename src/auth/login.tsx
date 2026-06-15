@@ -14,11 +14,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "../services/api";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
+import { AuthContext } from "../context/AuthContext";
+
 const LoginScreen = ({ navigation }: any) => {
     const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const auth = React.useContext(AuthContext);
 
     const handleLogin = async () => {
         if (!identifier.trim()) {
@@ -40,19 +43,8 @@ const LoginScreen = ({ navigation }: any) => {
             });
 
             if (res?.token) {
-                await AsyncStorage.setItem("token", res.token);
+                await auth?.signIn(res.token, res.user);
             }
-
-            if (res?.user) {
-                await AsyncStorage.setItem(
-                    "user",
-                    JSON.stringify(res.user)
-                );
-            }
-
-            const role = res?.user?.role;
-
-            navigation.replace("Main");
         } catch (error: any) {
             Alert.alert(
                 "Login Failed",

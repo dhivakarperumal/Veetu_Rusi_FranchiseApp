@@ -15,12 +15,15 @@ import FoodProducts from "./src/tabs/foodproducts";
 import FoodOrders from "./src/tabs/foodorders";
 import More from "./src/tabs/more";
 import AddHomeChef from "./src/pages/AddHomeChef";
+import Profile from "./src/pages/Profile";
 import Register from "./src/auth/register";
 import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
 import UserManagement from "./src/More/UserManagement";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+import Header from "./src/components/Header";
 
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
@@ -29,7 +32,8 @@ const MainTabs = () => {
     <Tab.Navigator
       initialRouteName="Dashboard"
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        header: () => <Header />,
         tabBarActiveTintColor: "#14B8A6",
         tabBarInactiveTintColor: "#94A3B8",
         tabBarStyle: {
@@ -94,6 +98,34 @@ const MainTabs = () => {
       />
 
     </Tab.Navigator>
+  );
+};
+
+const AppNavigator = () => {
+  const auth = React.useContext(AuthContext);
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {auth?.token ? (
+          <>
+            <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Group screenOptions={{ presentation: "modal", headerShown: false }}>
+              <Stack.Screen name="AddHomeChef" component={AddHomeChef} />
+              <Stack.Screen name="AddDeliveryPartner" component={AddDeliveryPartner} />
+              <Stack.Screen name="Profile" component={Profile} />
+            </Stack.Group>
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Group screenOptions={{ presentation: "modal", headerShown: false }}>
+              <Stack.Screen name="Register" component={Register} />
+            </Stack.Group>
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 
