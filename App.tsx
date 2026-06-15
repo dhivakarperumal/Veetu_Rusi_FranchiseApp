@@ -5,7 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
-import { LayoutDashboard, Truck, ChefHat, Package, ClipboardList, MoreVertical } from "lucide-react-native";
+import { LayoutDashboard, Truck, ChefHat, Package, ClipboardList, Grid3x3 } from "lucide-react-native";
 
 import LoginScreen from "./src/auth/login";
 import Dashboard from "./src/tabs/dashboard";
@@ -13,12 +13,13 @@ import DeliveryPartners from "./src/tabs/deliverypartners";
 import HomeChef from "./src/tabs/homechef";
 import FoodProducts from "./src/tabs/foodproducts";
 import FoodOrders from "./src/tabs/foodorders";
-import More from "./src/tabs/more";
+import MoreSettings from "./src/tabs/more";
 import AddHomeChef from "./src/pages/AddHomeChef";
 import Profile from "./src/pages/Profile";
 import Register from "./src/auth/register";
 import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
-import UserManagement from "./src/More/UserManagement";
+
+import { AuthProvider, AuthContext } from "./src/context/AuthContext";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -90,13 +91,12 @@ const MainTabs = () => {
       />
       <Tab.Screen
         name="More"
-        component={More}
+        component={MoreSettings}
         options={{ 
           tabBarLabel: "More",
-          tabBarIcon: ({ color, size }) => <MoreVertical color={color} size={size} />
+          tabBarIcon: ({ color, size }) => <Grid3x3 color={color} size={size} />
         }}
       />
-
     </Tab.Navigator>
   );
 };
@@ -132,52 +132,9 @@ const AppNavigator = () => {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Login"
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-          />
-
-          <Stack.Screen
-            name="Main"
-            component={MainTabs}
-          />
-
-          <Stack.Group
-            screenOptions={{
-              presentation: "modal",
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen
-              name="AddHomeChef"
-              component={AddHomeChef}
-            />
-
-            <Stack.Screen
-              name="Register"
-              component={Register}
-            />
-
-            <Stack.Screen
-              name="AddDeliveryPartner"
-              component={AddDeliveryPartner}
-            />
-
-            <Stack.Screen
-              name="UserManagement"
-              component={UserManagement}
-            />
-            
-          </Stack.Group>
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
