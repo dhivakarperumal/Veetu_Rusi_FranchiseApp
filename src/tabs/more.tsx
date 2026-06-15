@@ -32,9 +32,9 @@ const More = () => {
       onPress: () => navigation.navigate("UserManagement"),
     },
     {
-      id: "settings",
-      label: "Settings",
-      description: "App settings and preferences",
+      id: "inventory",
+      label: "Inventory",
+      description: "Manage inventory and stock levels",
       icon: Settings,
       color: "#8b5cf6",
       bgColor: "#ede9fe",

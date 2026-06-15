@@ -27,6 +27,7 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 import Header from "./src/components/Header";
+import Inventory from "./src/More/Inventory";
 
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
@@ -120,6 +121,40 @@ const AppNavigator = () => {
                 name="UserManagement"
                 component={UserManagement}
               />
+              <Stack.Screen
+                name="Inventory"
+                component={Inventory}
+              />
+
+              {/* <Stack.Screen
+                name="Products"
+                component={Products}
+              />
+
+              <Stack.Screen
+                name="Categories"
+                component={Categories}
+              />
+
+              <Stack.Screen
+                name="StockDetails"
+                component={StockDetails}
+              />
+
+              <Stack.Screen
+                name="AddProduct"
+                component={AddProduct}
+              />
+
+              <Stack.Screen
+                name="AddCategory"
+                component={AddCategory}
+              />
+
+              <Stack.Screen
+                name="AddStock"
+                component={AddStock}
+              /> */}
             </Stack.Group>
           </>
         ) : (
