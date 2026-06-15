@@ -196,7 +196,7 @@ const UserManagement = () => {
     const handleUpdateUser =
         async () => {
             try {
-                    const payload: any = {
+                const payload: any = {
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,
@@ -517,10 +517,7 @@ const UserManagement = () => {
 
     return (
         <View
-            style={{
-                flex: 1,
-                backgroundColor: "#f8fafc",
-            }}
+            className="flex-1 bg-slate-50"
         >
             <InnerHeader title="User Management" navigation={navigation} />
             <FlatList
@@ -538,50 +535,18 @@ const UserManagement = () => {
                 }}
                 ListHeaderComponent={
                     <>
-                        <View
-                            style={{
-                                padding: 20,
-                            }}
-                        >
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        fontSize: 24,
-                                        fontWeight: "700",
-                                    }}
-                                >
-                                    User Management
-                                </Text>
-
+                        <View className="p-5">
+                            <View className="flex-row items-center justify-end">
                                 <TouchableOpacity
                                     onPress={openAddModal}
-                                    style={{
-                                        backgroundColor: "#2a3042",
-                                        paddingHorizontal: 15,
-                                        paddingVertical: 10,
-                                        borderRadius: 12,
-                                        flexDirection: "row",
-                                        alignItems: "center",
-                                    }}
+                                    className="flex-row items-center rounded-xl bg-slate-800 px-4 py-2.5"
                                 >
                                     <Plus
                                         size={18}
                                         color="#fff"
                                     />
 
-                                    <Text
-                                        style={{
-                                            color: "#fff",
-                                            marginLeft: 6,
-                                            fontWeight: "600",
-                                        }}
-                                    >
+                                    <Text className="ml-1.5 font-semibold text-white">
                                         Add User
                                     </Text>
                                 </TouchableOpacity>
@@ -591,137 +556,74 @@ const UserManagement = () => {
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
-                            style={{
+                            className="mb-5"
+                            contentContainerStyle={{
                                 paddingHorizontal: 20,
-                                marginBottom: 20,
                             }}
                         >
-                            <View
-                                style={{
-                                    width: 170,
-                                    backgroundColor: "#131127",
-                                    padding: 18,
-                                    borderRadius: 20,
-                                    marginRight: 12,
-                                }}
-                            >
+                            {/* Total Users */}
+                            <View className="mr-3 w-[170px] rounded-3xl bg-[#131127] p-[18px]">
                                 <Users
                                     color="#fff"
                                     size={28}
                                 />
 
-                                <Text
-                                    style={{
-                                        color: "#94a3b8",
-                                        marginTop: 10,
-                                    }}
-                                >
+                                <Text className="mt-2.5 text-slate-400">
                                     Total Users
                                 </Text>
 
-                                <Text
-                                    style={{
-                                        fontSize: 28,
-                                        fontWeight: "700",
-                                        color: "#fff",
-                                    }}
-                                >
+                                <Text className="text-[28px] font-bold text-white">
                                     {users.length}
                                 </Text>
                             </View>
 
-                            <View
-                                style={{
-                                    width: 170,
-                                    backgroundColor: "#052e16",
-                                    padding: 18,
-                                    borderRadius: 20,
-                                    marginRight: 12,
-                                }}
-                            >
+                            {/* Active Users */}
+                            <View className="mr-3 w-[170px] rounded-3xl bg-green-950 p-[18px]">
                                 <UserCheck
                                     color="#fff"
                                     size={28}
                                 />
 
-                                <Text
-                                    style={{
-                                        color: "#86efac",
-                                        marginTop: 10,
-                                    }}
-                                >
+                                <Text className="mt-2.5 text-green-300">
                                     Active
                                 </Text>
 
-                                <Text
-                                    style={{
-                                        fontSize: 28,
-                                        fontWeight: "700",
-                                        color: "#fff",
-                                    }}
-                                >
-                                    {users.filter(
-                                        (u) =>
-                                            String(u.active).toLowerCase() ===
-                                            "active"
-                                    ).length}
+                                <Text className="text-[28px] font-bold text-white">
+                                    {
+                                        users.filter(
+                                            (u) =>
+                                                String(u.active).toLowerCase() ===
+                                                "active"
+                                        ).length
+                                    }
                                 </Text>
                             </View>
 
-                            <View
-                                style={{
-                                    width: 170,
-                                    backgroundColor: "#450a0a",
-                                    padding: 18,
-                                    borderRadius: 20,
-                                }}
-                            >
+                            {/* Blocked Users */}
+                            <View className="w-[170px] rounded-3xl bg-red-950 p-[18px]">
                                 <UserX
                                     color="#fff"
                                     size={28}
                                 />
 
-                                <Text
-                                    style={{
-                                        color: "#fca5a5",
-                                        marginTop: 10,
-                                    }}
-                                >
+                                <Text className="mt-2.5 text-red-300">
                                     Blocked
                                 </Text>
 
-                                <Text
-                                    style={{
-                                        fontSize: 28,
-                                        fontWeight: "700",
-                                        color: "#fff",
-                                    }}
-                                >
-                                    {users.filter(
-                                        (u) =>
-                                            String(u.active).toLowerCase() !==
-                                            "active"
-                                    ).length}
+                                <Text className="text-[28px] font-bold text-white">
+                                    {
+                                        users.filter(
+                                            (u) =>
+                                                String(u.active).toLowerCase() !==
+                                                "active"
+                                        ).length
+                                    }
                                 </Text>
                             </View>
                         </ScrollView>
 
-                        <View
-                            style={{
-                                paddingHorizontal: 20,
-                                marginBottom: 15,
-                            }}
-                        >
-                            <View
-                                style={{
-                                    backgroundColor: "#fff",
-                                    borderRadius: 15,
-                                    paddingHorizontal: 15,
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                    height: 55,
-                                }}
-                            >
+                        <View className="mb-4 px-5">
+                            <View className="h-14 flex-row items-center rounded-2xl bg-white px-4">
                                 <Search
                                     size={20}
                                     color="#64748b"
@@ -731,77 +633,46 @@ const UserManagement = () => {
                                     placeholder="Search users..."
                                     value={search}
                                     onChangeText={setSearch}
-                                    style={{
-                                        flex: 1,
-                                        marginLeft: 10,
-                                    }}
+                                    className="ml-3 flex-1 text-base text-slate-900"
+                                    placeholderTextColor="#94a3b8"
                                 />
                             </View>
                         </View>
                     </>
                 }
                 ListFooterComponent={
-                    <View
-                        style={{
-                            padding: 20,
-                            alignItems: "center",
-                        }}
-                    >
-                        <Text
-                            style={{
-                                marginBottom: 15,
-                                color: "#64748b",
-                            }}
-                        >
+                    <View className="items-center p-5">
+                        <Text className="mb-4 text-slate-500">
                             Page {page} of {totalPages || 1}
                         </Text>
 
-                        <View
-                            style={{
-                                flexDirection: "row",
-                            }}
-                        >
+                        <View className="flex-row">
                             <TouchableOpacity
                                 disabled={page === 1}
                                 onPress={() => setPage(page - 1)}
-                                style={{
-                                    backgroundColor:
-                                        page === 1 ? "#cbd5e1" : "#2563eb",
-                                    paddingHorizontal: 20,
-                                    paddingVertical: 10,
-                                    borderRadius: 10,
-                                    marginRight: 10,
-                                }}
+                                className={`mr-3 rounded-xl px-5 py-2.5 ${page === 1
+                                    ? "bg-slate-300"
+                                    : "bg-blue-600"
+                                    }`}
                             >
-                                <Text
-                                    style={{
-                                        color: "#fff",
-                                        fontWeight: "600",
-                                    }}
-                                >
+                                <Text className="font-semibold text-white">
                                     Prev
                                 </Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                disabled={page === totalPages || totalPages === 0}
+                                disabled={
+                                    page === totalPages ||
+                                    totalPages === 0
+                                }
                                 onPress={() => setPage(page + 1)}
-                                style={{
-                                    backgroundColor:
-                                        page === totalPages || totalPages === 0
-                                            ? "#cbd5e1"
-                                            : "#2563eb",
-                                    paddingHorizontal: 20,
-                                    paddingVertical: 10,
-                                    borderRadius: 10,
-                                }}
+                                className={`rounded-xl px-5 py-2.5 ${page === totalPages ||
+                                    totalPages === 0
+                                    ? "bg-slate-300"
+                                    : "bg-blue-600"
+                                    }`}
                             >
-                                <Text
-                                    style={{
-                                        color: "#fff",
-                                        fontWeight: "600",
-                                    }}
-                                >
+                                <Text className="font-semibold text-white">
                                     Next
                                 </Text>
                             </TouchableOpacity>
@@ -816,29 +687,19 @@ const UserManagement = () => {
                 transparent
             >
                 <View
+                    className="flex-1 justify-center p-5"
                     style={{
-                        flex: 1,
                         backgroundColor: "rgba(0,0,0,0.5)",
-                        justifyContent: "center",
-                        padding: 20,
                     }}
                 >
                     <View
+                        className="rounded-3xl bg-white p-5"
                         style={{
-                            backgroundColor: "#fff",
-                            borderRadius: 20,
-                            padding: 20,
                             maxHeight: "90%",
                         }}
                     >
                         <ScrollView>
-                            <Text
-                                style={{
-                                    fontSize: 22,
-                                    fontWeight: "700",
-                                    marginBottom: 20,
-                                }}
-                            >
+                            <Text className="mb-5 text-[22px] font-bold text-slate-900">
                                 {isEdit ? "Edit User" : "Add User"}
                             </Text>
 
@@ -851,13 +712,7 @@ const UserManagement = () => {
                                         name: text,
                                     })
                                 }
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: "#e2e8f0",
-                                    borderRadius: 12,
-                                    padding: 12,
-                                    marginBottom: 12,
-                                }}
+                                className="mb-3 rounded-xl border border-slate-200 p-3"
                             />
 
                             <TextInput
@@ -869,13 +724,7 @@ const UserManagement = () => {
                                         email: text,
                                     })
                                 }
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: "#e2e8f0",
-                                    borderRadius: 12,
-                                    padding: 12,
-                                    marginBottom: 12,
-                                }}
+                                className="mb-3 rounded-xl border border-slate-200 p-3"
                             />
 
                             <TextInput
@@ -887,13 +736,7 @@ const UserManagement = () => {
                                         phone: text,
                                     })
                                 }
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: "#e2e8f0",
-                                    borderRadius: 12,
-                                    padding: 12,
-                                    marginBottom: 12,
-                                }}
+                                className="mb-3 rounded-xl border border-slate-200 p-3"
                             />
 
                             <TextInput
@@ -905,13 +748,7 @@ const UserManagement = () => {
                                         role: text,
                                     })
                                 }
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: "#e2e8f0",
-                                    borderRadius: 12,
-                                    padding: 12,
-                                    marginBottom: 12,
-                                }}
+                                className="mb-3 rounded-xl border border-slate-200 p-3"
                             />
 
                             <TextInput
@@ -928,54 +765,29 @@ const UserManagement = () => {
                                         password: text,
                                     })
                                 }
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: "#e2e8f0",
-                                    borderRadius: 12,
-                                    padding: 12,
-                                    marginBottom: 20,
-                                }}
+                                className="mb-5 rounded-xl border border-slate-200 p-3"
                             />
 
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    justifyContent: "flex-end",
-                                }}
-                            >
+                            <View className="flex-row justify-end">
                                 <TouchableOpacity
-                                    onPress={() => setModalVisible(false)}
-                                    style={{
-                                        paddingHorizontal: 20,
-                                        paddingVertical: 10,
-                                        marginRight: 10,
-                                    }}
+                                    onPress={() =>
+                                        setModalVisible(false)
+                                    }
+                                    className="mr-3 px-5 py-2.5"
                                 >
-                                    <Text
-                                        style={{
-                                            fontWeight: "600",
-                                        }}
-                                    >
+                                    <Text className="font-semibold text-slate-700">
                                         Cancel
                                     </Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
                                     onPress={handleSubmit}
-                                    style={{
-                                        backgroundColor: "#2563eb",
-                                        paddingHorizontal: 20,
-                                        paddingVertical: 10,
-                                        borderRadius: 10,
-                                    }}
+                                    className="rounded-xl bg-blue-600 px-5 py-2.5"
                                 >
-                                    <Text
-                                        style={{
-                                            color: "#fff",
-                                            fontWeight: "600",
-                                        }}
-                                    >
-                                        {isEdit ? "Update" : "Add User"}
+                                    <Text className="font-semibold text-white">
+                                        {isEdit
+                                            ? "Update"
+                                            : "Add User"}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
