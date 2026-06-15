@@ -59,6 +59,11 @@ export async function login(payload: LoginPayload) {
   return data;
 }
 
+export async function logout() {
+  await AsyncStorage.removeItem("token");
+  await AsyncStorage.removeItem("user");
+}
+
 
 export async function get(path: string) {
   return request(path, {

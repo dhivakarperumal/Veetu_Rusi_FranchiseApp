@@ -18,6 +18,8 @@ import AddHomeChef from "./src/pages/AddHomeChef";
 import Register from "./src/auth/register";
 import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
 
+import { AuthProvider, AuthContext } from "./src/context/AuthContext";
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -95,50 +97,39 @@ const MainTabs = () => {
   );
 };
 
+const AppNavigator = () => {
+  const auth = React.useContext(AuthContext);
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {auth?.token ? (
+          <>
+            <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Group screenOptions={{ presentation: "modal", headerShown: false }}>
+              <Stack.Screen name="AddHomeChef" component={AddHomeChef} />
+              <Stack.Screen name="AddDeliveryPartner" component={AddDeliveryPartner} />
+            </Stack.Group>
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Group screenOptions={{ presentation: "modal", headerShown: false }}>
+              <Stack.Screen name="Register" component={Register} />
+            </Stack.Group>
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
 export default function App() {
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Login"
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-          />
-
-          <Stack.Screen
-            name="Main"
-            component={MainTabs}
-          />
-
-          <Stack.Group
-            screenOptions={{
-              presentation: "modal",
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen
-              name="AddHomeChef"
-              component={AddHomeChef}
-            />
-
-            <Stack.Screen
-              name="Register"
-              component={Register}
-            />
-
-            <Stack.Screen
-              name="AddDeliveryPartner"
-              component={AddDeliveryPartner}
-            />
-            
-          </Stack.Group>
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
