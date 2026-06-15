@@ -15,6 +15,7 @@ import FoodProducts from "./src/tabs/foodproducts";
 import FoodOrders from "./src/tabs/foodorders";
 import MoreSettings from "./src/tabs/more";
 import AddHomeChef from "./src/pages/AddHomeChef";
+import Profile from "./src/pages/Profile";
 import Register from "./src/auth/register";
 import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
 
@@ -112,6 +113,7 @@ const AppNavigator = () => {
             <Stack.Group screenOptions={{ presentation: "modal", headerShown: false }}>
               <Stack.Screen name="AddHomeChef" component={AddHomeChef} />
               <Stack.Screen name="AddDeliveryPartner" component={AddDeliveryPartner} />
+              <Stack.Screen name="Profile" component={Profile} />
             </Stack.Group>
           </>
         ) : (

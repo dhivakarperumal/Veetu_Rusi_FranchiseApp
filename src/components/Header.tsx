@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, Image } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -43,11 +43,28 @@ const Header = () => {
 
   return (
     <View 
-      className="bg-slate-950 px-4 pb-3 flex-row justify-between items-center border-b border-slate-800 z-50"
+      className="bg-slate-950 px-4 pb-3 flex-row justify-between items-start border-b border-slate-800 z-50"
       style={{ paddingTop: Math.max(insets.top, 16) }}
-    >
-      <Text className="text-teal-500 text-2xl font-bold">Veetu Rusi</Text>
-      
+      >
+        <View className="flex-row items-center">
+          <View>
+            <Text style={{ fontSize: 20, fontFamily: 'Poppins-Bold', color: 'white', letterSpacing: -1 }}>
+              V2Rusi
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 11,
+                fontFamily: 'Poppins-Medium',
+                letterSpacing: 4,
+                color: '#666',
+              }}
+            >
+              TASTE OF HOME
+            </Text>
+          </View>
+        </View>
+
       <TouchableOpacity 
         onPress={() => setDropdownVisible(true)}
         className="w-10 h-10 bg-teal-600 rounded-full items-center justify-center shadow-lg"
@@ -71,7 +88,7 @@ const Header = () => {
         >
           <TouchableOpacity 
             className="flex-row items-center px-4 py-4 border-b border-slate-700"
-            onPress={() => navigateTo('Dashboard')}
+            onPress={() => navigateTo('Profile')}
           >
             <User color="#94A3B8" size={20} />
             <Text className="text-slate-200 ml-3 font-semibold">Profile</Text>
