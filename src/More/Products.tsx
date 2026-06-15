@@ -7,6 +7,7 @@ import {
     ActivityIndicator,
     RefreshControl,
     TextInput,
+    Image, 
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Plus, Search, Package } from "lucide-react-native";

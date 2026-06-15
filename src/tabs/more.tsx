@@ -38,7 +38,7 @@ const More = () => {
       icon: Settings,
       color: "#8b5cf6",
       bgColor: "#ede9fe",
-      onPress: () => {},
+      onPress: () => navigation.navigate("Inventory"),
     },
     {
       id: "reports",
