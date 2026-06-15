@@ -78,6 +78,12 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.franchiseapp"
+
+    externalNativeBuild {
+        cmake {
+            buildStagingDirectory "C:/tmp/FranchiseApp_cxx"
+        }
+    }
     defaultConfig {
         applicationId "com.franchiseapp"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -106,6 +112,10 @@ android {
         }
     }
 }
+
+// Override the build directory for this specific module to avoid path length issues
+buildDir = "C:/tmp/FranchiseApp_app"
+
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin

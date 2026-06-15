@@ -5,6 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+import { LayoutDashboard, Truck, ChefHat, Package, ClipboardList } from "lucide-react-native";
 
 import LoginScreen from "./src/auth/login";
 import Dashboard from "./src/tabs/dashboard";
@@ -44,27 +45,42 @@ const MainTabs = () => {
       <Tab.Screen
         name="Dashboard"
         component={Dashboard}
-        options={{ tabBarLabel: "Dashboard" }}
+        options={{ 
+          tabBarLabel: "Dashboard",
+          tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} />
+        }}
       />
       <Tab.Screen
         name="DeliveryPartners"
         component={DeliveryPartners}
-        options={{ tabBarLabel: "Delivery Partners" }}
+        options={{ 
+          tabBarLabel: "Delivery Partners",
+          tabBarIcon: ({ color, size }) => <Truck color={color} size={size} />
+        }}
       />
       <Tab.Screen
         name="HomeChef"
         component={HomeChef}
-        options={{ tabBarLabel: "Home Chefs" }}
+        options={{ 
+          tabBarLabel: "Home Chefs",
+          tabBarIcon: ({ color, size }) => <ChefHat color={color} size={size} />
+        }}
       />
       <Tab.Screen
         name="FoodProducts"
         component={FoodProducts}
-        options={{ tabBarLabel: "Food Products" }}
+        options={{ 
+          tabBarLabel: "Food Products",
+          tabBarIcon: ({ color, size }) => <Package color={color} size={size} />
+        }}
       />
       <Tab.Screen
         name="FoodOrders"
         component={FoodOrders}
-        options={{ tabBarLabel: "Food Orders" }}
+        options={{ 
+          tabBarLabel: "Food Orders",
+          tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} />
+        }}
       />
 
     </Tab.Navigator>
