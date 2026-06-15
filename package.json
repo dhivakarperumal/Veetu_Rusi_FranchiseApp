@@ -23,6 +23,7 @@
     "react-native": "0.86.0",
     "react-native-chart-kit": "^6.12.3",
     "react-native-gesture-handler": "^3.0.1",
+    "react-native-image-picker": "^8.2.1",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-screens": "^4.25.2",
     "react-native-svg": "^15.15.5",
