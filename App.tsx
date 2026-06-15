@@ -23,6 +23,8 @@ import { AuthProvider, AuthContext } from "./src/context/AuthContext";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+import Header from "./src/components/Header";
+
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
 
@@ -30,7 +32,8 @@ const MainTabs = () => {
     <Tab.Navigator
       initialRouteName="Dashboard"
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        header: () => <Header />,
         tabBarActiveTintColor: "#14B8A6",
         tabBarInactiveTintColor: "#94A3B8",
         tabBarStyle: {
