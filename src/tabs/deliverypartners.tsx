@@ -10,8 +10,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Bike } from "lucide-react-native";
 
 import { get } from "../services/api";
+import { TouchableOpacity } from "react-native";
+import { Plus } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const DeliveryPartners = () => {
+  const navigation = useNavigation<any>();
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -65,13 +69,12 @@ const DeliveryPartners = () => {
       </Text>
 
       <Text
-        className={`mt-2 font-bold ${
-          item.status === "Approved"
+        className={`mt-2 font-bold ${item.status === "Approved"
             ? "text-green-400"
             : item.status === "Pending"
-            ? "text-yellow-400"
-            : "text-red-400"
-        }`}
+              ? "text-yellow-400"
+              : "text-red-400"
+          }`}
       >
         {item.status}
       </Text>
@@ -91,9 +94,23 @@ const DeliveryPartners = () => {
       edges={["top", "bottom"]}
       className="flex-1 bg-slate-950"
     >
-      <Text className="text-white text-2xl font-bold p-4">
-        Delivery Partners
-      </Text>
+      <View className="flex-row justify-between items-center p-4">
+        <Text className="text-white text-2xl font-bold">
+          Delivery Partners
+        </Text>
+
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("AddDeliveryPartner")
+          }
+          className="bg-emerald-600 px-4 py-2 rounded-xl flex-row items-center"
+        >
+          <Plus size={18} color="white" />
+          <Text className="text-white font-bold ml-2">
+            Add
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <FlatList
         data={partners}
