@@ -8,165 +8,305 @@ import {
     Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
-import { X } from "lucide-react-native";
-
 import { post } from "../services/api";
 
-const AddHomeChef = () => {
-    const navigation = useNavigation<any>();
+const AddHomeChef = ({ navigation }: any) => {
+    const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+
     const [form, setForm] = useState({
         first_name: "",
         last_name: "",
+        gender: "Male",
+        date_of_birth: "",
         mobile: "",
         email: "",
-        kitchen_name: "",
-        cuisine_type: "",
-        city: "",
         password: "",
+        confirmPassword: "",
+
+
+        house_number: "",
+        street: "",
+        area: "",
+        city: "",
+        state: "",
+        pincode: "",
+        landmark: "",
+        gps_location: "",
+        google_map_location: "",
+
+        kitchen_name: "",
+        kitchen_type: "Home Kitchen",
+        experience_years: "",
+        cuisine_type: "",
+        daily_order_capacity: "",
+
+        available_days: [],
+        available_slots: [],
+
+        fssai_available: "No",
+        gst_available: "No",
+        aadhaar_number: "",
+        pan_number: "",
+        bank_account_number: "",
+        ifsc_code: "",
+        upi_id: "",
+
+        instagram_url: "",
+        facebook_url: "",
+        youtube_url: "",
+        website_url: "",
+
+        about_me: "",
+        cooking_story: "",
+        why_choose_me: "",
+        languages_known: "",
+
+        delivery_radius: "5 KM",
+        preorder_available: false,
+        cutoff_time: "",
+
+
     });
 
-    const saveChef = async () => {
+    const handleSubmit = async () => {
         try {
+            setLoading(true);
+
             const payload = {
-                first_name: form.first_name,
-                last_name: form.last_name,
-                mobile: form.mobile,
-                email: form.email,
-                password: form.password,
-                kitchen_name: form.kitchen_name,
-                cuisine_type: form.cuisine_type,
-                city: form.city,
+                ...form,
+                name: `${form.first_name} ${form.last_name}`,
+                door_number: form.house_number,
+                street_name: form.street,
+                area_name: form.area,
+                map_link: form.google_map_location,
+                available_days: Array.isArray(form.available_days)
+                    ? form.available_days.join(",")
+                    : "",
             };
 
-            const response = await post(
-                "/superadmin/homechefs",
-                payload
-            );
-
-            console.log(response);
+            await post("/superadmin/homechefs", payload);
 
             Alert.alert(
                 "Success",
-                "Home Chef Created Successfully"
+                "Home Chef Added Successfully"
             );
 
             navigation.goBack();
-        } catch (error: any) {
+        } catch (error) {
+            console.log(error);
             Alert.alert(
                 "Error",
-                error.message || "Failed to create chef"
+                "Failed to Add Home Chef"
             );
+        } finally {
+            setLoading(false);
         }
-    };
+        
 
-    return (
-        <SafeAreaView className="flex-1 bg-slate-950">
-            {/* Header with Close Button */}
-            <View className="flex-row justify-between items-center px-4 pt-4 pb-4 border-b border-slate-800">
-                <Text className="text-white text-2xl font-bold">
-                    Add Home Chef
-                </Text>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <X size={24} color="#ffffff" />
-                </TouchableOpacity>
-            </View>
+};
 
-            <ScrollView className="p-4">
+return ( <SafeAreaView className="flex-1 bg-slate-950"> <ScrollView className="flex-1 px-5">
 
-                <TextInput
-                    placeholder="First Name"
-                    placeholderTextColor="#94a3b8"
-                    className="bg-slate-900 text-white rounded-xl p-4 mb-4"
-                    value={form.first_name}
-                    onChangeText={(text) =>
-                        setForm({ ...form, first_name: text })
-                    }
-                />
 
-                <TextInput
-                    placeholder="Last Name"
-                    placeholderTextColor="#94a3b8"
-                    className="bg-slate-900 text-white rounded-xl p-4 mb-4"
-                    value={form.last_name}
-                    onChangeText={(text) =>
-                        setForm({ ...form, last_name: text })
-                    }
-                />
+            < Text className = "text-white text-3xl font-bold mt-5" >
+                Add Home Chef
+    </Text >
 
-                <TextInput
-                    placeholder="Mobile"
-                    placeholderTextColor="#94a3b8"
-                    className="bg-slate-900 text-white rounded-xl p-4 mb-4"
-                    value={form.mobile}
-                    onChangeText={(text) =>
-                        setForm({ ...form, mobile: text })
-                    }
-                />
+    <Text className="text-slate-400 mb-6">
+        Step {step} of 9
+    </Text>
 
-                <TextInput
-                    placeholder="Email"
-                    placeholderTextColor="#94a3b8"
-                    className="bg-slate-900 text-white rounded-xl p-4 mb-4"
-                    value={form.email}
-                    onChangeText={(text) =>
-                        setForm({ ...form, email: text })
-                    }
-                />
+{/* STEP 1 */ }
+{
+    step === 1 && (
+        <View className="gap-4">
 
-                <TextInput
-                    placeholder="Kitchen Name"
-                    placeholderTextColor="#94a3b8"
-                    className="bg-slate-900 text-white rounded-xl p-4 mb-4"
-                    value={form.kitchen_name}
-                    onChangeText={(text) =>
-                        setForm({ ...form, kitchen_name: text })
-                    }
-                />
+            <TextInput
+                placeholder="First Name"
+                placeholderTextColor="#94a3b8"
+                value={form.first_name}
+                onChangeText={(text) =>
+                    setForm({ ...form, first_name: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
 
-                <TextInput
-                    placeholder="Cuisine Type"
-                    placeholderTextColor="#94a3b8"
-                    className="bg-slate-900 text-white rounded-xl p-4 mb-4"
-                    value={form.cuisine_type}
-                    onChangeText={(text) =>
-                        setForm({ ...form, cuisine_type: text })
-                    }
-                />
+            <TextInput
+                placeholder="Last Name"
+                placeholderTextColor="#94a3b8"
+                value={form.last_name}
+                onChangeText={(text) =>
+                    setForm({ ...form, last_name: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
 
-                <TextInput
-                    placeholder="City"
-                    placeholderTextColor="#94a3b8"
-                    className="bg-slate-900 text-white rounded-xl p-4 mb-4"
-                    value={form.city}
-                    onChangeText={(text) =>
-                        setForm({ ...form, city: text })
-                    }
-                />
+            <TextInput
+                placeholder="Mobile"
+                placeholderTextColor="#94a3b8"
+                value={form.mobile}
+                onChangeText={(text) =>
+                    setForm({ ...form, mobile: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
 
-                <TextInput
-                    placeholder="Password"
-                    secureTextEntry
-                    placeholderTextColor="#94a3b8"
-                    className="bg-slate-900 text-white rounded-xl p-4 mb-6"
-                    value={form.password}
-                    onChangeText={(text) =>
-                        setForm({ ...form, password: text })
-                    }
-                />
+            <TextInput
+                placeholder="Email"
+                placeholderTextColor="#94a3b8"
+                value={form.email}
+                onChangeText={(text) =>
+                    setForm({ ...form, email: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
 
-                <TouchableOpacity
-                    onPress={saveChef}
-                    className="bg-emerald-600 rounded-xl p-4"
-                >
-                    <Text className="text-center text-white font-bold">
-                        Save Home Chef
-                    </Text>
-                </TouchableOpacity>
+            <TextInput
+                placeholder="Password"
+                secureTextEntry
+                placeholderTextColor="#94a3b8"
+                value={form.password}
+                onChangeText={(text) =>
+                    setForm({ ...form, password: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
+        </View>
+    )
+}
 
-            </ScrollView>
-        </SafeAreaView>
-    );
+{/* STEP 2 */ }
+{
+    step === 2 && (
+        <View className="gap-4">
+
+            <TextInput
+                placeholder="House Number"
+                placeholderTextColor="#94a3b8"
+                value={form.house_number}
+                onChangeText={(text) =>
+                    setForm({ ...form, house_number: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
+
+            <TextInput
+                placeholder="Street"
+                placeholderTextColor="#94a3b8"
+                value={form.street}
+                onChangeText={(text) =>
+                    setForm({ ...form, street: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
+
+            <TextInput
+                placeholder="City"
+                placeholderTextColor="#94a3b8"
+                value={form.city}
+                onChangeText={(text) =>
+                    setForm({ ...form, city: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
+
+        </View>
+    )
+}
+
+{/* STEP 3 */ }
+{
+    step === 3 && (
+        <View className="gap-4">
+
+            <TextInput
+                placeholder="Kitchen Name"
+                placeholderTextColor="#94a3b8"
+                value={form.kitchen_name}
+                onChangeText={(text) =>
+                    setForm({ ...form, kitchen_name: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
+
+            <TextInput
+                placeholder="Cuisine Type"
+                placeholderTextColor="#94a3b8"
+                value={form.cuisine_type}
+                onChangeText={(text) =>
+                    setForm({ ...form, cuisine_type: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
+
+        </View>
+    )
+}
+
+{/* STEP 4 - 8 */ }
+{/* Continue same pattern using your web fields */ }
+
+{/* STEP 9 */ }
+{
+    step === 9 && (
+        <View className="gap-4">
+
+            <TextInput
+                placeholder="Delivery Radius"
+                placeholderTextColor="#94a3b8"
+                value={form.delivery_radius}
+                onChangeText={(text) =>
+                    setForm({ ...form, delivery_radius: text })
+                }
+                className="bg-slate-900 text-white p-4 rounded-xl"
+            />
+
+        </View>
+    )
+}
+
+<View className="flex-row justify-between mt-8 mb-10">
+
+    {step > 1 && (
+        <TouchableOpacity
+            onPress={() => setStep(step - 1)}
+            className="bg-slate-700 px-6 py-4 rounded-xl"
+        >
+            <Text className="text-white font-bold">
+                Previous
+            </Text>
+        </TouchableOpacity>
+    )}
+
+    {step < 9 ? (
+        <TouchableOpacity
+            onPress={() => setStep(step + 1)}
+            className="bg-emerald-600 px-6 py-4 rounded-xl"
+        >
+            <Text className="text-white font-bold">
+                Next
+            </Text>
+        </TouchableOpacity>
+    ) : (
+        <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={loading}
+            className="bg-emerald-600 px-6 py-4 rounded-xl"
+        >
+            <Text className="text-white font-bold">
+                {loading ? "Saving..." : "Save Home Chef"}
+            </Text>
+        </TouchableOpacity>
+    )}
+
+</View>
+
+  </ScrollView >
+</SafeAreaView >
+
+
+);
 };
 
 export default AddHomeChef;
