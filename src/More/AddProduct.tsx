@@ -63,10 +63,7 @@ const AddProduct = () => {
                 ? JSON.parse(userData)
                 : null;
 
-            const franchiseUserId =
-                user?.user_id ||
-                user?.id ||
-                user?.franchise_user_id;
+            console.log("User Object:", JSON.stringify(user, null, 2));
 
             const payload = {
                 productId: form.productId,
@@ -85,12 +82,12 @@ const AddProduct = () => {
                     form.expiryDate,
 
                 status: "Active",
-
-                franchise_user_id: franchiseUserId,
             };
 
+            console.log("Payload:", JSON.stringify(payload, null, 2));
+
             const response = await post(
-                "/franchise-products",
+                "/products",
                 payload
             );
 
