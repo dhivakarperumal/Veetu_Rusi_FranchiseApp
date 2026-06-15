@@ -14,6 +14,7 @@ import FoodProducts from "./src/tabs/foodproducts";
 import FoodOrders from "./src/tabs/foodorders";
 import AddHomeChef from "./src/pages/AddHomeChef";
 import Register from "./src/auth/register";
+import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -65,6 +66,7 @@ const MainTabs = () => {
         component={FoodOrders}
         options={{ tabBarLabel: "Food Orders" }}
       />
+
     </Tab.Navigator>
   );
 };
@@ -104,6 +106,12 @@ export default function App() {
               name="Register"
               component={Register}
             />
+
+            <Stack.Screen
+              name="AddDeliveryPartner"
+              component={AddDeliveryPartner}
+            />
+            
           </Stack.Group>
         </Stack.Navigator>
       </NavigationContainer>
