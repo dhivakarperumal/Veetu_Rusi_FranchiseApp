@@ -66,6 +66,23 @@ const AddHomeChef = ({ navigation }: any) => {
         preorder_available: false,
         cutoff_time: "",
 
+        profile_photo: null,
+
+        introduction_video: null,
+
+        aadhaar_front_url: null,
+        aadhaar_back_url: null,
+        pan_card_url: null,
+
+        kitchen_photo1: null,
+        kitchen_photo2: null,
+        kitchen_photo3: null,
+
+        cooking_area_photo: null,
+        storage_area_photo: null,
+
+        selfie_verification_url: null,
+
 
     });
 
@@ -242,6 +259,57 @@ const AddHomeChef = ({ navigation }: any) => {
                         className="bg-slate-900 text-white p-4 rounded-xl"
                     />
 
+                    <TextInput
+                        placeholder="Area"
+                        value={form.area}
+                        onChangeText={(text) =>
+                            setForm({ ...form, area: text })
+                        }
+                    />
+
+                    <TextInput
+                        placeholder="State"
+                        value={form.state}
+                        onChangeText={(text) =>
+                            setForm({ ...form, state: text })
+                        }
+                    />
+
+                    <TextInput
+                        placeholder="Pincode"
+                        value={form.pincode}
+                        onChangeText={(text) =>
+                            setForm({ ...form, pincode: text })
+                        }
+                    />
+
+                    <TextInput
+                        placeholder="Landmark"
+                        value={form.landmark}
+                        onChangeText={(text) =>
+                            setForm({ ...form, landmark: text })
+                        }
+                    />
+
+                    <TextInput
+                        placeholder="GPS Location"
+                        value={form.gps_location}
+                        onChangeText={(text) =>
+                            setForm({ ...form, gps_location: text })
+                        }
+                    />
+
+                    <TextInput
+                        placeholder="Google Map Location"
+                        value={form.google_map_location}
+                        onChangeText={(text) =>
+                            setForm({
+                                ...form,
+                                google_map_location: text,
+                            })
+                        }
+                    />
+
                 </View>
             )
         }
@@ -269,6 +337,39 @@ const AddHomeChef = ({ navigation }: any) => {
                             setForm({ ...form, cuisine_type: text })
                         }
                         className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                    <TextInput
+                        placeholder="Years Of Experience"
+                        value={form.experience_years}
+                        onChangeText={(text) =>
+                            setForm({
+                                ...form,
+                                experience_years: text,
+                            })
+                        }
+                    />
+
+                    <TextInput
+                        placeholder="Kitchen Type"
+                        value={form.kitchen_type}
+                        onChangeText={(text) =>
+                            setForm({
+                                ...form,
+                                kitchen_type: text,
+                            })
+                        }
+                    />
+
+                    <TextInput
+                        placeholder="Daily Order Capacity"
+                        value={form.daily_order_capacity}
+                        onChangeText={(text) =>
+                            setForm({
+                                ...form,
+                                daily_order_capacity: text,
+                            })
+                        }
                     />
 
                 </View>
@@ -403,6 +504,16 @@ const AddHomeChef = ({ navigation }: any) => {
                     }
                     className="bg-slate-900 text-white p-4 rounded-xl"
                 />
+                <TextInput
+                    placeholder="Aadhaar Number"
+                    value={form.aadhaar_number}
+                    onChangeText={(text) =>
+                        setForm({
+                            ...form,
+                            aadhaar_number: text,
+                        })
+                    }
+                />
 
             </View>
         )}
@@ -501,6 +612,12 @@ const AddHomeChef = ({ navigation }: any) => {
                     }
                     className="bg-slate-900 text-white p-4 rounded-xl"
                 />
+
+                <TouchableOpacity className="bg-slate-800 p-4 rounded-xl">
+                    <Text className="text-white">
+                        Upload Introduction Video
+                    </Text>
+                </TouchableOpacity>
 
             </View>
         )}
