@@ -102,211 +102,519 @@ const AddHomeChef = ({ navigation }: any) => {
         } finally {
             setLoading(false);
         }
-        
-
-};
-
-return ( <SafeAreaView className="flex-1 bg-slate-950"> <ScrollView className="flex-1 px-5">
 
 
-            < Text className = "text-white text-3xl font-bold mt-5" >
-                Add Home Chef
-    </Text >
+    };
 
-    <Text className="text-slate-400 mb-6">
-        Step {step} of 9
-    </Text>
+    return (<SafeAreaView className="flex-1 bg-slate-950"> <ScrollView className="flex-1 px-5">
 
-{/* STEP 1 */ }
-{
-    step === 1 && (
-        <View className="gap-4">
 
-            <TextInput
-                placeholder="First Name"
-                placeholderTextColor="#94a3b8"
-                value={form.first_name}
-                onChangeText={(text) =>
-                    setForm({ ...form, first_name: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
+        < Text className="text-white text-3xl font-bold mt-5" >
+            Add Home Chef
+        </Text >
 
-            <TextInput
-                placeholder="Last Name"
-                placeholderTextColor="#94a3b8"
-                value={form.last_name}
-                onChangeText={(text) =>
-                    setForm({ ...form, last_name: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
+        <Text className="text-slate-400 mb-6">
+            Step {step} of 9
+        </Text>
 
-            <TextInput
-                placeholder="Mobile"
-                placeholderTextColor="#94a3b8"
-                value={form.mobile}
-                onChangeText={(text) =>
-                    setForm({ ...form, mobile: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
+        {/* STEP 1 */}
+        {
+            step === 1 && (
+                <View className="gap-4">
 
-            <TextInput
-                placeholder="Email"
-                placeholderTextColor="#94a3b8"
-                value={form.email}
-                onChangeText={(text) =>
-                    setForm({ ...form, email: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
+                    <TextInput
+                        placeholder="First Name"
+                        placeholderTextColor="#94a3b8"
+                        value={form.first_name}
+                        onChangeText={(text) =>
+                            setForm({ ...form, first_name: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
 
-            <TextInput
-                placeholder="Password"
-                secureTextEntry
-                placeholderTextColor="#94a3b8"
-                value={form.password}
-                onChangeText={(text) =>
-                    setForm({ ...form, password: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
+                    <TextInput
+                        placeholder="Last Name"
+                        placeholderTextColor="#94a3b8"
+                        value={form.last_name}
+                        onChangeText={(text) =>
+                            setForm({ ...form, last_name: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                    <TextInput
+                        placeholder="Gender"
+                        value={form.gender}
+                        onChangeText={(text) =>
+                            setForm({ ...form, gender: text })
+                        }
+                    />
+
+                    <TextInput
+                        placeholder="Date Of Birth"
+                        value={form.date_of_birth}
+                        onChangeText={(text) =>
+                            setForm({ ...form, date_of_birth: text })
+                        }
+                    />
+
+                    <TextInput
+                        placeholder="Mobile"
+                        placeholderTextColor="#94a3b8"
+                        value={form.mobile}
+                        onChangeText={(text) =>
+                            setForm({ ...form, mobile: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                    <TextInput
+                        placeholder="Email"
+                        placeholderTextColor="#94a3b8"
+                        value={form.email}
+                        onChangeText={(text) =>
+                            setForm({ ...form, email: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                    <TextInput
+                        placeholder="Password"
+                        secureTextEntry
+                        placeholderTextColor="#94a3b8"
+                        value={form.password}
+                        onChangeText={(text) =>
+                            setForm({ ...form, password: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                    <TextInput
+                        placeholder="Confirm Password"
+                        secureTextEntry
+                        value={form.confirmPassword}
+                        onChangeText={(text) =>
+                            setForm({ ...form, confirmPassword: text })
+                        }
+                    />
+
+                    <TouchableOpacity className="bg-slate-800 p-4 rounded-xl">
+                        <Text className="text-white">
+                            Upload Profile Photo
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )
+        }
+
+        {/* STEP 2 */}
+        {
+            step === 2 && (
+                <View className="gap-4">
+
+                    <TextInput
+                        placeholder="House Number"
+                        placeholderTextColor="#94a3b8"
+                        value={form.house_number}
+                        onChangeText={(text) =>
+                            setForm({ ...form, house_number: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                    <TextInput
+                        placeholder="Street"
+                        placeholderTextColor="#94a3b8"
+                        value={form.street}
+                        onChangeText={(text) =>
+                            setForm({ ...form, street: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                    <TextInput
+                        placeholder="City"
+                        placeholderTextColor="#94a3b8"
+                        value={form.city}
+                        onChangeText={(text) =>
+                            setForm({ ...form, city: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                </View>
+            )
+        }
+
+        {/* STEP 3 */}
+        {
+            step === 3 && (
+                <View className="gap-4">
+
+                    <TextInput
+                        placeholder="Kitchen Name"
+                        placeholderTextColor="#94a3b8"
+                        value={form.kitchen_name}
+                        onChangeText={(text) =>
+                            setForm({ ...form, kitchen_name: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                    <TextInput
+                        placeholder="Cuisine Type"
+                        placeholderTextColor="#94a3b8"
+                        value={form.cuisine_type}
+                        onChangeText={(text) =>
+                            setForm({ ...form, cuisine_type: text })
+                        }
+                        className="bg-slate-900 text-white p-4 rounded-xl"
+                    />
+
+                </View>
+            )
+        }
+
+        {/* STEP 4 - 8 */}
+        {step === 4 && (
+            <View className="gap-5">
+
+                <Text className="text-white text-lg font-bold">
+                    Available Days
+                </Text>
+
+                <View className="flex-row flex-wrap gap-2">
+                    {[
+                        "Monday",
+                        "Tuesday",
+                        "Wednesday",
+                        "Thursday",
+                        "Friday",
+                        "Saturday",
+                        "Sunday",
+                    ].map((day) => (
+                        <TouchableOpacity
+                            key={day}
+                            onPress={() => {
+                                const exists = form.available_days.includes(day);
+
+                                setForm({
+                                    ...form,
+                                    available_days: exists
+                                        ? form.available_days.filter((d) => d !== day)
+                                        : [...form.available_days, day],
+                                });
+                            }}
+                            className={`px-4 py-3 rounded-xl ${form.available_days.includes(day)
+                                ? "bg-emerald-600"
+                                : "bg-slate-800"
+                                }`}
+                        >
+                            <Text className="text-white">{day}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                <Text className="text-white text-lg font-bold mt-5">
+                    Available Slots
+                </Text>
+
+                <View className="flex-row flex-wrap gap-2">
+                    {[
+                        "Breakfast",
+                        "Lunch",
+                        "Dinner",
+                        "Evening Snacks",
+                    ].map((slot) => (
+                        <TouchableOpacity
+                            key={slot}
+                            onPress={() => {
+                                const exists = form.available_slots.includes(slot);
+
+                                setForm({
+                                    ...form,
+                                    available_slots: exists
+                                        ? form.available_slots.filter((s) => s !== slot)
+                                        : [...form.available_slots, slot],
+                                });
+                            }}
+                            className={`px-4 py-3 rounded-xl ${form.available_slots.includes(slot)
+                                ? "bg-emerald-600"
+                                : "bg-slate-800"
+                                }`}
+                        >
+                            <Text className="text-white">{slot}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+            </View>
+        )}
+
+        {step === 5 && (
+            <View className="gap-4">
+
+                <TextInput
+                    placeholder="Aadhaar Number"
+                    placeholderTextColor="#94a3b8"
+                    value={form.aadhaar_number}
+                    onChangeText={(text) =>
+                        setForm({ ...form, aadhaar_number: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    placeholder="PAN Number"
+                    placeholderTextColor="#94a3b8"
+                    value={form.pan_number}
+                    onChangeText={(text) =>
+                        setForm({ ...form, pan_number: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    placeholder="Bank Account Number"
+                    placeholderTextColor="#94a3b8"
+                    value={form.bank_account_number}
+                    onChangeText={(text) =>
+                        setForm({ ...form, bank_account_number: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    placeholder="IFSC Code"
+                    placeholderTextColor="#94a3b8"
+                    value={form.ifsc_code}
+                    onChangeText={(text) =>
+                        setForm({ ...form, ifsc_code: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    placeholder="UPI ID"
+                    placeholderTextColor="#94a3b8"
+                    value={form.upi_id}
+                    onChangeText={(text) =>
+                        setForm({ ...form, upi_id: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+            </View>
+        )}
+
+        {step === 6 && (
+            <View className="gap-4">
+
+                <TextInput
+                    placeholder="Instagram URL"
+                    placeholderTextColor="#94a3b8"
+                    value={form.instagram_url}
+                    onChangeText={(text) =>
+                        setForm({ ...form, instagram_url: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    placeholder="Facebook URL"
+                    placeholderTextColor="#94a3b8"
+                    value={form.facebook_url}
+                    onChangeText={(text) =>
+                        setForm({ ...form, facebook_url: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    placeholder="YouTube URL"
+                    placeholderTextColor="#94a3b8"
+                    value={form.youtube_url}
+                    onChangeText={(text) =>
+                        setForm({ ...form, youtube_url: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    placeholder="Website URL"
+                    placeholderTextColor="#94a3b8"
+                    value={form.website_url}
+                    onChangeText={(text) =>
+                        setForm({ ...form, website_url: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+            </View>
+        )}
+
+        {step === 7 && (
+            <View className="gap-4">
+
+                <TextInput
+                    multiline
+                    numberOfLines={4}
+                    placeholder="About Me"
+                    placeholderTextColor="#94a3b8"
+                    value={form.about_me}
+                    onChangeText={(text) =>
+                        setForm({ ...form, about_me: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    multiline
+                    numberOfLines={4}
+                    placeholder="Cooking Story"
+                    placeholderTextColor="#94a3b8"
+                    value={form.cooking_story}
+                    onChangeText={(text) =>
+                        setForm({ ...form, cooking_story: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    multiline
+                    numberOfLines={4}
+                    placeholder="Why Choose Me"
+                    placeholderTextColor="#94a3b8"
+                    value={form.why_choose_me}
+                    onChangeText={(text) =>
+                        setForm({ ...form, why_choose_me: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    placeholder="Languages Known"
+                    placeholderTextColor="#94a3b8"
+                    value={form.languages_known}
+                    onChangeText={(text) =>
+                        setForm({ ...form, languages_known: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+            </View>
+        )}
+
+        {step === 8 && (
+            <View className="gap-3">
+
+                <TouchableOpacity className="bg-slate-800 p-4 rounded-xl">
+                    <Text className="text-white">
+                        Upload Aadhaar Front
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity className="bg-slate-800 p-4 rounded-xl">
+                    <Text className="text-white">
+                        Upload Aadhaar Back
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity className="bg-slate-800 p-4 rounded-xl">
+                    <Text className="text-white">
+                        Upload PAN Card
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity className="bg-slate-800 p-4 rounded-xl">
+                    <Text className="text-white">
+                        Upload Kitchen Photo 1
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity className="bg-slate-800 p-4 rounded-xl">
+                    <Text className="text-white">
+                        Upload Kitchen Photo 2
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity className="bg-slate-800 p-4 rounded-xl">
+                    <Text className="text-white">
+                        Upload Kitchen Photo 3
+                    </Text>
+                </TouchableOpacity>
+
+            </View>
+        )}
+
+        {/* STEP 9 */}
+        {step === 9 && (
+            <View className="gap-4">
+
+                <TextInput
+                    placeholder="Delivery Radius"
+                    placeholderTextColor="#94a3b8"
+                    value={form.delivery_radius}
+                    onChangeText={(text) =>
+                        setForm({ ...form, delivery_radius: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+                <TextInput
+                    placeholder="Cutoff Time"
+                    placeholderTextColor="#94a3b8"
+                    value={form.cutoff_time}
+                    onChangeText={(text) =>
+                        setForm({ ...form, cutoff_time: text })
+                    }
+                    className="bg-slate-900 text-white p-4 rounded-xl"
+                />
+
+            </View>
+        )}
+
+        <View className="flex-row justify-between mt-8 mb-10">
+
+            {step > 1 && (
+                <TouchableOpacity
+                    onPress={() => setStep(step - 1)}
+                    className="bg-slate-700 px-6 py-4 rounded-xl"
+                >
+                    <Text className="text-white font-bold">
+                        Previous
+                    </Text>
+                </TouchableOpacity>
+            )}
+
+            {step < 9 ? (
+                <TouchableOpacity
+                    onPress={() => setStep(step + 1)}
+                    className="bg-emerald-600 px-6 py-4 rounded-xl"
+                >
+                    <Text className="text-white font-bold">
+                        Next
+                    </Text>
+                </TouchableOpacity>
+            ) : (
+                <TouchableOpacity
+                    onPress={handleSubmit}
+                    disabled={loading}
+                    className="bg-emerald-600 px-6 py-4 rounded-xl"
+                >
+                    <Text className="text-white font-bold">
+                        {loading ? "Saving..." : "Save Home Chef"}
+                    </Text>
+                </TouchableOpacity>
+            )}
+
         </View>
-    )
-}
 
-{/* STEP 2 */ }
-{
-    step === 2 && (
-        <View className="gap-4">
-
-            <TextInput
-                placeholder="House Number"
-                placeholderTextColor="#94a3b8"
-                value={form.house_number}
-                onChangeText={(text) =>
-                    setForm({ ...form, house_number: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
-
-            <TextInput
-                placeholder="Street"
-                placeholderTextColor="#94a3b8"
-                value={form.street}
-                onChangeText={(text) =>
-                    setForm({ ...form, street: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
-
-            <TextInput
-                placeholder="City"
-                placeholderTextColor="#94a3b8"
-                value={form.city}
-                onChangeText={(text) =>
-                    setForm({ ...form, city: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
-
-        </View>
-    )
-}
-
-{/* STEP 3 */ }
-{
-    step === 3 && (
-        <View className="gap-4">
-
-            <TextInput
-                placeholder="Kitchen Name"
-                placeholderTextColor="#94a3b8"
-                value={form.kitchen_name}
-                onChangeText={(text) =>
-                    setForm({ ...form, kitchen_name: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
-
-            <TextInput
-                placeholder="Cuisine Type"
-                placeholderTextColor="#94a3b8"
-                value={form.cuisine_type}
-                onChangeText={(text) =>
-                    setForm({ ...form, cuisine_type: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
-
-        </View>
-    )
-}
-
-{/* STEP 4 - 8 */ }
-{/* Continue same pattern using your web fields */ }
-
-{/* STEP 9 */ }
-{
-    step === 9 && (
-        <View className="gap-4">
-
-            <TextInput
-                placeholder="Delivery Radius"
-                placeholderTextColor="#94a3b8"
-                value={form.delivery_radius}
-                onChangeText={(text) =>
-                    setForm({ ...form, delivery_radius: text })
-                }
-                className="bg-slate-900 text-white p-4 rounded-xl"
-            />
-
-        </View>
-    )
-}
-
-<View className="flex-row justify-between mt-8 mb-10">
-
-    {step > 1 && (
-        <TouchableOpacity
-            onPress={() => setStep(step - 1)}
-            className="bg-slate-700 px-6 py-4 rounded-xl"
-        >
-            <Text className="text-white font-bold">
-                Previous
-            </Text>
-        </TouchableOpacity>
-    )}
-
-    {step < 9 ? (
-        <TouchableOpacity
-            onPress={() => setStep(step + 1)}
-            className="bg-emerald-600 px-6 py-4 rounded-xl"
-        >
-            <Text className="text-white font-bold">
-                Next
-            </Text>
-        </TouchableOpacity>
-    ) : (
-        <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={loading}
-            className="bg-emerald-600 px-6 py-4 rounded-xl"
-        >
-            <Text className="text-white font-bold">
-                {loading ? "Saving..." : "Save Home Chef"}
-            </Text>
-        </TouchableOpacity>
-    )}
-
-</View>
-
-  </ScrollView >
-</SafeAreaView >
+    </ScrollView >
+    </SafeAreaView >
 
 
-);
+    );
 };
 
 export default AddHomeChef;
