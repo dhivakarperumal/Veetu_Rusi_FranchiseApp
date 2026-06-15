@@ -47,6 +47,13 @@ const Header = () => {
       style={{ paddingTop: Math.max(insets.top, 16) }}
       >
         <View className="flex-row items-center">
+          <View className="bg-white rounded-full p-0.8 mr-3 shadow-lg" style={{ elevation: 5 }}>
+            <Image 
+              source={require('../images/logo2.png')} 
+              style={{ width: 55, height: 55 }} 
+              resizeMode="contain" 
+            />
+          </View>
           <View>
             <Text style={{ fontSize: 20, fontFamily: 'Poppins-Bold', color: 'white', letterSpacing: -1 }}>
               V2Rusi
