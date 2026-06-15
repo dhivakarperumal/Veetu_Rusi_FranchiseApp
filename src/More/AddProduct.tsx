@@ -63,6 +63,11 @@ const AddProduct = () => {
                 ? JSON.parse(userData)
                 : null;
 
+            const franchiseUserId =
+                user?.user_id ||
+                user?.id ||
+                user?.franchise_user_id;
+
             const payload = {
                 productId: form.productId,
                 name: form.name,
@@ -81,8 +86,7 @@ const AddProduct = () => {
 
                 status: "Active",
 
-                franchise_user_id:
-                    user?.user_id || user?.id,
+                franchise_user_id: franchiseUserId,
             };
 
             const response = await post(
