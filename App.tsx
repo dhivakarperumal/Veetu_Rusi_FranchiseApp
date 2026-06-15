@@ -28,6 +28,12 @@ const Tab = createBottomTabNavigator();
 
 import Header from "./src/components/Header";
 import Inventory from "./src/More/Inventory";
+import Products from "./src/More/Products";
+import Categories from "./src/More/Categories";
+import StockDetails from "./src/More/StockDetails";
+import AddProduct from "./src/More/AddProduct";
+import AddCategory from "./src/More/AddCategory";
+import AddStock from "./src/More/AddStock";
 
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
@@ -126,7 +132,7 @@ const AppNavigator = () => {
                 component={Inventory}
               />
 
-              {/* <Stack.Screen
+              <Stack.Screen
                 name="Products"
                 component={Products}
               />
@@ -154,7 +160,7 @@ const AppNavigator = () => {
               <Stack.Screen
                 name="AddStock"
                 component={AddStock}
-              /> */}
+              />
             </Stack.Group>
           </>
         ) : (
