@@ -5,7 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
-import { LayoutDashboard, Truck, ChefHat, Package, ClipboardList } from "lucide-react-native";
+import { LayoutDashboard, Truck, ChefHat, Package, ClipboardList, Grid3x3 } from "lucide-react-native";
 
 import LoginScreen from "./src/auth/login";
 import Dashboard from "./src/tabs/dashboard";
@@ -13,6 +13,7 @@ import DeliveryPartners from "./src/tabs/deliverypartners";
 import HomeChef from "./src/tabs/homechef";
 import FoodProducts from "./src/tabs/foodproducts";
 import FoodOrders from "./src/tabs/foodorders";
+import MoreSettings from "./src/tabs/more";
 import AddHomeChef from "./src/pages/AddHomeChef";
 import Register from "./src/auth/register";
 import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
@@ -82,7 +83,14 @@ const MainTabs = () => {
           tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} />
         }}
       />
-
+      <Tab.Screen
+        name="More"
+        component={MoreSettings}
+        options={{ 
+          tabBarLabel: "More",
+          tabBarIcon: ({ color, size }) => <Grid3x3 color={color} size={size} />
+        }}
+      />
     </Tab.Navigator>
   );
 };
