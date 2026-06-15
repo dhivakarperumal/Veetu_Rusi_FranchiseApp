@@ -1,6 +1,7 @@
 import "./global.css";
 import React from "react";
 
+
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -18,6 +19,7 @@ import AddHomeChef from "./src/pages/AddHomeChef";
 import Profile from "./src/pages/Profile";
 import Register from "./src/auth/register";
 import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
+import UserManagement from "./src/More/UserManagement";
 
 import { AuthProvider, AuthContext } from "./src/context/AuthContext";
 
@@ -52,7 +54,7 @@ const MainTabs = () => {
       <Tab.Screen
         name="Dashboard"
         component={Dashboard}
-        options={{ 
+        options={{
           tabBarLabel: "Dashboard",
           tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} />
         }}
@@ -60,7 +62,7 @@ const MainTabs = () => {
       <Tab.Screen
         name="DeliveryPartners"
         component={DeliveryPartners}
-        options={{ 
+        options={{
           tabBarLabel: "Delivery Partners",
           tabBarIcon: ({ color, size }) => <Truck color={color} size={size} />
         }}
@@ -68,7 +70,7 @@ const MainTabs = () => {
       <Tab.Screen
         name="HomeChef"
         component={HomeChef}
-        options={{ 
+        options={{
           tabBarLabel: "Home Chefs",
           tabBarIcon: ({ color, size }) => <ChefHat color={color} size={size} />
         }}
@@ -76,7 +78,7 @@ const MainTabs = () => {
       <Tab.Screen
         name="FoodProducts"
         component={FoodProducts}
-        options={{ 
+        options={{
           tabBarLabel: "Food Products",
           tabBarIcon: ({ color, size }) => <Package color={color} size={size} />
         }}
@@ -84,7 +86,7 @@ const MainTabs = () => {
       <Tab.Screen
         name="FoodOrders"
         component={FoodOrders}
-        options={{ 
+        options={{
           tabBarLabel: "Food Orders",
           tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} />
         }}
@@ -92,7 +94,7 @@ const MainTabs = () => {
       <Tab.Screen
         name="More"
         component={MoreSettings}
-        options={{ 
+        options={{
           tabBarLabel: "More",
           tabBarIcon: ({ color, size }) => <Grid3x3 color={color} size={size} />
         }}
@@ -114,6 +116,10 @@ const AppNavigator = () => {
               <Stack.Screen name="AddHomeChef" component={AddHomeChef} />
               <Stack.Screen name="AddDeliveryPartner" component={AddDeliveryPartner} />
               <Stack.Screen name="Profile" component={Profile} />
+              <Stack.Screen
+                name="UserManagement"
+                component={UserManagement}
+              />
             </Stack.Group>
           </>
         ) : (
