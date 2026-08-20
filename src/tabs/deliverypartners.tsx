@@ -83,15 +83,14 @@ const DeliveryPartners = () => {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-950 justify-center items-center">
-        <ActivityIndicator size="large" color="#10b981" />
-      </SafeAreaView>
+      <View className="flex-1 bg-slate-950 justify-center items-center">
+        <ActivityIndicator size="large" color="#14B8A6" />
+      </View>
     );
   }
 
   return (
-    <SafeAreaView
-      edges={["top", "bottom"]}
+    <View
       className="flex-1 bg-slate-950"
     >
       <View className="flex-row justify-between items-center p-4">
@@ -128,7 +127,7 @@ const DeliveryPartners = () => {
           </Text>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

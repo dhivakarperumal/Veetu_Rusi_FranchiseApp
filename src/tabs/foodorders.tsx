@@ -7,9 +7,8 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-import { get } from "../services/api";
+import {
+ get } from "../services/api";
 
 const FoodOrders = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -87,15 +86,14 @@ const FoodOrders = () => {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-950 justify-center items-center">
-        <ActivityIndicator size="large" color="#10b981" />
-      </SafeAreaView>
+      <View className="flex-1 bg-slate-950 justify-center items-center">
+        <ActivityIndicator size="large" color="#14B8A6" />
+      </View>
     );
   }
 
   return (
-    <SafeAreaView
-      edges={["top", "bottom"]}
+    <View
       className="flex-1 bg-slate-950"
     >
       <View className="px-4 py-4">
@@ -124,7 +122,7 @@ const FoodOrders = () => {
           </Text>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
