@@ -3132,8 +3132,8 @@ const AddHomeChef = () => {
                                                     )
                                                 }
                                                 className={`px-5 py-3.5 rounded-2xl border ${selected
-                                                        ? "bg-emerald-600 border-emerald-500"
-                                                        : "bg-slate-950 border-slate-800"
+                                                    ? "bg-emerald-600 border-emerald-500"
+                                                    : "bg-slate-950 border-slate-800"
                                                     }`}
                                             >
 
@@ -3147,8 +3147,8 @@ const AddHomeChef = () => {
 
                                                     <Text
                                                         className={`font-black ${selected
-                                                                ? "text-white"
-                                                                : "text-slate-300"
+                                                            ? "text-white"
+                                                            : "text-slate-300"
                                                             }`}
                                                     >
                                                         {radius}
@@ -3193,8 +3193,8 @@ const AddHomeChef = () => {
                                             )
                                         }
                                         className={`flex-1 rounded-2xl border py-4 ${form.preorder_available === true
-                                                ? "bg-emerald-600 border-emerald-500"
-                                                : "bg-slate-950 border-slate-800"
+                                            ? "bg-emerald-600 border-emerald-500"
+                                            : "bg-slate-950 border-slate-800"
                                             }`}
                                     >
 
@@ -3202,8 +3202,8 @@ const AddHomeChef = () => {
 
                                             <Text
                                                 className={`font-black ${form.preorder_available === true
-                                                        ? "text-white"
-                                                        : "text-slate-300"
+                                                    ? "text-white"
+                                                    : "text-slate-300"
                                                     }`}
                                             >
                                                 Yes
@@ -3230,8 +3230,8 @@ const AddHomeChef = () => {
                                             )
                                         }
                                         className={`flex-1 rounded-2xl border py-4 ${form.preorder_available === false
-                                                ? "bg-slate-700 border-slate-600"
-                                                : "bg-slate-950 border-slate-800"
+                                            ? "bg-slate-700 border-slate-600"
+                                            : "bg-slate-950 border-slate-800"
                                             }`}
                                     >
 
@@ -3239,8 +3239,8 @@ const AddHomeChef = () => {
 
                                             <Text
                                                 className={`font-black ${form.preorder_available === false
-                                                        ? "text-white"
-                                                        : "text-slate-300"
+                                                    ? "text-white"
+                                                    : "text-slate-300"
                                                     }`}
                                             >
                                                 No
@@ -3420,8 +3420,8 @@ const AddHomeChef = () => {
 
                                         <Text
                                             className={`font-black ${form.preorder_available
-                                                    ? "text-emerald-400"
-                                                    : "text-slate-500"
+                                                ? "text-emerald-400"
+                                                : "text-slate-500"
                                                 }`}
                                         >
                                             {form.preorder_available
@@ -3504,6 +3504,746 @@ const AddHomeChef = () => {
                                             size={18}
                                             color="#ffffff"
                                         />
+
+                                    </View>
+
+                                </TouchableOpacity>
+
+                            </View>
+
+                        </View>
+                    )}
+
+                    {/* ================================================= */}
+                    {/* STEP 10 — REVIEW & SAVE */}
+                    {/* ================================================= */}
+
+                    {currentStep === 10 && (
+                        <View className="px-5">
+
+                            {/* Header */}
+                            <View className="mb-7">
+
+                                <View className="flex-row items-center">
+
+                                    <View className="w-11 h-11 rounded-2xl bg-emerald-600/15 items-center justify-center mr-3">
+                                        <Text className="text-emerald-400 text-xl">
+                                            ✓
+                                        </Text>
+                                    </View>
+
+                                    <View className="flex-1">
+
+                                        <Text className="text-white text-xl font-black">
+                                            Review Home Chef
+                                        </Text>
+
+                                        <Text className="text-slate-400 text-sm mt-1">
+                                            Check all information before creating the chef profile.
+                                        </Text>
+
+                                    </View>
+
+                                </View>
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* PERSONAL INFORMATION */}
+                            {/* ================================================= */}
+
+                            <View className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-5">
+
+                                <View className="flex-row items-center justify-between mb-5">
+
+                                    <View>
+                                        <Text className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            Step 1
+                                        </Text>
+
+                                        <Text className="text-white text-lg font-black mt-1">
+                                            Personal Information
+                                        </Text>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={() => setCurrentStep(1)}
+                                        className="bg-slate-800 px-3 py-2 rounded-xl"
+                                    >
+                                        <Text className="text-slate-300 text-xs font-bold">
+                                            Edit
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <View className="flex-row flex-wrap">
+
+                                    <ReviewItem
+                                        label="First Name"
+                                        value={form.first_name}
+                                    />
+
+                                    <ReviewItem
+                                        label="Last Name"
+                                        value={form.last_name}
+                                    />
+
+                                    <ReviewItem
+                                        label="Gender"
+                                        value={form.gender}
+                                    />
+
+                                    <ReviewItem
+                                        label="Date Of Birth"
+                                        value={form.date_of_birth}
+                                    />
+
+                                    <ReviewItem
+                                        label="Mobile"
+                                        value={form.mobile}
+                                    />
+
+                                    <ReviewItem
+                                        label="Alternate Mobile"
+                                        value={form.alt_mobile}
+                                    />
+
+                                    <ReviewItem
+                                        label="Email"
+                                        value={form.email}
+                                    />
+
+                                </View>
+
+                                <View className="mt-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-4 py-3">
+
+                                    <Text className="text-slate-500 text-[10px] uppercase font-black">
+                                        Password
+                                    </Text>
+
+                                    <Text className="text-emerald-400 font-bold mt-1">
+                                        ••••••••••
+                                    </Text>
+
+                                </View>
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* ADDRESS */}
+                            {/* ================================================= */}
+
+                            <View className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-5">
+
+                                <View className="flex-row items-center justify-between mb-5">
+
+                                    <View>
+                                        <Text className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            Step 2
+                                        </Text>
+
+                                        <Text className="text-white text-lg font-black mt-1">
+                                            Address Information
+                                        </Text>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={() => setCurrentStep(2)}
+                                        className="bg-slate-800 px-3 py-2 rounded-xl"
+                                    >
+                                        <Text className="text-slate-300 text-xs font-bold">
+                                            Edit
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <View className="flex-row flex-wrap">
+
+                                    <ReviewItem
+                                        label="House Number"
+                                        value={form.house_number}
+                                    />
+
+                                    <ReviewItem
+                                        label="Street"
+                                        value={form.street}
+                                    />
+
+                                    <ReviewItem
+                                        label="Area"
+                                        value={form.area}
+                                    />
+
+                                    <ReviewItem
+                                        label="City"
+                                        value={form.city}
+                                    />
+
+                                    <ReviewItem
+                                        label="State"
+                                        value={form.state}
+                                    />
+
+                                    <ReviewItem
+                                        label="Country"
+                                        value={form.country}
+                                    />
+
+                                    <ReviewItem
+                                        label="Pincode"
+                                        value={form.pincode}
+                                    />
+
+                                    <ReviewItem
+                                        label="Latitude"
+                                        value={form.latitude}
+                                    />
+
+                                    <ReviewItem
+                                        label="Longitude"
+                                        value={form.longitude}
+                                    />
+
+                                </View>
+
+                                {form.google_map_location ? (
+                                    <View className="mt-3">
+
+                                        <Text className="text-slate-500 text-[10px] uppercase font-black">
+                                            Google Map
+                                        </Text>
+
+                                        <Text
+                                            numberOfLines={1}
+                                            className="text-emerald-400 text-xs mt-1"
+                                        >
+                                            {form.google_map_location}
+                                        </Text>
+
+                                    </View>
+                                ) : null}
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* KITCHEN */}
+                            {/* ================================================= */}
+
+                            <View className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-5">
+
+                                <View className="flex-row items-center justify-between mb-5">
+
+                                    <View>
+                                        <Text className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            Step 3
+                                        </Text>
+
+                                        <Text className="text-white text-lg font-black mt-1">
+                                            Kitchen Information
+                                        </Text>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={() => setCurrentStep(3)}
+                                        className="bg-slate-800 px-3 py-2 rounded-xl"
+                                    >
+                                        <Text className="text-slate-300 text-xs font-bold">
+                                            Edit
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <View className="flex-row flex-wrap">
+
+                                    <ReviewItem
+                                        label="Kitchen Name"
+                                        value={form.kitchen_name}
+                                    />
+
+                                    <ReviewItem
+                                        label="Kitchen Type"
+                                        value={form.kitchen_type}
+                                    />
+
+                                    <ReviewItem
+                                        label="Veg / Non-Veg"
+                                        value={form.veg_nonveg}
+                                    />
+
+                                    <ReviewItem
+                                        label="Experience"
+                                        value={
+                                            form.experience_years
+                                                ? `${form.experience_years} Years`
+                                                : ""
+                                        }
+                                    />
+
+                                    <ReviewItem
+                                        label="Daily Capacity"
+                                        value={form.daily_order_capacity}
+                                    />
+
+                                </View>
+
+                                <ReviewList
+                                    label="Cuisine"
+                                    values={form.cuisine_type}
+                                />
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* AVAILABILITY */}
+                            {/* ================================================= */}
+
+                            <View className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-5">
+
+                                <View className="flex-row items-center justify-between mb-5">
+
+                                    <View>
+                                        <Text className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            Step 4
+                                        </Text>
+
+                                        <Text className="text-white text-lg font-black mt-1">
+                                            Food Availability
+                                        </Text>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={() => setCurrentStep(4)}
+                                        className="bg-slate-800 px-3 py-2 rounded-xl"
+                                    >
+                                        <Text className="text-slate-300 text-xs font-bold">
+                                            Edit
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <ReviewList
+                                    label="Available Days"
+                                    values={form.available_days}
+                                />
+
+                                <ReviewList
+                                    label="Available Slots"
+                                    values={form.available_slots}
+                                />
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* BUSINESS */}
+                            {/* ================================================= */}
+
+                            <View className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-5">
+
+                                <View className="flex-row items-center justify-between mb-5">
+
+                                    <View>
+                                        <Text className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            Step 5
+                                        </Text>
+
+                                        <Text className="text-white text-lg font-black mt-1">
+                                            Business Details
+                                        </Text>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={() => setCurrentStep(5)}
+                                        className="bg-slate-800 px-3 py-2 rounded-xl"
+                                    >
+                                        <Text className="text-slate-300 text-xs font-bold">
+                                            Edit
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <View className="flex-row flex-wrap">
+
+                                    <ReviewItem
+                                        label="FSSAI"
+                                        value={form.fssai_available}
+                                    />
+
+                                    <ReviewItem
+                                        label="GST"
+                                        value={form.gst_available}
+                                    />
+
+                                    <ReviewItem
+                                        label="Aadhaar"
+                                        value={
+                                            form.aadhaar_number
+                                                ? `XXXX XXXX ${form.aadhaar_number.slice(-4)}`
+                                                : ""
+                                        }
+                                    />
+
+                                    <ReviewItem
+                                        label="PAN"
+                                        value={form.pan_number}
+                                    />
+
+                                    <ReviewItem
+                                        label="Account Holder"
+                                        value={form.account_holder_name}
+                                    />
+
+                                    <ReviewItem
+                                        label="Bank Branch"
+                                        value={form.bank_branch}
+                                    />
+
+                                    <ReviewItem
+                                        label="Bank Account"
+                                        value={
+                                            form.bank_account_number
+                                                ? `XXXX${form.bank_account_number.slice(-4)}`
+                                                : ""
+                                        }
+                                    />
+
+                                    <ReviewItem
+                                        label="IFSC"
+                                        value={form.ifsc_code}
+                                    />
+
+                                    <ReviewItem
+                                        label="UPI"
+                                        value={form.upi_id}
+                                    />
+
+                                </View>
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* SOCIAL */}
+                            {/* ================================================= */}
+
+                            <View className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-5">
+
+                                <View className="flex-row items-center justify-between mb-5">
+
+                                    <View>
+                                        <Text className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            Step 6
+                                        </Text>
+
+                                        <Text className="text-white text-lg font-black mt-1">
+                                            Social Media
+                                        </Text>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={() => setCurrentStep(6)}
+                                        className="bg-slate-800 px-3 py-2 rounded-xl"
+                                    >
+                                        <Text className="text-slate-300 text-xs font-bold">
+                                            Edit
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <ReviewItem
+                                    label="Instagram"
+                                    value={form.instagram_url}
+                                />
+
+                                <ReviewItem
+                                    label="Facebook"
+                                    value={form.facebook_url}
+                                />
+
+                                <ReviewItem
+                                    label="YouTube"
+                                    value={form.youtube_url}
+                                />
+
+                                <ReviewItem
+                                    label="Website"
+                                    value={form.website_url}
+                                />
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* CREATOR */}
+                            {/* ================================================= */}
+
+                            <View className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-5">
+
+                                <View className="flex-row items-center justify-between mb-5">
+
+                                    <View>
+                                        <Text className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            Step 7
+                                        </Text>
+
+                                        <Text className="text-white text-lg font-black mt-1">
+                                            Creator Profile
+                                        </Text>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={() => setCurrentStep(7)}
+                                        className="bg-slate-800 px-3 py-2 rounded-xl"
+                                    >
+                                        <Text className="text-slate-300 text-xs font-bold">
+                                            Edit
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <ReviewText
+                                    label="About Me"
+                                    value={form.about_me}
+                                />
+
+                                <ReviewText
+                                    label="Cooking Story"
+                                    value={form.cooking_story}
+                                />
+
+                                <ReviewText
+                                    label="Why Choose Me"
+                                    value={form.why_choose_me}
+                                />
+
+                                <ReviewItem
+                                    label="Languages"
+                                    value={form.languages_known}
+                                />
+
+                                <ReviewFile
+                                    label="Introduction Video"
+                                    value={form.introduction_video}
+                                />
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* VERIFICATION */}
+                            {/* ================================================= */}
+
+                            <View className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-5">
+
+                                <View className="flex-row items-center justify-between mb-5">
+
+                                    <View>
+                                        <Text className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            Step 8
+                                        </Text>
+
+                                        <Text className="text-white text-lg font-black mt-1">
+                                            Proof Verification
+                                        </Text>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={() => setCurrentStep(8)}
+                                        className="bg-slate-800 px-3 py-2 rounded-xl"
+                                    >
+                                        <Text className="text-slate-300 text-xs font-bold">
+                                            Edit
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <ReviewFile
+                                    label="Aadhaar Front"
+                                    value={form.aadhaar_front_url}
+                                />
+
+                                <ReviewFile
+                                    label="Aadhaar Back"
+                                    value={form.aadhaar_back_url}
+                                />
+
+                                <ReviewFile
+                                    label="PAN Card"
+                                    value={form.pan_card_url}
+                                />
+
+                                <ReviewFile
+                                    label="Selfie Verification"
+                                    value={form.selfie_verification_url}
+                                />
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* DELIVERY */}
+                            {/* ================================================= */}
+
+                            <View className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+
+                                <View className="flex-row items-center justify-between mb-5">
+
+                                    <View>
+                                        <Text className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                                            Step 9
+                                        </Text>
+
+                                        <Text className="text-white text-lg font-black mt-1">
+                                            Delivery Preferences
+                                        </Text>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={() => setCurrentStep(9)}
+                                        className="bg-slate-800 px-3 py-2 rounded-xl"
+                                    >
+                                        <Text className="text-slate-300 text-xs font-bold">
+                                            Edit
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <View className="flex-row flex-wrap">
+
+                                    <ReviewItem
+                                        label="Delivery Radius"
+                                        value={form.delivery_radius}
+                                    />
+
+                                    <ReviewItem
+                                        label="Preorder"
+                                        value={
+                                            form.preorder_available
+                                                ? "Available"
+                                                : "Not Available"
+                                        }
+                                    />
+
+                                    <ReviewItem
+                                        label="Opening Time"
+                                        value={form.opening_time}
+                                    />
+
+                                    <ReviewItem
+                                        label="Closing Time"
+                                        value={form.closing_time}
+                                    />
+
+                                    <ReviewItem
+                                        label="Cutoff Time"
+                                        value={form.cutoff_time}
+                                    />
+
+                                </View>
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* FINAL NOTICE */}
+                            {/* ================================================= */}
+
+                            <View className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 mb-7">
+
+                                <View className="flex-row">
+
+                                    <Text className="text-emerald-400 text-xl mr-3">
+                                        ✓
+                                    </Text>
+
+                                    <View className="flex-1">
+
+                                        <Text className="text-emerald-300 font-black">
+                                            Ready to Create Home Chef
+                                        </Text>
+
+                                        <Text className="text-emerald-200/60 text-xs mt-2 leading-5">
+                                            Please verify all information above before
+                                            submitting. Once saved, the home chef profile
+                                            will be created in the system.
+                                        </Text>
+
+                                    </View>
+
+                                </View>
+
+                            </View>
+
+
+                            {/* ================================================= */}
+                            {/* FINAL BUTTONS */}
+                            {/* ================================================= */}
+
+                            <View className="flex-row gap-3 mb-10">
+
+                                <TouchableOpacity
+                                    onPress={previousStep}
+                                    disabled={saving}
+                                    className="flex-1 bg-slate-900 border border-slate-700 rounded-2xl py-4"
+                                >
+
+                                    <View className="flex-row items-center justify-center">
+
+                                        <ChevronLeft
+                                            size={18}
+                                            color="#cbd5e1"
+                                        />
+
+                                        <Text className="text-slate-200 font-black uppercase tracking-widest ml-1">
+                                            Previous
+                                        </Text>
+
+                                    </View>
+
+                                </TouchableOpacity>
+
+
+                                <TouchableOpacity
+                                    onPress={handleSubmit}
+                                    disabled={saving}
+                                    className={`flex-1 rounded-2xl py-4 ${saving
+                                            ? "bg-emerald-800"
+                                            : "bg-emerald-600"
+                                        }`}
+                                >
+
+                                    <View className="flex-row items-center justify-center">
+
+                                        {saving ? (
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#ffffff"
+                                            />
+                                        ) : (
+                                            <>
+                                                <Text className="text-white font-black uppercase tracking-widest mr-2">
+                                                    Save Home Chef
+                                                </Text>
+
+                                                <Check
+                                                    size={18}
+                                                    color="#ffffff"
+                                                />
+                                            </>
+                                        )}
 
                                     </View>
 
