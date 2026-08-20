@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 
 import { get } from "../services/api";
@@ -46,8 +45,7 @@ const HomeChef = () => {
 
   if (loading) {
     return (
-      <SafeAreaView
-        edges={["top", "bottom"]}
+      <View
         className="flex-1 bg-slate-950"
       >
         <View className="flex-1 justify-center items-center">
@@ -56,13 +54,12 @@ const HomeChef = () => {
             Loading Home Chefs...
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView
-      edges={["top", "bottom"]}
+    <View
       className="flex-1 bg-slate-950"
     >
 
@@ -149,7 +146,7 @@ const HomeChef = () => {
           </View>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
