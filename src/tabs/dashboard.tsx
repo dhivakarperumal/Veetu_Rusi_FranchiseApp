@@ -379,80 +379,85 @@ const Dashboard = () => {
     },
   ];
 
-  const revenueLabels =
-    charts?.revenueAnalytics?.map((item: any) => item.name) || [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-    ];
-  const revenueValues =
-    charts?.revenueAnalytics?.map((item: any) => Number(item.revenue || 0)) || [
-      0,
-    ];
+  const revenueList =
+    Array.isArray(charts?.revenueAnalytics) &&
+    charts.revenueAnalytics.length >= 2
+      ? charts.revenueAnalytics
+      : FALLBACK.charts.revenueAnalytics;
+  const revenueLabels = revenueList.map((item: any) => item.name || "");
+  const revenueValues = revenueList.map((item: any) =>
+    Number(item.revenue || 0)
+  );
 
-  const orderLabels =
-    charts?.dailyOrders?.map((item: any) => item.date) || [
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat",
-      "Sun",
-    ];
-  const orderValues =
-    charts?.dailyOrders?.map((item: any) => Number(item.orders || 0)) || [0];
+  const dailyOrdersList =
+    Array.isArray(charts?.dailyOrders) && charts.dailyOrders.length >= 1
+      ? charts.dailyOrders
+      : FALLBACK.charts.dailyOrders;
+  const orderLabels = dailyOrdersList.map((item: any) => item.date || "");
+  const orderValues = dailyOrdersList.map((item: any) =>
+    Number(item.orders || 0)
+  );
 
-  const userGrowthLabels =
-    charts?.userGrowth?.map((item: any) => item.name) || [
-      "Wk 1",
-      "Wk 2",
-      "Wk 3",
-      "Wk 4",
-    ];
-  const customerValues =
-    charts?.userGrowth?.map((item: any) => Number(item.customers || 0)) || [0];
-  const chefValues =
-    charts?.userGrowth?.map((item: any) => Number(item.chefs || 0)) || [0];
-  const partnerValues =
-    charts?.userGrowth?.map((item: any) => Number(item.partners || 0)) || [0];
+  const userGrowthList =
+    Array.isArray(charts?.userGrowth) && charts.userGrowth.length >= 2
+      ? charts.userGrowth
+      : FALLBACK.charts.userGrowth;
+  const userGrowthLabels = userGrowthList.map((item: any) => item.name || "");
+  const customerValues = userGrowthList.map((item: any) =>
+    Number(item.customers || 0)
+  );
+  const chefValues = userGrowthList.map((item: any) =>
+    Number(item.chefs || 0)
+  );
+  const partnerValues = userGrowthList.map((item: any) =>
+    Number(item.partners || 0)
+  );
+
+  const ordersByStatusList =
+    Array.isArray(charts?.ordersByStatus) &&
+    charts.ordersByStatus.length > 0
+      ? charts.ordersByStatus
+      : FALLBACK.charts.ordersByStatus;
 
   const pieColors = ["#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#3B82F6"];
-  const pieChartData =
-    charts?.ordersByStatus && charts.ordersByStatus.length > 0
-      ? charts.ordersByStatus.map((item: any, index: number) => ({
+
+  const hasPieData = ordersByStatusList.some(
+    (item: any) => Number(item.count || 0) > 0
+  );
+
+  const pieChartData = hasPieData
+    ? ordersByStatusList
+        .filter((item: any) => Number(item.count || 0) > 0)
+        .map((item: any, index: number) => ({
           name: item.status || "Unknown",
           population: Number(item.count || 0),
           color: pieColors[index % pieColors.length],
           legendFontColor: "#94A3B8",
           legendFontSize: 11,
         }))
-      : [
-          {
-            name: "Delivered",
-            population: 0,
-            color: "#10B981",
-            legendFontColor: "#94A3B8",
-            legendFontSize: 11,
-          },
-          {
-            name: "Pending",
-            population: 0,
-            color: "#F59E0B",
-            legendFontColor: "#94A3B8",
-            legendFontSize: 11,
-          },
-          {
-            name: "Cancelled",
-            population: 0,
-            color: "#EF4444",
-            legendFontColor: "#94A3B8",
-            legendFontSize: 11,
-          },
-        ];
+    : [
+        {
+          name: "Delivered",
+          population: 1,
+          color: "#10B981",
+          legendFontColor: "#94A3B8",
+          legendFontSize: 11,
+        },
+        {
+          name: "Pending",
+          population: 1,
+          color: "#F59E0B",
+          legendFontColor: "#94A3B8",
+          legendFontSize: 11,
+        },
+        {
+          name: "Cancelled",
+          population: 1,
+          color: "#EF4444",
+          legendFontColor: "#94A3B8",
+          legendFontSize: 11,
+        },
+      ];
 
   return (
     <View className="flex-1 bg-slate-950">
