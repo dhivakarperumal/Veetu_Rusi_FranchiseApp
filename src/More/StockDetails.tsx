@@ -17,7 +17,7 @@ import {
 } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 
-import { get } from "../../services/api";
+import { get } from "../services/api";
 
 interface Product {
   id: number;

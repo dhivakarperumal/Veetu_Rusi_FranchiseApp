@@ -74,7 +74,7 @@ const Products = () => {
 
     const renderItem = ({ item }: { item: Product }) => {
         const image =
-            item?.images?.length > 0
+            item?.images && item.images.length > 0
                 ? item.images[0]
                 : null;
 

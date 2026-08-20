@@ -68,6 +68,9 @@ const AddDeliveryPartner = ({ navigation }: any) => {
         face_verified: false,
         location_verified: false,
 
+        delivery_radius: "",
+        cutoff_time: "",
+
         status: "Pending",
     });
 
