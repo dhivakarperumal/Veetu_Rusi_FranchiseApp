@@ -12,7 +12,7 @@ import { Picker } from "@react-native-picker/picker";
 import { ArrowLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 
-import { get, put } from "../../services/api";
+import { get, put } from "../services/api";
 
 interface Product {
   id: number;
