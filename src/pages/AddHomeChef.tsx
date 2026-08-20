@@ -42,8 +42,8 @@ const AddHomeChef = ({ navigation }: any) => {
         cuisine_type: "",
         daily_order_capacity: "",
 
-        available_days: [],
-        available_slots: [],
+        available_days: [] as string[],
+        available_slots: [] as string[],
 
         fssai_available: "No",
         gst_available: "No",

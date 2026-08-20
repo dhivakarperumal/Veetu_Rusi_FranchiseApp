@@ -17,7 +17,7 @@ const FoodOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await get("/user-food-orders");
+      const response = await get<any>("/user-food-orders");
 
       setOrders(response.data || response);
     } catch (error) {

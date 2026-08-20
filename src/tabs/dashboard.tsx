@@ -8,7 +8,6 @@ import {
   Dimensions,
 } from "react-native";
 import {
-
   Users,
   Store,
   ChefHat,
@@ -22,21 +21,12 @@ import {
   Package,
   XCircle,
 } from "lucide-react-native";
-
-import {
-  VictoryArea,
-  VictoryBar,
-  VictoryChart,
-  VictoryLine,
-  VictoryPie,
-  VictoryAxis,
-} from "victory-native";
+import { LineChart, BarChart, PieChart } from "react-native-chart-kit";
 
 import { get } from "../services/api";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-const CHART_WIDTH = SCREEN_WIDTH - 32;
+const CHART_WIDTH = SCREEN_WIDTH - 64;
 
 const FALLBACK = {
   cards: {
@@ -99,6 +89,27 @@ const FALLBACK = {
   },
 };
 
+const chartConfig = {
+  backgroundColor: "#0f172a",
+  backgroundGradientFrom: "#0f172a",
+  backgroundGradientTo: "#1e293b",
+  decimalPlaces: 0,
+  color: (opacity = 1) => `rgba(20, 184, 166, ${opacity})`,
+  labelColor: (opacity = 1) => `rgba(148, 163, 184, ${opacity})`,
+  style: {
+    borderRadius: 16,
+  },
+  propsForDots: {
+    r: "4",
+    strokeWidth: "2",
+    stroke: "#14B8A6",
+  },
+  propsForBackgroundLines: {
+    stroke: "#334155",
+    strokeDasharray: "4, 4",
+  },
+};
+
 const StatCard = ({
   icon: Icon,
   label,
@@ -108,7 +119,6 @@ const StatCard = ({
 }: any) => {
   return (
     <View className="w-[48%] bg-slate-900 rounded-3xl p-4 mb-4 overflow-hidden">
-
       <View
         className="w-11 h-11 rounded-2xl items-center justify-center"
         style={{
@@ -151,9 +161,7 @@ const ChartCard = ({
 }: any) => {
   return (
     <View className="bg-slate-900 rounded-3xl p-4 mb-5">
-
       <View className="flex-row items-center justify-between mb-4">
-
         <View className="flex-1">
           <Text className="text-white text-sm font-black">
             {title}
@@ -211,11 +219,8 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <View
-        className="flex-1 bg-slate-950"
-      >
+      <View className="flex-1 bg-slate-950">
         <View className="flex-1 justify-center items-center">
-
           <ActivityIndicator
             size="large"
             color="#14B8A6"
@@ -224,7 +229,6 @@ const Dashboard = () => {
           <Text className="text-white mt-3 text-base">
             Loading Dashboard...
           </Text>
-
         </View>
       </View>
     );
@@ -375,47 +379,83 @@ const Dashboard = () => {
     },
   ];
 
-  const revenueData =
-    charts?.revenueAnalytics?.map((item: any) => ({
-      x: item.name,
-      y: Number(item.revenue || 0),
-    })) || [];
+  const revenueLabels =
+    charts?.revenueAnalytics?.map((item: any) => item.name) || [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+    ];
+  const revenueValues =
+    charts?.revenueAnalytics?.map((item: any) => Number(item.revenue || 0)) || [
+      0,
+    ];
 
-  const orderData =
-    charts?.dailyOrders?.map((item: any) => ({
-      x: item.date,
-      y: Number(item.orders || 0),
-    })) || [];
+  const orderLabels =
+    charts?.dailyOrders?.map((item: any) => item.date) || [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun",
+    ];
+  const orderValues =
+    charts?.dailyOrders?.map((item: any) => Number(item.orders || 0)) || [0];
 
-  const customerData =
-    charts?.userGrowth?.map((item: any) => ({
-      x: item.name,
-      y: Number(item.customers || 0),
-    })) || [];
+  const userGrowthLabels =
+    charts?.userGrowth?.map((item: any) => item.name) || [
+      "Wk 1",
+      "Wk 2",
+      "Wk 3",
+      "Wk 4",
+    ];
+  const customerValues =
+    charts?.userGrowth?.map((item: any) => Number(item.customers || 0)) || [0];
+  const chefValues =
+    charts?.userGrowth?.map((item: any) => Number(item.chefs || 0)) || [0];
+  const partnerValues =
+    charts?.userGrowth?.map((item: any) => Number(item.partners || 0)) || [0];
 
-  const chefData =
-    charts?.userGrowth?.map((item: any) => ({
-      x: item.name,
-      y: Number(item.chefs || 0),
-    })) || [];
-
-  const partnerData =
-    charts?.userGrowth?.map((item: any) => ({
-      x: item.name,
-      y: Number(item.partners || 0),
-    })) || [];
-
-  const pieData =
-    charts?.ordersByStatus?.map((item: any) => ({
-      x: item.status,
-      y: Number(item.count || 0),
-    })) || [];
+  const pieColors = ["#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#3B82F6"];
+  const pieChartData =
+    charts?.ordersByStatus && charts.ordersByStatus.length > 0
+      ? charts.ordersByStatus.map((item: any, index: number) => ({
+          name: item.status || "Unknown",
+          population: Number(item.count || 0),
+          color: pieColors[index % pieColors.length],
+          legendFontColor: "#94A3B8",
+          legendFontSize: 11,
+        }))
+      : [
+          {
+            name: "Delivered",
+            population: 0,
+            color: "#10B981",
+            legendFontColor: "#94A3B8",
+            legendFontSize: 11,
+          },
+          {
+            name: "Pending",
+            population: 0,
+            color: "#F59E0B",
+            legendFontColor: "#94A3B8",
+            legendFontSize: 11,
+          },
+          {
+            name: "Cancelled",
+            population: 0,
+            color: "#EF4444",
+            legendFontColor: "#94A3B8",
+            legendFontSize: 11,
+          },
+        ];
 
   return (
-    <View
-      className="flex-1 bg-slate-950"
-    >
-
+    <View className="flex-1 bg-slate-950">
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -428,11 +468,8 @@ const Dashboard = () => {
           />
         }
       >
-
         <View className="p-4 pt-6">
-
           {/* ================= HEADER ================= */}
-
           <Text className="text-white text-3xl font-black">
             Dashboard
           </Text>
@@ -441,377 +478,182 @@ const Dashboard = () => {
             Welcome Back Franchise Admin
           </Text>
 
-
           {/* ================= STAT CARDS ================= */}
-
           <View className="flex-row flex-wrap justify-between">
-
             {statsCards.map((card, index) => (
               <StatCard
                 key={index}
                 {...card}
               />
             ))}
-
           </View>
 
-
           {/* ================= REVENUE CHART ================= */}
-
           <ChartCard
             title="Revenue Trends"
             subtitle="Monthly platform earnings"
             icon={TrendingUp}
             iconColor="#10B981"
           >
-
-            <VictoryChart
-              width={CHART_WIDTH}
-              height={250}
-              padding={{
-                top: 20,
-                bottom: 45,
-                left: 55,
-                right: 20,
-              }}
-            >
-
-              <VictoryAxis
-                style={{
-                  axis: {
-                    stroke: "#334155",
-                  },
-                  ticks: {
-                    stroke: "#334155",
-                  },
-                  tickLabels: {
-                    fill: "#94A3B8",
-                    fontSize: 9,
-                  },
-                }}
-              />
-
-              <VictoryAxis
-                dependentAxis
-                tickFormat={(value) =>
-                  `₹${Math.round(value / 1000)}k`
-                }
-                style={{
-                  axis: {
-                    stroke: "#334155",
-                  },
-                  ticks: {
-                    stroke: "#334155",
-                  },
-                  tickLabels: {
-                    fill: "#94A3B8",
-                    fontSize: 9,
-                  },
-                  grid: {
-                    stroke: "#1E293B",
-                    strokeDasharray: "4,4",
-                  },
-                }}
-              />
-
-              <VictoryArea
-                data={revenueData}
-                interpolation="monotoneX"
-                style={{
-                  data: {
-                    fill: "#10B981",
-                    fillOpacity: 0.18,
-                    stroke: "#10B981",
+            <LineChart
+              data={{
+                labels: revenueLabels,
+                datasets: [
+                  {
+                    data: revenueValues,
+                    color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
                     strokeWidth: 2.5,
                   },
-                }}
-              />
-
-            </VictoryChart>
-
+                ],
+              }}
+              width={CHART_WIDTH}
+              height={220}
+              yAxisLabel="₹"
+              yAxisSuffix=""
+              chartConfig={{
+                ...chartConfig,
+                color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
+              }}
+              bezier
+              style={{
+                borderRadius: 16,
+                marginTop: 8,
+              }}
+              formatYLabel={(val: any) => {
+                const n = Number(val);
+                if (isNaN(n)) return String(val);
+                if (n >= 1000) return `${Math.round(n / 1000)}k`;
+                return `${Math.round(n)}`;
+              }}
+            />
           </ChartCard>
 
-
           {/* ================= DAILY ORDERS ================= */}
-
           <ChartCard
             title="Daily Orders"
             subtitle="Orders placed this week"
             icon={ShoppingBag}
             iconColor="#3B82F6"
           >
-
-            <VictoryChart
-              width={CHART_WIDTH}
-              height={250}
-              domainPadding={{ x: 20 }}
-              padding={{
-                top: 20,
-                bottom: 45,
-                left: 45,
-                right: 20,
+            <BarChart
+              data={{
+                labels: orderLabels,
+                datasets: [
+                  {
+                    data: orderValues,
+                  },
+                ],
               }}
-            >
-
-              <VictoryAxis
-                style={{
-                  axis: {
-                    stroke: "#334155",
-                  },
-                  tickLabels: {
-                    fill: "#94A3B8",
-                    fontSize: 9,
-                  },
-                }}
-              />
-
-              <VictoryAxis
-                dependentAxis
-                style={{
-                  axis: {
-                    stroke: "#334155",
-                  },
-                  grid: {
-                    stroke: "#1E293B",
-                    strokeDasharray: "4,4",
-                  },
-                  tickLabels: {
-                    fill: "#94A3B8",
-                    fontSize: 9,
-                  },
-                }}
-              />
-
-              <VictoryBar
-                data={orderData}
-                style={{
-                  data: {
-                    fill: "#3B82F6",
-                    width: 18,
-                  },
-                }}
-              />
-
-            </VictoryChart>
-
+              width={CHART_WIDTH}
+              height={220}
+              yAxisLabel=""
+              yAxisSuffix=""
+              chartConfig={{
+                ...chartConfig,
+                color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+              }}
+              style={{
+                borderRadius: 16,
+                marginTop: 8,
+              }}
+              showValuesOnTopOfBars
+            />
           </ChartCard>
 
-
           {/* ================= USER ACQUISITION ================= */}
-
           <ChartCard
             title="User Acquisition"
             subtitle="Customers, chefs & partners by week"
             icon={Users}
             iconColor="#8B5CF6"
           >
-
-            <VictoryChart
-              width={CHART_WIDTH}
-              height={270}
-              padding={{
-                top: 20,
-                bottom: 45,
-                left: 45,
-                right: 20,
+            <LineChart
+              data={{
+                labels: userGrowthLabels,
+                datasets: [
+                  {
+                    data: customerValues,
+                    color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+                    strokeWidth: 2,
+                  },
+                  {
+                    data: chefValues,
+                    color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
+                    strokeWidth: 2,
+                  },
+                  {
+                    data: partnerValues,
+                    color: (opacity = 1) => `rgba(245, 158, 11, ${opacity})`,
+                    strokeWidth: 2,
+                  },
+                ],
+                legend: ["Customers", "Chefs", "Partners"],
               }}
-            >
-
-              <VictoryAxis
-                style={{
-                  axis: {
-                    stroke: "#334155",
-                  },
-                  tickLabels: {
-                    fill: "#94A3B8",
-                    fontSize: 9,
-                  },
-                }}
-              />
-
-              <VictoryAxis
-                dependentAxis
-                style={{
-                  axis: {
-                    stroke: "#334155",
-                  },
-                  grid: {
-                    stroke: "#1E293B",
-                    strokeDasharray: "4,4",
-                  },
-                  tickLabels: {
-                    fill: "#94A3B8",
-                    fontSize: 9,
-                  },
-                }}
-              />
-
-              <VictoryLine
-                data={customerData}
-                interpolation="monotoneX"
-                style={{
-                  data: {
-                    stroke: "#3B82F6",
-                    strokeWidth: 2.5,
-                  },
-                }}
-              />
-
-              <VictoryLine
-                data={chefData}
-                interpolation="monotoneX"
-                style={{
-                  data: {
-                    stroke: "#10B981",
-                    strokeWidth: 2.5,
-                  },
-                }}
-              />
-
-              <VictoryLine
-                data={partnerData}
-                interpolation="monotoneX"
-                style={{
-                  data: {
-                    stroke: "#F59E0B",
-                    strokeWidth: 2.5,
-                  },
-                }}
-              />
-
-            </VictoryChart>
-
-
-            {/* Chart Legend */}
-
-            <View className="flex-row justify-center gap-5 mt-1">
-
-              <View className="flex-row items-center">
-                <View className="w-2.5 h-2.5 rounded-full bg-blue-500 mr-2" />
-                <Text className="text-slate-400 text-[10px]">
-                  Customers
-                </Text>
-              </View>
-
-              <View className="flex-row items-center">
-                <View className="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2" />
-                <Text className="text-slate-400 text-[10px]">
-                  Chefs
-                </Text>
-              </View>
-
-              <View className="flex-row items-center">
-                <View className="w-2.5 h-2.5 rounded-full bg-amber-500 mr-2" />
-                <Text className="text-slate-400 text-[10px]">
-                  Partners
-                </Text>
-              </View>
-
-            </View>
-
+              width={CHART_WIDTH}
+              height={230}
+              chartConfig={{
+                ...chartConfig,
+                color: (opacity = 1) => `rgba(139, 92, 246, ${opacity})`,
+              }}
+              bezier
+              style={{
+                borderRadius: 16,
+                marginTop: 8,
+              }}
+            />
           </ChartCard>
 
-
           {/* ================= ORDER DISTRIBUTION ================= */}
-
           <ChartCard
             title="Order Distribution"
             subtitle="Status breakdown of all orders"
             icon={Clock}
             iconColor="#EC4899"
           >
-
             <View className="items-center">
-
-              <VictoryPie
-                width={CHART_WIDTH - 30}
-                height={250}
-                data={pieData}
-                innerRadius={55}
-                padAngle={4}
-                labels={({ datum }) =>
-                  `${datum.x}\n${datum.y}`
-                }
-                style={{
-                  labels: {
-                    fill: "#fff",
-                    fontSize: 9,
-                    fontWeight: "bold",
-                  },
-                  data: {
-                    fill: ({ index }) => {
-                      const colors = [
-                        "#10B981",
-                        "#F59E0B",
-                        "#EF4444",
-                      ];
-
-                      return colors[index % colors.length];
-                    },
-                  },
-                }}
+              <PieChart
+                data={pieChartData}
+                width={CHART_WIDTH}
+                height={200}
+                chartConfig={chartConfig}
+                accessor="population"
+                backgroundColor="transparent"
+                paddingLeft="15"
+                center={[10, 0]}
+                absolute={false}
               />
-
             </View>
-
 
             {/* Status List */}
-
             <View className="mt-2">
-
-              {charts?.ordersByStatus?.map(
-                (item: any, index: number) => {
-
-                  const colors = [
-                    "#10B981",
-                    "#F59E0B",
-                    "#EF4444",
-                  ];
-
-                  return (
-                    <View
-                      key={index}
-                      className="flex-row items-center mb-3"
-                    >
-
-                      <View
-                        className="w-3 h-3 rounded-full mr-3"
-                        style={{
-                          backgroundColor:
-                            colors[index % colors.length],
-                        }}
-                      />
-
-                      <View className="flex-1">
-
-                        <Text className="text-slate-400 text-[10px] font-bold uppercase">
-                          {item.status || "Unknown"}
-                        </Text>
-
-                        <Text className="text-white text-base font-black mt-0.5">
-                          {item.count || 0}
-                        </Text>
-
-                      </View>
-
-                    </View>
-                  );
-                }
-              )}
-
+              {pieChartData.map((item: any, index: number) => (
+                <View
+                  key={index}
+                  className="flex-row items-center mb-3"
+                >
+                  <View
+                    className="w-3 h-3 rounded-full mr-3"
+                    style={{
+                      backgroundColor: item.color,
+                    }}
+                  />
+                  <View className="flex-1">
+                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                      {item.name || "Unknown"}
+                    </Text>
+                    <Text className="text-white text-base font-black mt-0.5">
+                      {item.population || 0}
+                    </Text>
+                  </View>
+                </View>
+              ))}
             </View>
-
           </ChartCard>
 
-
           {/* Bottom spacing */}
-
           <View className="h-10" />
-
         </View>
-
       </ScrollView>
-
     </View>
   );
 };

@@ -22,7 +22,7 @@ const DeliveryPartners = () => {
 
   const fetchPartners = async () => {
     try {
-      const response = await get("/superadmin/delivery-partners");
+      const response = await get<any>("/superadmin/delivery-partners");
 
       // adjust if your API wrapper returns differently
       setPartners(response.data || response);
