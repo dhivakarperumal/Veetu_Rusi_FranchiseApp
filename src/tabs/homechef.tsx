@@ -55,7 +55,7 @@ const HomeChef = () => {
 
   const fetchHomeChefs = async () => {
     try {
-      const data: any = await get("/superadmin/homechefs");
+      const data: any = await get("/admin/homechefs");
 
       if (Array.isArray(data)) {
         setChefs(data);
