@@ -4,7 +4,7 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
+
 } from "react-native";
 
 import {
@@ -111,7 +111,7 @@ const More = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-slate-50">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -131,7 +131,7 @@ const More = () => {
 
         {menuItems.map(renderMenuItem)}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
