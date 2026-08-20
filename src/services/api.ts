@@ -19,16 +19,19 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = await AsyncStorage.getItem("token");
+  const isFormData = options.body instanceof FormData;
+
+  const headers: Record<string, string> = {
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
+    ...(token
+      ? { Authorization: `Bearer ${token}` }
+      : {}),
+    ...((options.headers as Record<string, string>) || {}),
+  };
 
   const response = await fetch(`${BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token
-        ? { Authorization: `Bearer ${token}` }
-        : {}),
-      ...(options.headers || {}),
-    },
     ...options,
+    headers,
   });
 
   const data = await response.json();
@@ -65,45 +68,47 @@ export async function logout() {
   await AsyncStorage.removeItem("user");
 }
 
-
 export async function get<T>(path: string): Promise<T> {
   return request<T>(path, {
     method: "GET",
   });
 }
 
-export async function post(
+export async function post<T = any>(
   path: string,
   payload: any
-) {
-  return request(path, {
+): Promise<T> {
+  const isFormData = payload instanceof FormData;
+  return request<T>(path, {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: isFormData ? payload : JSON.stringify(payload),
   });
 }
 
-export async function put(
+export async function put<T = any>(
   path: string,
   payload: any
-) {
-  return request(path, {
+): Promise<T> {
+  const isFormData = payload instanceof FormData;
+  return request<T>(path, {
     method: "PUT",
-    body: JSON.stringify(payload),
+    body: isFormData ? payload : JSON.stringify(payload),
   });
 }
 
-export async function del(path: string) {
-  return request(path, {
+export async function del<T = any>(path: string): Promise<T> {
+  return request<T>(path, {
     method: "DELETE",
   });
 }
 
-export async function patch(
+export async function patch<T = any>(
   path: string,
   payload: any
-) {
-  return request(path, {
+): Promise<T> {
+  const isFormData = payload instanceof FormData;
+  return request<T>(path, {
     method: "PATCH",
-    body: JSON.stringify(payload),
+    body: isFormData ? payload : JSON.stringify(payload),
   });
 }
