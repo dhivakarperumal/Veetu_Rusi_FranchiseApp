@@ -16,9 +16,12 @@ import FoodProducts from "./src/tabs/foodproducts";
 import FoodOrders from "./src/tabs/foodorders";
 import MoreSettings from "./src/tabs/more";
 import AddHomeChef from "./src/pages/AddHomeChef";
+import EditHomeChef from "./src/pages/EditHomeChef";
+import HomeChefDetails from "./src/pages/HomeChefDetails";
 import Profile from "./src/pages/Profile";
 import Register from "./src/auth/register";
 import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
+import EditDeliveryPartner from "./src/pages/EditDeliveryPartner";
 import UserManagement from "./src/More/UserManagement";
 
 import { AuthProvider, AuthContext } from "./src/context/AuthContext";
@@ -121,7 +124,10 @@ const AppNavigator = () => {
             <Stack.Screen name="Main" component={MainTabs} />
             <Stack.Group screenOptions={{ presentation: "modal", headerShown: false }}>
               <Stack.Screen name="AddHomeChef" component={AddHomeChef} />
+              <Stack.Screen name="EditHomeChef" component={EditHomeChef} />
+              <Stack.Screen name="HomeChefDetails" component={HomeChefDetails} />
               <Stack.Screen name="AddDeliveryPartner" component={AddDeliveryPartner} />
+              <Stack.Screen name="EditDeliveryPartner" component={EditDeliveryPartner} />
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen
                 name="UserManagement"

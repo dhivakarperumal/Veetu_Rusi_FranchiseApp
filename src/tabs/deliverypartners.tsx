@@ -524,6 +524,19 @@ const DeliveryPartners = () => {
                   </Text>
                 </TouchableOpacity>
 
+                {/* Edit Button */}
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("EditDeliveryPartner", {
+                      partnerId: item.id,
+                      partner: item,
+                    })
+                  }
+                  className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
+                >
+                  <Briefcase size={16} color="#cbd5e1" />
+                </TouchableOpacity>
+
                 {/* Approve Button */}
                 {item.status !== "Approved" && (
                   <TouchableOpacity
@@ -874,6 +887,23 @@ const DeliveryPartners = () => {
 
             {/* Modal Bottom Actions */}
             <View className="p-4 border-t border-slate-800 bg-slate-950 flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => {
+                  const target = selectedPartner;
+                  setIsDetailOpen(false);
+                  navigation.navigate("EditDeliveryPartner", {
+                    partnerId: target.id,
+                    partner: target,
+                  });
+                }}
+                className="px-4 bg-slate-800 py-3 rounded-2xl items-center flex-row"
+              >
+                <Briefcase size={15} color="#cbd5e1" />
+                <Text className="text-slate-300 font-bold text-xs uppercase ml-1.5">
+                  Edit
+                </Text>
+              </TouchableOpacity>
+
               {selectedPartner?.status !== "Approved" && (
                 <TouchableOpacity
                   onPress={() => {
