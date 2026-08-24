@@ -12,7 +12,17 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Search,
+  ChevronDown,
+  Eye,
+  Pencil,
+  Trash2,
+  X,
+  Check,
+  FastForward,
+  Utensils,
+} from "lucide-react-native";
 import { get, put, del } from "../services/api";
 // If your api file doesn't export del, change del(...) to your delete method.
 
@@ -126,9 +136,8 @@ const FoodProducts = () => {
       return imgPath;
     }
 
-    return `${API_BASE_URL}${
-      imgPath.startsWith("/") ? "" : "/"
-    }${imgPath}`;
+    return `${API_BASE_URL}${imgPath.startsWith("/") ? "" : "/"
+      }${imgPath}`;
   };
 
   /*
@@ -268,22 +277,22 @@ const FoodProducts = () => {
 
       const matchesSearch = searchText
         ? [
-            item.name,
-            item.product_code,
-            item.category,
-            item.cuisine,
-            item.product_type,
-            item.chef_name,
-            item.chef_phone,
-            item.created_by,
-            item.franchise_name,
-          ]
-            .filter(Boolean)
-            .some((value) =>
-              String(value)
-                .toLowerCase()
-                .includes(searchText)
-            )
+          item.name,
+          item.product_code,
+          item.category,
+          item.cuisine,
+          item.product_type,
+          item.chef_name,
+          item.chef_phone,
+          item.created_by,
+          item.franchise_name,
+        ]
+          .filter(Boolean)
+          .some((value) =>
+            String(value)
+              .toLowerCase()
+              .includes(searchText)
+          )
         : true;
 
       let matchesStatus = true;
@@ -572,18 +581,16 @@ const FoodProducts = () => {
                 setCurrentPage(1);
                 setShowStatusDropdown(false);
               }}
-              className={`px-5 py-4 border-b border-slate-800 ${
-                statusFilter === status
+              className={`px-5 py-4 border-b border-slate-800 ${statusFilter === status
                   ? "bg-emerald-900/40"
                   : ""
-              }`}
+                }`}
             >
               <Text
-                className={`font-semibold ${
-                  statusFilter === status
+                className={`font-semibold ${statusFilter === status
                     ? "text-emerald-400"
                     : "text-slate-200"
-                }`}
+                  }`}
               >
                 {status === "All"
                   ? "All Statuses"
@@ -628,18 +635,16 @@ const FoodProducts = () => {
               setCurrentPage(1);
               setShowChefDropdown(false);
             }}
-            className={`px-5 py-4 border-b border-slate-800 ${
-              selectedChef === "All"
+            className={`px-5 py-4 border-b border-slate-800 ${selectedChef === "All"
                 ? "bg-emerald-900/40"
                 : ""
-            }`}
+              }`}
           >
             <Text
-              className={`font-semibold ${
-                selectedChef === "All"
+              className={`font-semibold ${selectedChef === "All"
                   ? "text-emerald-400"
                   : "text-slate-200"
-              }`}
+                }`}
             >
               All Chefs
             </Text>
@@ -658,18 +663,16 @@ const FoodProducts = () => {
                   setCurrentPage(1);
                   setShowChefDropdown(false);
                 }}
-                className={`px-5 py-4 border-b border-slate-800 ${
-                  selectedChef === id
+                className={`px-5 py-4 border-b border-slate-800 ${selectedChef === id
                     ? "bg-emerald-900/40"
                     : ""
-                }`}
+                  }`}
               >
                 <Text
-                  className={`font-semibold ${
-                    selectedChef === id
+                  className={`font-semibold ${selectedChef === id
                       ? "text-emerald-400"
                       : "text-slate-200"
-                  }`}
+                    }`}
                 >
                   {chef.name || "Unnamed Chef"}
                 </Text>
@@ -698,11 +701,10 @@ const FoodProducts = () => {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className={`rounded-3xl p-5 mr-3 w-64 ${
-        active
+      className={`rounded-3xl p-5 mr-3 w-64 ${active
           ? "bg-slate-800"
           : "bg-slate-900"
-      }`}
+        }`}
       style={{
         borderWidth: active ? 2 : 1,
         borderColor: active
@@ -735,8 +737,8 @@ const FoodProducts = () => {
         {title === "Total Foods"
           ? "All chef food items currently loaded."
           : title === "Active Foods"
-          ? "Active food items ready for sale."
-          : "Food items currently inactive or blocked."}
+            ? "Active food items ready for sale."
+            : "Food items currently inactive or blocked."}
       </Text>
     </TouchableOpacity>
   );
@@ -896,11 +898,7 @@ const FoodProducts = () => {
               }}
               className="flex-1 flex-row items-center justify-center bg-slate-50 border border-slate-200 rounded-2xl py-3"
             >
-              <Ionicons
-                name="eye-outline"
-                size={16}
-                color="#475569"
-              />
+              <Eye size={16} color="#475569" />
 
               <Text className="text-slate-700 text-xs font-black ml-2">
                 VIEW
@@ -917,11 +915,7 @@ const FoodProducts = () => {
               }}
               className="flex-1 flex-row items-center justify-center bg-slate-50 border border-slate-200 rounded-2xl py-3"
             >
-              <Ionicons
-                name="create-outline"
-                size={16}
-                color="#475569"
-              />
+              <Pencil size={16} color="#475569" />
 
               <Text className="text-slate-700 text-xs font-black ml-2">
                 EDIT
@@ -934,11 +928,7 @@ const FoodProducts = () => {
               }
               className="flex-1 flex-row items-center justify-center bg-rose-50 border border-rose-200 rounded-2xl py-3"
             >
-              <Ionicons
-                name="trash-outline"
-                size={16}
-                color="#e11d48"
-              />
+              <Trash2 size={16} color="#e11d48" />
 
               <Text className="text-rose-700 text-xs font-black ml-2">
                 DELETE
@@ -1058,11 +1048,7 @@ const FoodProducts = () => {
             {/* Search */}
             <View className="px-4">
               <View className="bg-slate-900 border border-slate-700 rounded-2xl flex-row items-center px-4">
-                <Ionicons
-                  name="search-outline"
-                  size={20}
-                  color="#94a3b8"
-                />
+                <Search size={20} color="#94a3b8" />
 
                 <TextInput
                   value={search}
@@ -1096,22 +1082,18 @@ const FoodProducts = () => {
                       {selectedChef === "All"
                         ? "All Chefs"
                         : chefs.find(
-                            (chef) =>
-                              String(
-                                chef.chef_id ??
-                                  chef.id
-                              ) ===
-                              selectedChef
-                          )?.name ||
-                          "Selected Chef"}
+                          (chef) =>
+                            String(
+                              chef.chef_id ??
+                              chef.id
+                            ) ===
+                            selectedChef
+                        )?.name ||
+                        "Selected Chef"}
                     </Text>
                   </View>
 
-                  <Ionicons
-                    name="chevron-down"
-                    size={16}
-                    color="#94a3b8"
-                  />
+                  <ChevronDown size={16} color="#94a3b8" />
                 </TouchableOpacity>
               )}
 
@@ -1134,11 +1116,7 @@ const FoodProducts = () => {
                   </Text>
                 </View>
 
-                <Ionicons
-                  name="chevron-down"
-                  size={16}
-                  color="#94a3b8"
-                />
+                <ChevronDown size={16} color="#94a3b8" /> 
               </TouchableOpacity>
             </View>
 
@@ -1148,18 +1126,16 @@ const FoodProducts = () => {
                 onPress={() =>
                   setActiveTab("food")
                 }
-                className={`flex-1 py-3 rounded-xl items-center ${
-                  activeTab === "food"
+                className={`flex-1 py-3 rounded-xl items-center ${activeTab === "food"
                     ? "bg-white"
                     : ""
-                }`}
+                  }`}
               >
                 <Text
-                  className={`font-bold text-sm ${
-                    activeTab === "food"
+                  className={`font-bold text-sm ${activeTab === "food"
                       ? "text-emerald-700"
                       : "text-slate-400"
-                  }`}
+                    }`}
                 >
                   Food
                 </Text>
@@ -1169,18 +1145,16 @@ const FoodProducts = () => {
                 onPress={() =>
                   setActiveTab("foodProducts")
                 }
-                className={`flex-1 py-3 rounded-xl items-center ${
-                  activeTab === "foodProducts"
+                className={`flex-1 py-3 rounded-xl items-center ${activeTab === "foodProducts"
                     ? "bg-white"
                     : ""
-                }`}
+                  }`}
               >
                 <Text
-                  className={`font-bold text-sm ${
-                    activeTab === "foodProducts"
+                  className={`font-bold text-sm ${activeTab === "foodProducts"
                       ? "text-emerald-700"
                       : "text-slate-400"
-                  }`}
+                    }`}
                 >
                   Food Products
                 </Text>
@@ -1205,11 +1179,7 @@ const FoodProducts = () => {
         }
         ListEmptyComponent={
           <View className="items-center py-16">
-            <Ionicons
-              name="fast-food-outline"
-              size={50}
-              color="#475569"
-            />
+            <Utensils size={50} color="#475569" />
 
             <Text className="text-slate-400 mt-4 font-semibold">
               No food products found.
@@ -1226,18 +1196,16 @@ const FoodProducts = () => {
                     Math.max(prev - 1, 1)
                   )
                 }
-                className={`px-5 py-3 rounded-xl ${
-                  currentPage === 1
+                className={`px-5 py-3 rounded-xl ${currentPage === 1
                     ? "bg-slate-900"
                     : "bg-slate-700"
-                }`}
+                  }`}
               >
                 <Text
-                  className={`font-bold ${
-                    currentPage === 1
+                  className={`font-bold ${currentPage === 1
                       ? "text-slate-600"
                       : "text-white"
-                  }`}
+                    }`}
                 >
                   Previous
                 </Text>
@@ -1260,18 +1228,16 @@ const FoodProducts = () => {
                     )
                   )
                 }
-                className={`px-5 py-3 rounded-xl ${
-                  currentPage === totalPages
+                className={`px-5 py-3 rounded-xl ${currentPage === totalPages
                     ? "bg-slate-900"
                     : "bg-slate-700"
-                }`}
+                  }`}
               >
                 <Text
-                  className={`font-bold ${
-                    currentPage === totalPages
+                  className={`font-bold ${currentPage === totalPages
                       ? "text-slate-600"
                       : "text-white"
-                  }`}
+                    }`}
                 >
                   Next
                 </Text>
@@ -1312,11 +1278,7 @@ const FoodProducts = () => {
                   onPress={closeApprovalModal}
                   className="bg-slate-800 rounded-xl p-2"
                 >
-                  <Ionicons
-                    name="close"
-                    size={22}
-                    color="#cbd5e1"
-                  />
+                  <X size={22} color="#cbd5e1" />
                 </TouchableOpacity>
               </View>
 
@@ -1383,18 +1345,16 @@ const FoodProducts = () => {
               <TouchableOpacity
                 disabled={!canApprove}
                 onPress={handleApprove}
-                className={`mt-6 rounded-2xl py-4 items-center ${
-                  canApprove
+                className={`mt-6 rounded-2xl py-4 items-center ${canApprove
                     ? "bg-emerald-500"
                     : "bg-slate-800"
-                }`}
+                  }`}
               >
                 <Text
-                  className={`font-black uppercase tracking-widest ${
-                    canApprove
+                  className={`font-black uppercase tracking-widest ${canApprove
                       ? "text-white"
                       : "text-slate-500"
-                  }`}
+                    }`}
                 >
                   Approve Product
                 </Text>
@@ -1463,18 +1423,13 @@ const ChecklistRow = ({
     className="flex-row items-center bg-slate-800 border border-slate-700 rounded-2xl px-4 py-4 mt-3"
   >
     <View
-      className={`w-6 h-6 rounded-lg items-center justify-center border ${
-        checked
+      className={`w-6 h-6 rounded-lg items-center justify-center border ${checked
           ? "bg-emerald-500 border-emerald-500"
           : "border-slate-500"
-      }`}
+        }`}
     >
       {checked && (
-        <Ionicons
-          name="checkmark"
-          size={16}
-          color="white"
-        />
+        <Check size={16} color="white" />
       )}
     </View>
 
