@@ -13,6 +13,7 @@ import {
   BarChart3,
   Wallet,
   FileText,
+  ClipboardList,
   ArrowRight,
 } from "lucide-react-native";
 
@@ -39,6 +40,15 @@ const More = () => {
       color: "#8b5cf6",
       bgColor: "#ede9fe",
       onPress: () => navigation.navigate("Inventory"),
+    },
+    {
+      id: "orders",
+      label: "Orders",
+      description: "Manage orders and delivery status",
+      icon: ClipboardList,
+      color: "#0f766e",
+      bgColor: "#ccfbf1",
+      onPress: () => navigation.navigate("Orders"),
     },
     {
       id: "reports",
