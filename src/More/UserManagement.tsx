@@ -83,7 +83,7 @@ const UserManagement = () => {
             setLoading(true);
 
             const res = await get<User[]>(
-                "/superadmin/users"
+                "/admin/users"
             );
 
             setUsers(res);
@@ -173,7 +173,7 @@ const UserManagement = () => {
         async () => {
             try {
                 await post(
-                    "/superadmin/users",
+                    "/admin/users",
                     formData
                 );
 
@@ -207,7 +207,7 @@ const UserManagement = () => {
                 };
 
                 await put(
-                    `/superadmin/users/${formData.id}`,
+                    `/admin/users/${formData.id}`,
                     payload
                 );
 
@@ -243,7 +243,7 @@ const UserManagement = () => {
                         onPress: async () => {
                             try {
                                 await del(
-                                    `/superadmin/users/${id}`
+                                    `/admin/users/${id}`
                                 );
 
                                 fetchUsers();
@@ -272,7 +272,7 @@ const UserManagement = () => {
                         : 1;
 
                 await patch(
-                    `/superadmin/users/status/${id}`,
+                    `/admin/users/status/${id}`,
                     { active }
                 );
 
@@ -324,7 +324,7 @@ const UserManagement = () => {
             case "admin":
                 return "#2563eb";
 
-            case "superadmin":
+            case "admin":
                 return "#7c3aed";
 
             case "chef":
