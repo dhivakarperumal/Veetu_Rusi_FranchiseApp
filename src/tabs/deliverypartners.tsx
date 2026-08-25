@@ -642,99 +642,123 @@ const DeliveryPartners = () => {
       >
         <View className="flex-1 bg-black/80 justify-end">
           <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex-col">
-            {/* Modal Header */}
+
+            {/* ================= MODAL HEADER ================= */}
             <View className="p-5 bg-emerald-700 rounded-t-3xl flex-row items-center justify-between">
               <View className="flex-1">
-                <Text className="text-white text-lg font-black" numberOfLines={1}>
+                <Text
+                  className="text-white text-xl font-black"
+                  numberOfLines={1}
+                >
                   {selectedPartner?.name ||
                     `${selectedPartner?.first_name || ""} ${selectedPartner?.last_name || ""
                       }`.trim()}
                 </Text>
-                <Text className="text-emerald-200 text-xs font-bold uppercase tracking-wider mt-0.5">
+
+                <Text className="text-emerald-200 text-sm font-bold uppercase tracking-wider mt-1">
                   Delivery Partner Overview
                 </Text>
               </View>
+
               <TouchableOpacity
                 onPress={() => setIsDetailOpen(false)}
-                className="p-1.5 bg-black/20 rounded-full"
+                className="w-9 h-9 bg-black/20 rounded-full items-center justify-center"
               >
-                <X size={20} color="#ffffff" />
+                <X size={21} color="#ffffff" />
               </TouchableOpacity>
             </View>
 
-            {/* Modal Body */}
-            <ScrollView className="p-5 space-y-4">
-              {/* Personal Section */}
+            {/* ================= MODAL BODY ================= */}
+            <ScrollView
+              className="p-5"
+              showsVerticalScrollIndicator={false}
+            >
+
+              {/* ================= PERSONAL INFORMATION ================= */}
               <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
-                <Text className="text-emerald-400 text-xs font-black uppercase tracking-wider mb-2">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
                   👤 Personal Information
                 </Text>
+
                 <View className="flex-row flex-wrap">
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Mobile
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.mobile || "—"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Alt Mobile
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.alt_mobile || "—"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Email
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text
+                      className="text-white text-sm font-semibold mt-1"
+                      numberOfLines={1}
+                    >
                       {selectedPartner?.email || "—"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Gender / Blood
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.gender || "—"} &bull;{" "}
                       {selectedPartner?.blood_group || "—"}
                     </Text>
                   </View>
+
                   <View className="w-full p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       DOB & Age
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.date_of_birth
                         ? selectedPartner.date_of_birth.substring(0, 10)
                         : "—"}{" "}
-                      {selectedPartner?.age ? `(${selectedPartner.age} yrs)` : ""}
+                      {selectedPartner?.age
+                        ? `(${selectedPartner.age} yrs)`
+                        : ""}
                     </Text>
                   </View>
+
                 </View>
               </View>
 
-              {/* Address Section */}
+              {/* ================= ADDRESS ================= */}
               <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
-                <Text className="text-emerald-400 text-xs font-black uppercase tracking-wider mb-2">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
                   📍 Address & Live GPS
                 </Text>
+
                 <View className="p-1.5">
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                  <Text className="text-slate-400 text-xs font-bold uppercase">
                     Current Address
                   </Text>
-                  <Text className="text-white text-xs font-semibold mt-0.5">
+                  <Text className="text-white text-sm font-semibold mt-1">
                     {selectedPartner?.current_address || "—"}
                   </Text>
                 </View>
+
                 <View className="p-1.5">
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                  <Text className="text-slate-400 text-xs font-bold uppercase">
                     City, State & Pincode
                   </Text>
-                  <Text className="text-white text-xs font-semibold mt-0.5">
+                  <Text className="text-white text-sm font-semibold mt-1">
                     {[
                       selectedPartner?.city,
                       selectedPartner?.state,
@@ -744,176 +768,202 @@ const DeliveryPartners = () => {
                       .join(", ") || "—"}
                   </Text>
                 </View>
+
                 <View className="p-1.5">
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                  <Text className="text-slate-400 text-xs font-bold uppercase">
                     Live GPS / Location
                   </Text>
-                  <Text className="text-emerald-400 text-xs font-mono font-bold mt-0.5">
+                  <Text className="text-emerald-400 text-sm font-mono font-bold mt-1">
                     {selectedPartner?.live_location || "—"}
                   </Text>
                 </View>
               </View>
 
-              {/* Emergency Contact */}
+              {/* ================= EMERGENCY CONTACT ================= */}
               <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
-                <Text className="text-emerald-400 text-xs font-black uppercase tracking-wider mb-2">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
                   📞 Emergency Contact
                 </Text>
+
                 <View className="flex-row flex-wrap">
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Contact Name
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.emergency_contact_name || "—"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Relationship
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.emergency_contact_relationship || "—"}
                     </Text>
                   </View>
+
                   <View className="w-full p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Emergency Phone
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.emergency_contact_mobile || "—"}
                     </Text>
                   </View>
+
                 </View>
               </View>
 
-              {/* Vehicle & License Section */}
+              {/* ================= VEHICLE & LICENSE ================= */}
               <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
-                <Text className="text-emerald-400 text-xs font-black uppercase tracking-wider mb-2">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
                   🛵 Vehicle & License
                 </Text>
+
                 <View className="flex-row flex-wrap">
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Vehicle Type
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.vehicle_type || "Bike"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Brand / Model
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.vehicle_brand}{" "}
                       {selectedPartner?.vehicle_model}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Vehicle Number
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.vehicle_number || "—"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       License Number
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.license_number || "—"}
                     </Text>
                   </View>
+
                 </View>
               </View>
 
-              {/* Bank & Identity */}
+              {/* ================= BANK & IDENTITY ================= */}
               <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
-                <Text className="text-emerald-400 text-xs font-black uppercase tracking-wider mb-2">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
                   🏦 Bank & Identity
                 </Text>
+
                 <View className="flex-row flex-wrap">
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Bank Name
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.bank_name || "—"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       A/C Number
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.bank_account_number || "—"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       IFSC / UPI
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.ifsc_code || "—"} &bull;{" "}
                       {selectedPartner?.upi_id || "—"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Aadhaar / PAN
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.aadhaar_number || "—"} &bull;{" "}
                       {selectedPartner?.pan_number || "—"}
                     </Text>
                   </View>
+
                 </View>
               </View>
 
-              {/* Preferences */}
+              {/* ================= WORK PREFERENCES ================= */}
               <View className="bg-slate-950 rounded-2xl p-4 mb-6 border border-slate-800">
-                <Text className="text-emerald-400 text-xs font-black uppercase tracking-wider mb-2">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
                   ⚙️ Work Preferences
                 </Text>
+
                 <View className="p-1.5">
-                  <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                  <Text className="text-slate-400 text-xs font-bold uppercase">
                     Delivery Zones
                   </Text>
-                  <Text className="text-white text-xs font-semibold mt-0.5">
+                  <Text className="text-white text-sm font-semibold mt-1">
                     {selectedPartner?.available_areas || "—"}
                   </Text>
                 </View>
+
                 <View className="flex-row flex-wrap">
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Preferred Distance
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.preferred_distance || "3 KM"}
                     </Text>
                   </View>
+
                   <View className="w-1/2 p-1.5">
-                    <Text className="text-slate-400 text-[10px] font-bold uppercase">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
                       Driving Exp
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-1">
                       {selectedPartner?.driving_experience
                         ? `${selectedPartner.driving_experience} Years`
                         : "—"}
                     </Text>
                   </View>
+
                 </View>
               </View>
+
             </ScrollView>
 
-            {/* Modal Bottom Actions */}
+            {/* ================= BOTTOM ACTIONS ================= */}
             <View className="p-4 border-t border-slate-800 bg-slate-950 flex-row gap-2">
+
               <TouchableOpacity
                 onPress={() => {
                   const target = selectedPartner;
                   setIsDetailOpen(false);
+
                   navigation.navigate("EditDeliveryPartner", {
                     partnerId: target.id,
                     partner: target,
@@ -921,8 +971,9 @@ const DeliveryPartners = () => {
                 }}
                 className="px-4 bg-slate-800 py-3 rounded-2xl items-center flex-row"
               >
-                <Briefcase size={15} color="#cbd5e1" />
-                <Text className="text-slate-300 font-bold text-xs uppercase ml-1.5">
+                <Briefcase size={17} color="#cbd5e1" />
+
+                <Text className="text-slate-300 font-bold text-sm uppercase ml-1.5">
                   Edit
                 </Text>
               </TouchableOpacity>
@@ -934,7 +985,7 @@ const DeliveryPartners = () => {
                   }}
                   className="flex-1 bg-emerald-600 py-3 rounded-2xl items-center"
                 >
-                  <Text className="text-white font-black text-xs uppercase tracking-wider">
+                  <Text className="text-white font-black text-sm uppercase tracking-wider">
                     Approve Partner
                   </Text>
                 </TouchableOpacity>
@@ -947,7 +998,7 @@ const DeliveryPartners = () => {
                   }}
                   className="flex-1 bg-red-600 py-3 rounded-2xl items-center"
                 >
-                  <Text className="text-white font-black text-xs uppercase tracking-wider">
+                  <Text className="text-white font-black text-sm uppercase tracking-wider">
                     Reject Partner
                   </Text>
                 </TouchableOpacity>
@@ -957,11 +1008,13 @@ const DeliveryPartners = () => {
                 onPress={() => setIsDetailOpen(false)}
                 className="px-5 bg-slate-800 py-3 rounded-2xl items-center"
               >
-                <Text className="text-slate-300 font-bold text-xs uppercase">
+                <Text className="text-slate-300 font-bold text-sm uppercase">
                   Close
                 </Text>
               </TouchableOpacity>
+
             </View>
+
           </View>
         </View>
       </Modal>
