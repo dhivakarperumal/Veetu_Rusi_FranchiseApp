@@ -1,16 +1,15 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { ArrowLeft, UserCircle } from 'lucide-react-native';
+import { ArrowLeft } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type InnerHeaderProps = {
   title: string;
   navigation: any;
   onBack?: () => void;
-  onProfile?: () => void;
 };
 
-const InnerHeader = ({ title, navigation, onBack, onProfile }: InnerHeaderProps) => {
+const InnerHeader = ({ title, navigation, onBack }: InnerHeaderProps) => {
   const insets = useSafeAreaInsets();
 
   return (
@@ -24,7 +23,6 @@ const InnerHeader = ({ title, navigation, onBack, onProfile }: InnerHeaderProps)
         borderBottomColor: '#334155',
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
       }}
     >
       <TouchableOpacity
@@ -40,17 +38,11 @@ const InnerHeader = ({ title, navigation, onBack, onProfile }: InnerHeaderProps)
           fontSize: 18,
           fontWeight: '700',
           letterSpacing: 0.2,
+          marginLeft: 8,
         }}
       >
         {title}
       </Text>
-
-      <TouchableOpacity
-        onPress={onProfile ?? (() => navigation.navigate('Profile'))}
-        style={{ padding: 8 }}
-      >
-        <UserCircle color="#fff" size={26} />
-      </TouchableOpacity>
     </View>
   );
 };
