@@ -650,10 +650,12 @@ const DeliveryPartners = () => {
         visible={isDetailOpen && !!selectedPartner}
         transparent
         animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={() => setIsDetailOpen(false)}
       >
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex-col">
+          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex-col" style={{ paddingBottom: Math.max(insets.bottom, 12) }}>
 
             {/* ================= MODAL HEADER ================= */}
             <View className="p-5 bg-emerald-700 rounded-t-3xl flex-row items-center justify-between">

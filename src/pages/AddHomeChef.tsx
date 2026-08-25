@@ -374,7 +374,7 @@ const AddHomeChef = () => {
     const openMediaOptions = (
         field: string,
         mediaType: "photo" | "video" = "photo",
-        _multiple: boolean = false
+        multiple: boolean = false
     ) => {
         setActivePickerField({ field, mediaType, multiple });
         setPickerModalVisible(true);

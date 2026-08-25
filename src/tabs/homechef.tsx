@@ -26,9 +26,7 @@ import {
   Trash2,
   MapPin,
   Phone,
-  Mail,
   ChefHat,
-  Utensils,
   ChevronLeft,
   ChevronRight,
   X,
@@ -58,7 +56,7 @@ const HomeChef = () => {
   // Selected chef for Details Modal
   const [selectedChef, setSelectedChef] = useState<any | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [confirmation, setConfirmation] = useState<{ type: "suspend" | "delete"; chef: any } | null>(null);
+  const [confirmation, setConfirmation] = useState<{ type: "approve" | "suspend" | "delete"; chef: any } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -184,8 +182,8 @@ const HomeChef = () => {
   // ACTIONS
   // --------------------------------------------------
   const handleStatusChange = async (chef: any, newStatus: string) => {
-    if (newStatus === "Suspended") {
-      setConfirmation({ type: "suspend", chef });
+    if (newStatus === "Suspended" || newStatus === "Approved") {
+      setConfirmation({ type: newStatus === "Approved" ? "approve" : "suspend", chef });
       return;
     }
     Alert.alert(
@@ -228,8 +226,9 @@ const HomeChef = () => {
         setIsDetailOpen(false);
         setSelectedChef(null);
       } else {
-        await patch(`/admin/homechefs/${chef.id}/status`, { status: "Suspended" });
-        if (selectedChef?.id === chef.id) setSelectedChef({ ...selectedChef, status: "Suspended" });
+        const nextStatus = type === "approve" ? "Approved" : "Suspended";
+        await patch(`/admin/homechefs/${chef.id}/status`, { status: nextStatus });
+        if (selectedChef?.id === chef.id) setSelectedChef({ ...selectedChef, status: nextStatus });
       }
       setConfirmation(null);
       fetchHomeChefs();
@@ -299,21 +298,21 @@ const HomeChef = () => {
             {/* ================= SUMMARY CARDS ================= */}
             <View className="flex-row gap-2 mb-5">
               {/* TOTAL */}
-              <View className="flex-1 bg-slate-900 border border-indigo-400/25 rounded-2xl p-3">
+              <View className="flex-1 h-30 bg-slate-900 border border-indigo-400/25 rounded-2xl p-3">
                 <View className="w-8 h-8 rounded-lg bg-indigo-500/15 items-center justify-center mb-2"><Users size={16} color="#a5b4fc" /></View>
                 <Text className="text-indigo-200/70 text-[9px] font-bold uppercase">Total</Text>
                 <Text className="text-white text-2xl font-black mt-0.5">{chefs.length}</Text>
               </View>
 
               {/* APPROVED */}
-              <View className="flex-1 bg-slate-900 border border-emerald-400/25 rounded-2xl p-3">
+              <View className="flex-1 h-30 bg-slate-900 border border-emerald-400/25 rounded-2xl p-3">
                 <View className="w-8 h-8 rounded-lg bg-emerald-500/15 items-center justify-center mb-2"><CheckCircle size={16} color="#6ee7b7" /></View>
                 <Text className="text-emerald-200/70 text-[9px] font-bold uppercase">Approved</Text>
                 <Text className="text-white text-2xl font-black mt-0.5">{approvedCount}</Text>
               </View>
 
             {/* PENDING CARD */}
-            <View className="flex-1 bg-slate-900 border border-amber-400/25 rounded-2xl p-3 mb-5">
+            <View className="flex-1 h-30 bg-slate-900 border border-amber-400/25 rounded-2xl p-3 mb-5">
               <View className="w-8 h-8 rounded-lg bg-amber-500/15 items-center justify-center mb-2"><Clock size={16} color="#fcd34d" /></View>
               <Text className="text-amber-200/70 text-[9px] font-bold uppercase">Needs review</Text>
               <Text className="text-white text-2xl font-black mt-0.5">{pendingCount + suspendedCount}</Text>
@@ -380,29 +379,11 @@ const HomeChef = () => {
 
               {/* ================= INFO ================= */}
               <View className="mt-4 gap-2">
-                {/* EMAIL */}
-                <View className="flex-row items-center mb-1.5">
-                  <Mail size={14} color="#64748b" />
-                  <Text className="text-slate-400 text-xs ml-2 flex-1">
-                    {item.email || "-"}
-                  </Text>
-                </View>
-
                 {/* MOBILE */}
-                <View className="flex-row items-center mb-1.5">
+                <View className="flex-row items-center">
                   <Phone size={14} color="#64748b" />
                   <Text className="text-slate-400 text-xs ml-2">
                     {item.mobile || "-"}
-                  </Text>
-                </View>
-
-                {/* CUISINE */}
-                <View className="flex-row items-start mb-1.5">
-                  <Utensils size={14} color="#64748b" style={{ marginTop: 2 }} />
-                  <Text className="text-slate-400 text-xs ml-2 flex-1">
-                    {Array.isArray(item.cuisine_type)
-                      ? item.cuisine_type.join(", ")
-                      : item.cuisine_type || "N/A"}
                   </Text>
                 </View>
 
@@ -420,47 +401,11 @@ const HomeChef = () => {
                 </View>
               </View>
 
-              {/* ================= EXTRA DETAILS ================= */}
-              <View className="flex-row mt-3.5 gap-2">
-                <View className="flex-1 bg-slate-950 rounded-xl p-2.5">
-                  <Text className="text-slate-500 text-[9px] uppercase font-bold">
-                    Delivery Radius
-                  </Text>
-                  <Text className="text-white text-xs font-bold mt-0.5">
-                    {item.delivery_radius || "5 KM"}
-                  </Text>
-                </View>
-
-                <View className="flex-1 bg-slate-950 rounded-xl p-2.5">
-                  <Text className="text-slate-500 text-[9px] uppercase font-bold">
-                    Daily Capacity
-                  </Text>
-                  <Text className="text-white text-xs font-bold mt-0.5">
-                    {item.daily_order_capacity || "N/A"}
-                  </Text>
-                </View>
-              </View>
-
-              {/* ================= LOGIN ================= */}
-              {item.status === "Approved" && (
-                <View className="mt-3 bg-slate-950 rounded-xl p-3">
-                  <Text className="text-slate-500 text-[9px] uppercase font-bold">
-                    Login Credentials
-                  </Text>
-                  <Text className="text-slate-300 text-xs mt-1">
-                    User:{" "}
-                    <Text className="text-white font-bold">
-                      {item.username || item.email || "N/A"}
-                    </Text>
-                  </Text>
-                  <Text className="text-slate-300 text-xs mt-0.5">
-                    Pass: <Text className="text-slate-500">********</Text>
-                  </Text>
-                </View>
-              )}
-
               {/* ================= ACTIONS ================= */}
               <View className="flex-row items-center mt-4 pt-3 border-t border-white/10 gap-2">
+                <Text className="text-slate-300 text-xs font-semibold flex-1" numberOfLines={1}>
+                  {item.kitchen_name || item.cuisine_type || "Home kitchen"}
+                </Text>
                 {/* VIEW DETAILS */}
                 <TouchableOpacity
                   onPress={() => openChefDetails(item)}
@@ -577,12 +522,12 @@ const HomeChef = () => {
       >
         <View className="flex-1 bg-black/80 justify-end">
           <View className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
-            {confirmation?.type === "delete" ? <Trash2 size={25} color="#f87171" /> : <ShieldAlert size={25} color="#fbbf24" />}
-            <Text className="text-white text-lg font-black mt-4">{confirmation?.type === "delete" ? "Remove this chef?" : "Suspend this chef?"}</Text>
-            <Text className="text-slate-400 text-sm mt-2">{confirmation?.chef?.name || "This chef"} will be {confirmation?.type === "delete" ? "removed from" : "blocked from"} your home chef network.</Text>
+            {confirmation?.type === "delete" ? <Trash2 size={25} color="#f87171" /> : confirmation?.type === "approve" ? <CheckCircle size={25} color="#34d399" /> : <ShieldAlert size={25} color="#fbbf24" />}
+            <Text className="text-white text-lg font-black mt-4">{confirmation?.type === "delete" ? "Remove this chef?" : confirmation?.type === "approve" ? "Approve this chef?" : "Suspend this chef?"}</Text>
+            <Text className="text-slate-400 text-sm mt-2">{confirmation?.chef?.name || "This chef"} will be {confirmation?.type === "delete" ? "removed from" : confirmation?.type === "approve" ? "approved for" : "blocked from"} your home chef network.</Text>
             <View className="flex-row gap-3 mt-6">
               <TouchableOpacity onPress={() => setConfirmation(null)} disabled={actionLoading} className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"><Text className="text-slate-300 font-bold text-xs uppercase">Cancel</Text></TouchableOpacity>
-              <TouchableOpacity onPress={confirmAction} disabled={actionLoading} className={`flex-1 rounded-2xl py-3.5 items-center ${confirmation?.type === "delete" ? "bg-red-600" : "bg-amber-500"}`}>{actionLoading ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-black text-xs uppercase">{confirmation?.type === "delete" ? "Remove chef" : "Suspend chef"}</Text>}</TouchableOpacity>
+              <TouchableOpacity onPress={confirmAction} disabled={actionLoading} className={`flex-1 rounded-2xl py-3.5 items-center ${confirmation?.type === "delete" ? "bg-red-600" : confirmation?.type === "approve" ? "bg-emerald-600" : "bg-amber-500"}`}>{actionLoading ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-black text-xs uppercase">{confirmation?.type === "delete" ? "Remove chef" : confirmation?.type === "approve" ? "Approve chef" : "Suspend chef"}</Text>}</TouchableOpacity>
             </View>
           </View>
         </View>
@@ -604,10 +549,12 @@ const HomeChef = () => {
         visible={isDetailOpen && !!selectedChef}
         transparent
         animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={() => setIsDetailOpen(false)}
       >
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex-col">
+          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex-col" style={{ paddingBottom: Math.max(insets.bottom, 12) }}>
             {/* Modal Header */}
             <View className="p-5 bg-emerald-700 rounded-t-3xl flex-row items-center justify-between">
               <View className="flex-1">
@@ -641,7 +588,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Mobile
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.mobile || "—"}
                     </Text>
                   </View>
@@ -649,7 +596,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Alt Mobile
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.alt_mobile || "—"}
                     </Text>
                   </View>
@@ -657,7 +604,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Email
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.email || "—"}
                     </Text>
                   </View>
@@ -665,7 +612,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Gender / Age
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.gender || "—"}{" "}
                       {selectedChef?.age ? `(${selectedChef.age} yrs)` : ""}
                     </Text>
@@ -674,7 +621,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       DOB
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.date_of_birth
                         ? selectedChef.date_of_birth.substring(0, 10)
                         : "—"}
@@ -692,7 +639,7 @@ const HomeChef = () => {
                   <Text className="text-slate-400 text-[10px] font-bold uppercase">
                     Kitchen Name
                   </Text>
-                  <Text className="text-white text-xs font-semibold mt-0.5">
+                  <Text className="text-white text-sm font-semibold mt-0.5">
                     {selectedChef?.kitchen_name || "—"}
                   </Text>
                 </View>
@@ -701,7 +648,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Type / Veg
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.kitchen_type || "Home Kitchen"} &bull;{" "}
                       {selectedChef?.veg_nonveg || "Veg"}
                     </Text>
@@ -710,7 +657,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Experience
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.experience_years
                         ? `${selectedChef.experience_years} Years`
                         : "—"}
@@ -720,7 +667,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Speciality Cuisines
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {Array.isArray(selectedChef?.cuisine_type)
                         ? selectedChef.cuisine_type.join(", ")
                         : selectedChef?.cuisine_type || "—"}
@@ -730,7 +677,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Daily Capacity
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.daily_order_capacity || "—"}
                     </Text>
                   </View>
@@ -738,7 +685,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Delivery Radius
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.delivery_radius || "5 KM"}
                     </Text>
                   </View>
@@ -794,7 +741,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Account Holder
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.account_holder_name || "—"}
                     </Text>
                   </View>
@@ -802,7 +749,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       Branch
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.bank_branch || "—"}
                     </Text>
                   </View>
@@ -810,7 +757,7 @@ const HomeChef = () => {
                     <Text className="text-slate-400 text-[10px] font-bold uppercase">
                       A/C Number
                     </Text>
-                    <Text className="text-white text-xs font-semibold mt-0.5">
+                    <Text className="text-white text-sm font-semibold mt-0.5">
                       {selectedChef?.bank_account_number || "—"}
                     </Text>
                   </View>
