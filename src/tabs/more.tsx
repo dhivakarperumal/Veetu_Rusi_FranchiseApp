@@ -50,33 +50,6 @@ const More = () => {
       bgColor: "#ccfbf1",
       onPress: () => navigation.navigate("Orders"),
     },
-    {
-      id: "reports",
-      label: "Reports",
-      description: "View system reports and analytics",
-      icon: BarChart3,
-      color: "#10b981",
-      bgColor: "#d1fae5",
-      onPress: () => { },
-    },
-    {
-      id: "financials",
-      label: "Financials",
-      description: "Financial records and transactions",
-      icon: Wallet,
-      color: "#f59e0b",
-      bgColor: "#fef3c7",
-      onPress: () => { },
-    },
-    {
-      id: "documentation",
-      label: "Documentation",
-      description: "Help and documentation",
-      icon: FileText,
-      color: "#ef4444",
-      bgColor: "#fee2e2",
-      onPress: () => { },
-    },
   ];
 
   const renderMenuItem = (item: any) => {
