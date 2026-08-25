@@ -583,7 +583,7 @@ const EditDeliveryPartner = () => {
         >
           {/* STEP 1: PERSONAL */}
           {currentStep === 1 && (
-            <View className="space-y-5">
+            <View className="gap-5">
               <View className="flex-row gap-3">
                 <View className="flex-1">
                   <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
@@ -744,7 +744,7 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 2: ADDRESS */}
           {currentStep === 2 && (
-            <View className="space-y-5">
+            <View className="gap-5">
               <View>
                 <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Current Address
@@ -826,7 +826,7 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 3: EMERGENCY */}
           {currentStep === 3 && (
-            <View className="space-y-5">
+            <View className="gap-5">
               <View>
                 <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Emergency Contact Name
@@ -871,7 +871,7 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 4: VEHICLE */}
           {currentStep === 4 && (
-            <View className="space-y-5">
+            <View className="gap-5">
               <View className="flex-row gap-3">
                 <View className="flex-1">
                   <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
@@ -947,7 +947,7 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 5: DRIVING */}
           {currentStep === 5 && (
-            <View className="space-y-5">
+            <View className="gap-5">
               <View>
                 <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Driving License Number
@@ -1007,7 +1007,7 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 6: BANK */}
           {currentStep === 6 && (
-            <View className="space-y-5">
+            <View className="gap-5">
               <View className="flex-row gap-3">
                 <View className="flex-1">
                   <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
@@ -1095,7 +1095,7 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 7: DOCUMENTS */}
           {currentStep === 7 && (
-            <View className="space-y-5">
+            <View className="gap-5">
               {renderFileInput("aadhaar_front_url", "Aadhaar Card - Front")}
               {renderFileInput("aadhaar_back_url", "Aadhaar Card - Back")}
               {renderFileInput("pan_card_url", "PAN Card")}
@@ -1107,7 +1107,7 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 8: PREFERENCES */}
           {currentStep === 8 && (
-            <View className="space-y-5">
+            <View className="gap-5">
               <View>
                 <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Available Areas
