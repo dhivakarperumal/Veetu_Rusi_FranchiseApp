@@ -26,14 +26,15 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
-  Plus,
   Users,
   X,
   ChevronDown,
+  Pencil,
   Briefcase,
 } from "lucide-react-native";
 
 import { get, patch, del } from "../services/api";
+import FloatingActionButton from "../components/FloatingActionButton";
 
 const DeliveryPartners = () => {
   const navigation = useNavigation<any>();
@@ -51,6 +52,11 @@ const DeliveryPartners = () => {
   // Selected partner for Details Modal
   const [selectedPartner, setSelectedPartner] = useState<any | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState<{
+    type: "suspend" | "delete";
+    partner: any;
+  } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchPartners();
@@ -176,57 +182,53 @@ const DeliveryPartners = () => {
   // ACTIONS
   // --------------------------------------------------
   const handleStatusChange = async (partner: any, newStatus: string) => {
-    Alert.alert(
-      `${newStatus} Partner`,
-      `Are you sure you want to change status of ${partner.name} to ${newStatus}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Confirm",
-          onPress: async () => {
-            try {
-              await patch(`/admin/delivery-partners/${partner.id}/status`, {
-                status: newStatus,
-              });
-              Alert.alert("Success", `Status updated to ${newStatus}`);
-              if (selectedPartner?.id === partner.id) {
-                setSelectedPartner({ ...selectedPartner, status: newStatus });
-              }
-              fetchPartners();
-            } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to update status.");
-            }
-          },
-        },
-      ]
-    );
+    if (newStatus === "Suspended") {
+      setConfirmation({ type: "suspend", partner });
+      return;
+    }
+
+    try {
+      await patch(`/admin/delivery-partners/${partner.id}/status`, {
+        status: newStatus,
+      });
+      Alert.alert("Success", `Status updated to ${newStatus}`);
+      if (selectedPartner?.id === partner.id) {
+        setSelectedPartner({ ...selectedPartner, status: newStatus });
+      }
+      fetchPartners();
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to update status.");
+    }
   };
 
   const handleDelete = async (partner: any) => {
-    Alert.alert(
-      "Delete Partner",
-      `Are you sure you want to remove ${partner.name}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await del(`/admin/delivery-partners/${partner.id}`);
-              Alert.alert("Deleted", "Delivery partner removed successfully.");
-              if (selectedPartner?.id === partner.id) {
-                setIsDetailOpen(false);
-                setSelectedPartner(null);
-              }
-              fetchPartners();
-            } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to delete partner.");
-            }
-          },
-        },
-      ]
-    );
+    setConfirmation({ type: "delete", partner });
+  };
+
+  const confirmAction = async () => {
+    if (!confirmation) return;
+    const { type, partner } = confirmation;
+    setActionLoading(true);
+    try {
+      if (type === "delete") {
+        await del(`/admin/delivery-partners/${partner.id}`);
+        setIsDetailOpen(false);
+        setSelectedPartner(null);
+      } else {
+        await patch(`/admin/delivery-partners/${partner.id}/status`, {
+          status: "Suspended",
+        });
+        if (selectedPartner?.id === partner.id) {
+          setSelectedPartner({ ...selectedPartner, status: "Suspended" });
+        }
+      }
+      setConfirmation(null);
+      fetchPartners();
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Action could not be completed.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const openPartnerDetails = (partner: any) => {
@@ -409,12 +411,11 @@ const DeliveryPartners = () => {
                 {/* Details Button */}
                 <TouchableOpacity
                   onPress={() => openPartnerDetails(item)}
-                  className="flex-1 bg-slate-800 border border-white/10 rounded-xl py-2.5 flex-row items-center justify-center"
+                  accessibilityRole="button"
+                  accessibilityLabel={`View details for ${item.name || "partner"}`}
+                  className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
                 >
                   <Eye size={15} color="#cbd5e1" />
-                  <Text className="text-slate-200 text-xs font-bold ml-1.5">
-                    Details
-                  </Text>
                 </TouchableOpacity>
 
                 {/* Edit Button */}
@@ -425,15 +426,19 @@ const DeliveryPartners = () => {
                       partner: item,
                     })
                   }
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit ${item.name || "partner"}`}
                   className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
                 >
-                  <Briefcase size={16} color="#cbd5e1" />
+                  <Pencil size={16} color="#cbd5e1" />
                 </TouchableOpacity>
 
                 {/* Approve Button */}
                 {item.status !== "Approved" && (
                   <TouchableOpacity
                     onPress={() => handleStatusChange(item, "Approved")}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Approve ${item.name || "partner"}`}
                     className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-xl items-center justify-center"
                   >
                     <Check size={17} color="#34d399" />
@@ -444,6 +449,8 @@ const DeliveryPartners = () => {
                 {item.status === "Approved" && (
                   <TouchableOpacity
                     onPress={() => handleStatusChange(item, "Suspended")}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Suspend ${item.name || "partner"}`}
                     className="w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl items-center justify-center"
                   >
                     <ShieldAlert size={17} color="#fbbf24" />
@@ -453,6 +460,8 @@ const DeliveryPartners = () => {
                 {/* Delete Button */}
                 <TouchableOpacity
                   onPress={() => handleDelete(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Delete ${item.name || "partner"}`}
                   className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-xl items-center justify-center"
                 >
                   <Trash2 size={16} color="#f87171" />
@@ -500,16 +509,69 @@ const DeliveryPartners = () => {
         }
       />
 
-      {/* Floating add action, kept independent from the list scroll. */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate("AddDeliveryPartner")}
-        accessibilityRole="button"
-        accessibilityLabel="Add delivery partner"
-        className="absolute right-5 bottom-6 w-14 h-14 rounded-2xl bg-emerald-500 items-center justify-center border-4 border-slate-950 shadow-lg"
-        style={{ elevation: 8 }}
+      <View
+        style={{
+          position: "absolute",
+          right: 20,
+          bottom: 25,
+          zIndex: 9999,
+          elevation: 20,
+        }}
       >
-        <Plus size={25} color="#052e2b" strokeWidth={2.5} />
-      </TouchableOpacity>
+        <FloatingActionButton
+          onPress={() => navigation.navigate("AddDeliveryPartner")}
+          label="Add delivery partner"
+        />
+      </View>
+
+      <Modal
+        visible={!!confirmation}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmation(null)}
+      >
+        <View className="flex-1 bg-black/75 justify-end">
+          <View className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5">
+            <View className={`w-12 h-12 rounded-2xl items-center justify-center mb-4 ${confirmation?.type === "delete" ? "bg-red-500/15" : "bg-amber-500/15"}`}>
+              {confirmation?.type === "delete" ? (
+                <Trash2 size={23} color="#f87171" />
+              ) : (
+                <ShieldAlert size={23} color="#fbbf24" />
+              )}
+            </View>
+            <Text className="text-white text-lg font-black">
+              {confirmation?.type === "delete" ? "Remove this partner?" : "Suspend this partner?"}
+            </Text>
+            <Text className="text-slate-400 text-sm mt-2 leading-5">
+              {confirmation?.type === "delete"
+                ? `${confirmation?.partner?.name || "This partner"} will be permanently removed from your delivery fleet.`
+                : `${confirmation?.partner?.name || "This partner"} will lose active delivery access until approved again.`}
+            </Text>
+            <View className="flex-row gap-3 mt-6">
+              <TouchableOpacity
+                onPress={() => setConfirmation(null)}
+                disabled={actionLoading}
+                className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"
+              >
+                <Text className="text-slate-300 font-bold text-xs uppercase">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={confirmAction}
+                disabled={actionLoading}
+                className={`flex-1 rounded-2xl py-3.5 items-center ${confirmation?.type === "delete" ? "bg-red-600" : "bg-amber-500"}`}
+              >
+                {actionLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className="text-white font-black text-xs uppercase">
+                    {confirmation?.type === "delete" ? "Remove partner" : "Suspend partner"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Status filter dropdown */}
       <Modal
@@ -541,11 +603,10 @@ const DeliveryPartners = () => {
                     setStatusFilter(status);
                     setIsFilterOpen(false);
                   }}
-                  className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${
-                    active
+                  className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${active
                       ? "bg-emerald-500/15 border-emerald-500/40"
                       : "bg-slate-950 border-white/5"
-                  }`}
+                    }`}
                 >
                   <Text className={`text-sm font-bold ${active ? "text-emerald-300" : "text-slate-300"}`}>
                     {status === "All" ? "All partners" : status}
@@ -574,9 +635,8 @@ const DeliveryPartners = () => {
               <View className="flex-1">
                 <Text className="text-white text-lg font-black" numberOfLines={1}>
                   {selectedPartner?.name ||
-                    `${selectedPartner?.first_name || ""} ${
-                      selectedPartner?.last_name || ""
-                    }`.trim()}
+                    `${selectedPartner?.first_name || ""} ${selectedPartner?.last_name || ""
+                      }`.trim()}
                 </Text>
                 <Text className="text-emerald-200 text-xs font-bold uppercase tracking-wider mt-0.5">
                   Delivery Partner Overview
