@@ -35,6 +35,7 @@ import { get, put, del } from "../services/api";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 // import FloatingActionButton from "../components/FloatingActionButton";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_BASE_URL = "https://veeturusi.qtechx.com";
 
@@ -152,6 +153,22 @@ const FoodProducts = () => {
     return `${API_BASE_URL}${imgPath.startsWith("/") ? "" : "/"}${imgPath}`;
   };
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("user");
+        if (userData) {
+          setCurrentUser(JSON.parse(userData));
+        }
+      } catch (e) {
+        console.log("Error loading user:", e);
+      }
+    };
+    loadUser();
+  }, []);
+
   /*
    * -------------------------------------------------------
    * FETCH CHEFS
@@ -179,15 +196,28 @@ const FoodProducts = () => {
         activeTab === "food" ? "/chef-foods" : "/products";
       let queryString = "";
       const queryParts: string[] = [];
+
       if (selectedChef !== "All") {
         queryParts.push(`chef_id=${encodeURIComponent(selectedChef)}`);
+        queryParts.push(`chef_user_id=${encodeURIComponent(selectedChef)}`);
       }
+
       if (search.trim()) {
         queryParts.push(`search=${encodeURIComponent(search.trim())}`);
       }
+
       if (activeTab === "foodProducts") {
         queryParts.push(`source=chef_products`);
       }
+
+      const userData = await AsyncStorage.getItem("user");
+      const user = userData ? JSON.parse(userData) : null;
+      const franchiseUserId = user?.franchise_user_id || user?.user_id || user?.id;
+
+      if (franchiseUserId) {
+        queryParts.push(`franchise_user_id=${encodeURIComponent(franchiseUserId)}`);
+      }
+
       if (queryParts.length > 0) {
         queryString = `?${queryParts.join("&")}`;
       }
@@ -224,8 +254,127 @@ const FoodProducts = () => {
 
   const onRefresh = () => {
     setRefreshing(true);
+    fetchChefs();
     fetchFoods();
   };
+
+  /*
+   * -------------------------------------------------------
+   * CHEF & FRANCHISE MATCHING HELPERS
+   * -------------------------------------------------------
+   */
+  const isChefMatch = useCallback(
+    (item: Food, targetChefId: string) => {
+      const targetChef = chefs.find(
+        (c) =>
+          String(c.chef_id ?? c.id) === String(targetChefId) ||
+          String((c as any).user_id) === String(targetChefId)
+      );
+
+      const rawItem = item as any;
+      const itemChefId = rawItem.chef_id != null ? String(rawItem.chef_id) : null;
+      const itemChefUserId = rawItem.chef_user_id != null ? String(rawItem.chef_user_id) : null;
+      const itemUserId = rawItem.user_id != null ? String(rawItem.user_id) : null;
+      const itemCreatedById = rawItem.created_by_id != null ? String(rawItem.created_by_id) : null;
+      const itemCreatedBy = rawItem.created_by != null ? String(rawItem.created_by).trim() : null;
+
+      // 1. Direct ID comparison
+      if (
+        (itemChefId && itemChefId === String(targetChefId)) ||
+        (itemChefUserId && itemChefUserId === String(targetChefId)) ||
+        (itemUserId && itemUserId === String(targetChefId)) ||
+        (itemCreatedById && itemCreatedById === String(targetChefId)) ||
+        (itemCreatedBy && itemCreatedBy === String(targetChefId))
+      ) {
+        return true;
+      }
+
+      // 2. Matching against target chef's details
+      if (targetChef) {
+        const targetIds = [
+          targetChef.id != null ? String(targetChef.id) : null,
+          targetChef.chef_id != null ? String(targetChef.chef_id) : null,
+          (targetChef as any).user_id != null ? String((targetChef as any).user_id) : null,
+        ].filter(Boolean) as string[];
+
+        if (
+          (itemChefId && targetIds.includes(itemChefId)) ||
+          (itemChefUserId && targetIds.includes(itemChefUserId)) ||
+          (itemUserId && targetIds.includes(itemUserId)) ||
+          (itemCreatedById && targetIds.includes(itemCreatedById)) ||
+          (itemCreatedBy && targetIds.includes(itemCreatedBy))
+        ) {
+          return true;
+        }
+
+        const normItemChefName = item.chef_name?.trim().toLowerCase();
+        const normItemKitchenName = item.kitchen_name?.trim().toLowerCase();
+        const normItemPhone = (item.chef_phone || item.mobile)?.trim();
+        const normItemCreatedBy = itemCreatedBy?.toLowerCase();
+
+        const normTargetName = targetChef.name?.trim().toLowerCase();
+        const normTargetFirstLast = `${(targetChef as any).first_name || ""} ${(targetChef as any).last_name || ""}`.trim().toLowerCase();
+        const normTargetKitchen = (targetChef as any).kitchen_name?.trim().toLowerCase();
+        const normTargetPhone = ((targetChef as any).mobile || (targetChef as any).phone)?.trim();
+
+        if (normItemChefName && normTargetName && normItemChefName === normTargetName) return true;
+        if (normItemChefName && normTargetFirstLast && normItemChefName === normTargetFirstLast) return true;
+        if (normItemKitchenName && normTargetKitchen && normItemKitchenName === normTargetKitchen) return true;
+        if (normItemPhone && normTargetPhone && normItemPhone === normTargetPhone) return true;
+        if (normItemCreatedBy && normTargetName && normItemCreatedBy === normTargetName) return true;
+        if (normItemCreatedBy && normTargetKitchen && normItemCreatedBy === normTargetKitchen) return true;
+      }
+
+      return false;
+    },
+    [chefs]
+  );
+
+  const belongsToFranchiseChef = useCallback(
+    (item: Food) => {
+      // If we have home chefs registered for this franchise admin, check if item belongs to one of them
+      if (chefs.length > 0) {
+        const matchesAnyChef = chefs.some((chef) => {
+          const chefId = String(chef.chef_id ?? chef.id);
+          return isChefMatch(item, chefId);
+        });
+
+        if (matchesAnyChef) return true;
+      }
+
+      // Check if product has franchise ID matching the current franchise user
+      const rawItem = item as any;
+      const franchiseId =
+        currentUser?.franchise_user_id ||
+        currentUser?.franchise_id ||
+        currentUser?.user_id ||
+        currentUser?.id;
+
+      if (franchiseId) {
+        const itemFranchiseId =
+          rawItem.franchise_id != null
+            ? String(rawItem.franchise_id)
+            : rawItem.franchise_user_id != null
+            ? String(rawItem.franchise_user_id)
+            : null;
+
+        if (itemFranchiseId && itemFranchiseId === String(franchiseId)) {
+          return true;
+        }
+      }
+
+      if (currentUser?.franchise_name || currentUser?.name) {
+        const franchiseName = (currentUser.franchise_name || currentUser.name)?.trim().toLowerCase();
+        const itemFranchiseName = item.franchise_name?.trim().toLowerCase();
+        if (franchiseName && itemFranchiseName && franchiseName === itemFranchiseName) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+    [chefs, currentUser, isChefMatch]
+  );
 
   /*
    * -------------------------------------------------------
@@ -267,11 +416,25 @@ const FoodProducts = () => {
 
   /*
    * -------------------------------------------------------
+   * FRANCHISE CHEF FILTERED LIST
+   * -------------------------------------------------------
+   */
+  const franchiseFoods = useMemo(() => {
+    return foods.filter((item) => {
+      if (selectedChef !== "All") {
+        return isChefMatch(item, selectedChef);
+      }
+      return belongsToFranchiseChef(item);
+    });
+  }, [foods, selectedChef, isChefMatch, belongsToFranchiseChef]);
+
+  /*
+   * -------------------------------------------------------
    * STATUS FILTER & SEARCH
    * -------------------------------------------------------
    */
   const filteredFoods = useMemo(() => {
-    return foods.filter((item) => {
+    return franchiseFoods.filter((item) => {
       const searchText = search.trim().toLowerCase();
 
       const matchesSearch = searchText
@@ -306,7 +469,7 @@ const FoodProducts = () => {
 
       return matchesSearch && matchesStatus;
     });
-  }, [foods, search, statusFilter]);
+  }, [franchiseFoods, search, statusFilter]);
 
   /*
    * -------------------------------------------------------
@@ -314,12 +477,17 @@ const FoodProducts = () => {
    * -------------------------------------------------------
    */
   const summary = useMemo(() => {
-    const total = foods.length;
-    const active = foods.filter(
+    const baseList = franchiseFoods;
+    const total = baseList.length;
+    const active = baseList.filter(
       (item) => item.status === "Active" || item.status === "Approved"
     ).length;
-    const inactive = foods.filter((item) =>
-      ["Inactive", "Suspended", "Rejected"].includes(item.status || "")
+    const inactive = baseList.filter(
+      (item) =>
+        ["Inactive", "Suspended", "Rejected", "Not Approved"].includes(
+          item.status || ""
+        ) ||
+        (item.status !== "Active" && item.status !== "Approved")
     ).length;
 
     return {
@@ -327,7 +495,7 @@ const FoodProducts = () => {
       active,
       inactive,
     };
-  }, [foods]);
+  }, [franchiseFoods]);
 
   /*
    * -------------------------------------------------------
