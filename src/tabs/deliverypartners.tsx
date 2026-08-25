@@ -23,17 +23,14 @@ import {
   ShieldAlert,
   Trash2,
   Phone,
-  Mail,
   MapPin,
   ChevronLeft,
   ChevronRight,
   Plus,
   Users,
   X,
-  CreditCard,
-  FileText,
+  ChevronDown,
   Briefcase,
-  ShieldCheck,
 } from "lucide-react-native";
 
 import { get, patch, del } from "../services/api";
@@ -47,6 +44,7 @@ const DeliveryPartners = () => {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -282,66 +280,38 @@ const DeliveryPartners = () => {
                 </Text>
               </View>
 
-              <TouchableOpacity
-                onPress={() => navigation.navigate("AddDeliveryPartner")}
-                className="bg-emerald-600 px-4 py-3 rounded-xl flex-row items-center"
-              >
-                <Plus size={18} color="#ffffff" />
-                <Text className="text-white font-bold ml-1 text-xs">Add</Text>
-              </TouchableOpacity>
+              <View className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center">
+                <Bike size={20} color="#34d399" />
+              </View>
             </View>
 
             {/* ================= SUMMARY METRICS ================= */}
-            <View className="flex-row mb-3">
+            <View className="flex-row gap-2 mb-5">
               {/* TOTAL */}
-              <View className="flex-1 bg-slate-900 border border-indigo-500/20 rounded-2xl p-4 mr-2">
-                <View className="flex-row items-center">
-                  <View className="w-11 h-11 rounded-xl bg-indigo-600/20 items-center justify-center">
-                    <Users size={21} color="#818cf8" />
-                  </View>
-                  <View className="ml-3 flex-1">
-                    <Text className="text-indigo-300/70 text-[9px] font-bold uppercase">
-                      Total
-                    </Text>
-                    <Text className="text-white text-2xl font-black mt-0.5">
-                      {partners.length}
-                    </Text>
-                  </View>
+              <View className="flex-1 bg-slate-900 border border-indigo-400/25 rounded-2xl p-3">
+                <View className="w-8 h-8 rounded-lg bg-indigo-500/15 items-center justify-center mb-2">
+                  <Users size={16} color="#a5b4fc" />
                 </View>
+                <Text className="text-indigo-200/70 text-[9px] font-bold uppercase">Total</Text>
+                <Text className="text-white text-2xl font-black mt-0.5">{partners.length}</Text>
               </View>
 
               {/* APPROVED */}
-              <View className="flex-1 bg-slate-900 border border-emerald-500/20 rounded-2xl p-4 ml-2">
-                <View className="flex-row items-center">
-                  <View className="w-11 h-11 rounded-xl bg-emerald-600/20 items-center justify-center">
-                    <CheckCircle size={21} color="#34d399" />
-                  </View>
-                  <View className="ml-3 flex-1">
-                    <Text className="text-emerald-300/70 text-[9px] font-bold uppercase">
-                      Approved
-                    </Text>
-                    <Text className="text-white text-2xl font-black mt-0.5">
-                      {approvedCount}
-                    </Text>
-                  </View>
+              <View className="flex-1 bg-slate-900 border border-emerald-400/25 rounded-2xl p-3">
+                <View className="w-8 h-8 rounded-lg bg-emerald-500/15 items-center justify-center mb-2">
+                  <CheckCircle size={16} color="#6ee7b7" />
                 </View>
+                <Text className="text-emerald-200/70 text-[9px] font-bold uppercase">Approved</Text>
+                <Text className="text-white text-2xl font-black mt-0.5">{approvedCount}</Text>
               </View>
-            </View>
 
-            {/* PENDING & SUSPENDED CARD */}
-            <View className="bg-slate-900 border border-amber-500/20 rounded-2xl p-4 mb-5">
-              <View className="flex-row items-center">
-                <View className="w-11 h-11 rounded-xl bg-amber-600/20 items-center justify-center">
-                  <Clock size={21} color="#fbbf24" />
+              {/* PENDING & SUSPENDED CARD */}
+              <View className="flex-1 bg-slate-900 border border-amber-400/25 rounded-2xl p-3">
+                <View className="w-8 h-8 rounded-lg bg-amber-500/15 items-center justify-center mb-2">
+                  <Clock size={16} color="#fcd34d" />
                 </View>
-                <View className="ml-3 flex-1">
-                  <Text className="text-amber-300/70 text-[9px] font-bold uppercase">
-                    Pending & Suspended
-                  </Text>
-                  <Text className="text-white text-2xl font-black mt-0.5">
-                    {pendingCount + suspendedCount}
-                  </Text>
-                </View>
+                <Text className="text-amber-200/70 text-[9px] font-bold uppercase">Needs review</Text>
+                <Text className="text-white text-2xl font-black mt-0.5">{pendingCount + suspendedCount}</Text>
               </View>
             </View>
 
@@ -357,36 +327,19 @@ const DeliveryPartners = () => {
               />
             </View>
 
-            {/* ================= STATUS FILTERS ================= */}
-            <View className="flex-row items-center mb-4">
-              <Filter size={15} color="#94a3b8" />
-              <Text className="text-slate-400 ml-1.5 mr-2 text-[10px] font-bold">
-                STATUS
-              </Text>
-              {["All", "Pending", "Approved", "Suspended", "Rejected"].map(
-                (status) => {
-                  const active = statusFilter === status;
-                  return (
-                    <TouchableOpacity
-                      key={status}
-                      onPress={() => setStatusFilter(status)}
-                      className={`px-3 py-1.5 rounded-lg mr-1.5 ${
-                        active
-                          ? "bg-emerald-600"
-                          : "bg-slate-900 border border-white/10"
-                      }`}
-                    >
-                      <Text
-                        className={`text-[10px] font-bold ${
-                          active ? "text-white" : "text-slate-400"
-                        }`}
-                      >
-                        {status}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                }
-              )}
+            {/* ================= STATUS FILTER ================= */}
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center">
+                <Filter size={15} color="#94a3b8" />
+                <Text className="text-slate-400 ml-1.5 text-[10px] font-bold uppercase">Filter partners</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setIsFilterOpen(true)}
+                className="flex-row items-center bg-slate-900 border border-white/10 rounded-xl px-3 py-2"
+              >
+                <Text className="text-white text-xs font-bold mr-2">{statusFilter}</Text>
+                <ChevronDown size={15} color="#94a3b8" />
+              </TouchableOpacity>
             </View>
 
             {/* RESULT COUNT */}
@@ -400,7 +353,7 @@ const DeliveryPartners = () => {
           const statusStyle = getStatusStyle(item.status);
 
           return (
-            <View className="mx-4 mb-4 bg-slate-900 border border-white/10 rounded-2xl p-4">
+            <View className="mx-4 mb-3 bg-slate-900 border border-white/10 rounded-2xl p-4">
               {/* ================= TOP INFO ================= */}
               <View className="flex-row items-start">
                 <View className="w-12 h-12 rounded-xl bg-emerald-600/15 items-center justify-center">
@@ -427,33 +380,20 @@ const DeliveryPartners = () => {
                 </View>
               </View>
 
-              {/* ================= DETAILS LIST ================= */}
-              <View className="mt-4 space-y-1.5">
+              {/* ================= ESSENTIAL DETAILS ================= */}
+              <View className="mt-3.5 flex-row items-center">
                 {/* Mobile */}
-                <View className="flex-row items-center mb-1.5">
+                <View className="flex-row items-center flex-1">
                   <Phone size={14} color="#64748b" />
-                  <Text className="text-slate-400 text-xs ml-2">
+                  <Text className="text-slate-300 text-xs ml-2" numberOfLines={1}>
                     {item.mobile || "-"}
                   </Text>
                 </View>
 
-                {/* Email */}
-                {item.email ? (
-                  <View className="flex-row items-center mb-1.5">
-                    <Mail size={14} color="#64748b" />
-                    <Text className="text-slate-400 text-xs ml-2">
-                      {item.email}
-                    </Text>
-                  </View>
-                ) : null}
-
                 {/* Location */}
-                <View className="flex-row items-center">
+                <View className="flex-row items-center flex-1 ml-2">
                   <MapPin size={14} color="#64748b" />
-                  <Text
-                    className="text-slate-400 text-xs ml-2 flex-1"
-                    numberOfLines={1}
-                  >
+                  <Text className="text-slate-400 text-xs ml-2 flex-1" numberOfLines={1}>
                     {[item.city, item.state, item.pincode]
                       .filter(Boolean)
                       .join(", ") ||
@@ -464,55 +404,8 @@ const DeliveryPartners = () => {
                 </View>
               </View>
 
-              {/* ================= EXTRA METRICS ================= */}
-              <View className="flex-row mt-3.5 gap-2">
-                <View className="flex-1 bg-slate-950 rounded-xl p-2.5">
-                  <Text className="text-slate-500 text-[9px] uppercase font-bold">
-                    Vehicle Model
-                  </Text>
-                  <Text
-                    className="text-white text-xs font-bold mt-0.5"
-                    numberOfLines={1}
-                  >
-                    {item.vehicle_brand
-                      ? `${item.vehicle_brand} ${item.vehicle_model || ""}`
-                      : item.vehicle_model || "N/A"}
-                  </Text>
-                </View>
-
-                <View className="flex-1 bg-slate-950 rounded-xl p-2.5">
-                  <Text className="text-slate-500 text-[9px] uppercase font-bold">
-                    Preferred Radius
-                  </Text>
-                  <Text className="text-white text-xs font-bold mt-0.5">
-                    {item.preferred_distance ||
-                      (item.delivery_radius
-                        ? `${item.delivery_radius} KM`
-                        : "N/A")}
-                  </Text>
-                </View>
-              </View>
-
-              {/* ================= LOGIN CREDENTIALS ================= */}
-              {item.status === "Approved" && (
-                <View className="mt-3 bg-slate-950 rounded-xl p-3">
-                  <Text className="text-slate-500 text-[9px] uppercase font-bold">
-                    Login Credentials
-                  </Text>
-                  <Text className="text-slate-300 text-xs mt-1">
-                    User:{" "}
-                    <Text className="text-white font-bold">
-                      {item.email || item.mobile || "N/A"}
-                    </Text>
-                  </Text>
-                  <Text className="text-slate-300 text-xs mt-0.5">
-                    Pass: <Text className="text-slate-500">********</Text>
-                  </Text>
-                </View>
-              )}
-
               {/* ================= ACTION BUTTONS ================= */}
-              <View className="flex-row items-center mt-4 pt-3 border-t border-white/10 gap-2">
+              <View className="flex-row items-center mt-3.5 pt-3 border-t border-white/10 gap-2">
                 {/* Details Button */}
                 <TouchableOpacity
                   onPress={() => openPartnerDetails(item)}
@@ -606,6 +499,64 @@ const DeliveryPartners = () => {
           ) : null
         }
       />
+
+      {/* Floating add action, kept independent from the list scroll. */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate("AddDeliveryPartner")}
+        accessibilityRole="button"
+        accessibilityLabel="Add delivery partner"
+        className="absolute right-5 bottom-6 w-14 h-14 rounded-2xl bg-emerald-500 items-center justify-center border-4 border-slate-950 shadow-lg"
+        style={{ elevation: 8 }}
+      >
+        <Plus size={25} color="#052e2b" strokeWidth={2.5} />
+      </TouchableOpacity>
+
+      {/* Status filter dropdown */}
+      <Modal
+        visible={isFilterOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsFilterOpen(false)}
+      >
+        <View className="flex-1 bg-black/70 justify-end">
+          <View className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5">
+            <View className="flex-row items-center justify-between mb-4">
+              <View>
+                <Text className="text-white text-base font-black">Filter partners</Text>
+                <Text className="text-slate-400 text-xs mt-1">Choose a partner status</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setIsFilterOpen(false)}
+                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+              >
+                <X size={17} color="#cbd5e1" />
+              </TouchableOpacity>
+            </View>
+            {["All", "Pending", "Approved", "Suspended", "Rejected"].map((status) => {
+              const active = statusFilter === status;
+              return (
+                <TouchableOpacity
+                  key={status}
+                  onPress={() => {
+                    setStatusFilter(status);
+                    setIsFilterOpen(false);
+                  }}
+                  className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${
+                    active
+                      ? "bg-emerald-500/15 border-emerald-500/40"
+                      : "bg-slate-950 border-white/5"
+                  }`}
+                >
+                  <Text className={`text-sm font-bold ${active ? "text-emerald-300" : "text-slate-300"}`}>
+                    {status === "All" ? "All partners" : status}
+                  </Text>
+                  {active ? <CheckCircle size={17} color="#34d399" /> : null}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </Modal>
 
       {/* ================================================= */}
       {/* PARTNER DETAILS POPUP MODAL */}
