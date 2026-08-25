@@ -291,14 +291,6 @@ const FoodOrders = () => {
       let queryString = "";
       const queryParts: string[] = [];
 
-      if (statusFilter !== "All") {
-        queryParts.push(`status=${encodeURIComponent(statusFilter)}`);
-      }
-
-      if (chefFilter !== "All") {
-        queryParts.push(`chef_id=${encodeURIComponent(chefFilter)}`);
-      }
-
       if (search.trim()) {
         queryParts.push(`search=${encodeURIComponent(search.trim())}`);
       }
@@ -325,7 +317,7 @@ const FoodOrders = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [statusFilter, chefFilter, search]);
+  }, [search]);
 
   useEffect(() => {
     fetchChefs();
@@ -356,34 +348,95 @@ const FoodOrders = () => {
   // --------------------------------------------------
   const isOrderMatchingChef = useCallback(
     (order: Order, targetChefId: string) => {
+      if (targetChefId === "All") return true;
+
       const targetChef = chefs.find(
         (c) =>
-          String(c.chef_id ?? c.id) === String(targetChefId) ||
-          String((c as any).user_id) === String(targetChefId)
+          String(c.id) === String(targetChefId) ||
+          String(c.chef_id) === String(targetChefId) ||
+          String((c as any).user_id) === String(targetChefId) ||
+          String(c.name).trim().toLowerCase() === String(targetChefId).trim().toLowerCase()
       );
 
+      // Target identifiers
+      const targetIds: string[] = [String(targetChefId)];
+      if (targetChef) {
+        if (targetChef.id != null) targetIds.push(String(targetChef.id));
+        if (targetChef.chef_id != null) targetIds.push(String(targetChef.chef_id));
+        if ((targetChef as any).user_id != null) targetIds.push(String((targetChef as any).user_id));
+      }
+
+      const targetNames = targetChef
+        ? [
+            targetChef.name?.trim().toLowerCase(),
+            (targetChef as any).kitchen_name?.trim().toLowerCase(),
+            `${(targetChef as any).first_name || ""} ${(targetChef as any).last_name || ""}`.trim().toLowerCase(),
+          ].filter(Boolean) as string[]
+        : [];
+
+      const targetPhones = targetChef
+        ? [((targetChef as any).mobile || (targetChef as any).phone)?.trim()].filter(Boolean) as string[]
+        : [];
+
+      // 1. Check direct order level fields
+      const rawOrder = order as any;
+      const orderChefId = rawOrder.chef_id != null ? String(rawOrder.chef_id) : null;
+      const orderChefName = (rawOrder.chef_name || rawOrder.chef || rawOrder.vendor_name)?.trim().toLowerCase();
+
+      for (const tId of targetIds) {
+        if (orderChefId && orderChefId === tId) return true;
+      }
+      for (const tName of targetNames) {
+        if (orderChefName && (orderChefName === tName || orderChefName.includes(tName) || tName.includes(orderChefName))) {
+          return true;
+        }
+      }
+
+      // 2. Check each item in order.items
       const items = Array.isArray(order.items) ? order.items : [];
-
-      // Check if any order item belongs to this chef
       return items.some((item) => {
-        const itemChefId = item.chef_id != null ? String(item.chef_id) : null;
-        if (itemChefId && itemChefId === String(targetChefId)) return true;
+        const rawItem = item as any;
+        const itemChefId = rawItem.chef_id != null ? String(rawItem.chef_id) : null;
+        const itemChefUserId = rawItem.chef_user_id != null ? String(rawItem.chef_user_id) : null;
+        const itemUserId = rawItem.user_id != null ? String(rawItem.user_id) : null;
+        const itemCreatedById = rawItem.created_by_id != null ? String(rawItem.created_by_id) : null;
 
-        if (targetChef) {
-          const targetIds = [
-            targetChef.id != null ? String(targetChef.id) : null,
-            targetChef.chef_id != null ? String(targetChef.chef_id) : null,
-            (targetChef as any).user_id != null ? String((targetChef as any).user_id) : null,
-          ].filter(Boolean) as string[];
+        // Check ID matches
+        for (const tId of targetIds) {
+          if (
+            (itemChefId && itemChefId === tId) ||
+            (itemChefUserId && itemChefUserId === tId) ||
+            (itemUserId && itemUserId === tId) ||
+            (itemCreatedById && itemCreatedById === tId)
+          ) {
+            return true;
+          }
+        }
 
-          if (itemChefId && targetIds.includes(itemChefId)) return true;
+        // Check Name matches
+        const itemNames = [
+          rawItem.chef_name?.trim().toLowerCase(),
+          rawItem.chef?.trim().toLowerCase(),
+          rawItem.kitchen_name?.trim().toLowerCase(),
+          rawItem.created_by_name?.trim().toLowerCase(),
+        ].filter(Boolean) as string[];
 
-          const itemChefName = (item.chef_name || item.chef || item.created_by_name)?.trim().toLowerCase();
-          const targetName = targetChef.name?.trim().toLowerCase();
-          const targetKitchen = targetChef.kitchen_name?.trim().toLowerCase();
+        for (const iName of itemNames) {
+          for (const tName of targetNames) {
+            if (iName === tName || (iName.length > 2 && tName.length > 2 && (iName.includes(tName) || tName.includes(iName)))) {
+              return true;
+            }
+          }
+        }
 
-          if (itemChefName && targetName && itemChefName === targetName) return true;
-          if (itemChefName && targetKitchen && itemChefName === targetKitchen) return true;
+        // Check Phone matches
+        const itemPhone = (rawItem.chef_phone || rawItem.mobile)?.trim();
+        if (itemPhone) {
+          for (const tPhone of targetPhones) {
+            if (itemPhone === tPhone || itemPhone.endsWith(tPhone) || tPhone.endsWith(itemPhone)) {
+              return true;
+            }
+          }
         }
 
         return false;
@@ -397,7 +450,7 @@ const FoodOrders = () => {
       // If we have home chefs registered for this franchise admin, check if any order item belongs to them
       if (chefs.length > 0) {
         const matchesAnyChef = chefs.some((chef) => {
-          const chefId = String(chef.chef_id ?? chef.id);
+          const chefId = String(chef.id ?? chef.chef_id);
           return isOrderMatchingChef(order, chefId);
         });
         if (matchesAnyChef) return true;
@@ -807,7 +860,11 @@ const FoodOrders = () => {
                       {chefFilter === "All"
                         ? "All Chefs"
                         : chefs.find(
-                            (c) => String(c.chef_id ?? c.id) === chefFilter
+                            (c) =>
+                              String(c.id) === chefFilter ||
+                              String(c.chef_id) === chefFilter ||
+                              String(c.chef_id ?? c.id) === chefFilter ||
+                              String(c.id ?? c.chef_id) === chefFilter
                           )?.name || "Chef"}
                     </Text>
                   </View>
@@ -1167,8 +1224,11 @@ const FoodOrders = () => {
               </TouchableOpacity>
 
               {chefs.map((chef) => {
-                const id = String(chef.chef_id ?? chef.id);
-                const active = chefFilter === id;
+                const id = String(chef.id ?? chef.chef_id);
+                const active =
+                  chefFilter === id ||
+                  chefFilter === String(chef.id) ||
+                  chefFilter === String(chef.chef_id);
                 return (
                   <TouchableOpacity
                     key={id}
@@ -1188,7 +1248,7 @@ const FoodOrders = () => {
                         active ? "text-emerald-300" : "text-slate-300"
                       }`}
                     >
-                      {chef.name || chef.kitchen_name || "Unnamed Chef"}
+                      {chef.name || (chef as any).kitchen_name || "Unnamed Chef"}
                     </Text>
                     {active ? (
                       <CheckCircle size={17} color="#34d399" />
@@ -1715,25 +1775,51 @@ const FoodOrders = () => {
                 </Text>
               </View>
 
-              {/* UPI QR if enabled */}
-              {receiptSettings?.upi_id ? (
-                <View className="mt-5 p-4 border border-dashed border-slate-800 rounded-2xl items-center">
-                  <Text className="text-slate-400 text-xs font-bold mb-2">
+              {/* UPI QR */}
+              {(receiptSettings?.upi_id || (receiptOrder as any)?.upi_id) ? (
+                <View className="mt-5 p-4 border border-dashed border-slate-800 rounded-2xl items-center bg-slate-950/80">
+                  <Text className="text-slate-300 text-xs font-bold mb-1">
                     Scan to Pay (UPI)
                   </Text>
-                  <Image
-                    source={{
-                      uri: `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
-                        `upi://pay?pa=${receiptSettings.upi_id}&pn=VeetuRusi&am=${
-                          receiptOrder?.total_amount || 0
-                        }&tr=${receiptOrder?.order_id || ""}`
-                      )}`,
-                    }}
-                    className="w-32 h-32 rounded-xl bg-white p-1"
-                  />
-                  <Text className="text-slate-500 text-[10px] mt-2">
-                    UPI ID: {receiptSettings.upi_id}
+                  <Text className="text-slate-500 text-[10px] mb-3">
+                    Scan via any UPI app (GPay, PhonePe, Paytm)
                   </Text>
+
+                  {/* High Quality QR Container */}
+                  <View
+                    style={{
+                      width: 170,
+                      height: 170,
+                      backgroundColor: "#ffffff",
+                      borderRadius: 16,
+                      padding: 8,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      elevation: 4,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 3.84,
+                    }}
+                  >
+                    <Image
+                      source={{
+                        uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=2&data=${encodeURIComponent(
+                          `upi://pay?pa=${receiptSettings?.upi_id || (receiptOrder as any)?.upi_id}&pn=VeetuRusi&am=${
+                            receiptOrder?.total_amount || 0
+                          }&tr=${receiptOrder?.order_id || ""}`
+                        )}`,
+                      }}
+                      style={{ width: 154, height: 154 }}
+                      resizeMode="contain"
+                    />
+                  </View>
+
+                  <View className="mt-3 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+                    <Text className="text-slate-300 font-mono text-xs font-semibold">
+                      UPI ID: {receiptSettings?.upi_id || (receiptOrder as any)?.upi_id}
+                    </Text>
+                  </View>
                 </View>
               ) : null}
             </ScrollView>

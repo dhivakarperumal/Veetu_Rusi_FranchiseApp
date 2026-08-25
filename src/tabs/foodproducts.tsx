@@ -197,11 +197,6 @@ const FoodProducts = () => {
       let queryString = "";
       const queryParts: string[] = [];
 
-      if (selectedChef !== "All") {
-        queryParts.push(`chef_id=${encodeURIComponent(selectedChef)}`);
-        queryParts.push(`chef_user_id=${encodeURIComponent(selectedChef)}`);
-      }
-
       if (search.trim()) {
         queryParts.push(`search=${encodeURIComponent(search.trim())}`);
       }
@@ -232,7 +227,7 @@ const FoodProducts = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [activeTab, selectedChef, search]);
+  }, [activeTab, search]);
 
   useEffect(() => {
     fetchChefs();
@@ -241,7 +236,7 @@ const FoodProducts = () => {
   useEffect(() => {
     setCurrentPage(1);
     fetchFoods();
-  }, [activeTab, selectedChef, fetchFoods]);
+  }, [activeTab, fetchFoods]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -265,13 +260,27 @@ const FoodProducts = () => {
    */
   const isChefMatch = useCallback(
     (item: Food, targetChefId: string) => {
+      if (targetChefId === "All") return true;
+
       const targetChef = chefs.find(
         (c) =>
-          String(c.chef_id ?? c.id) === String(targetChefId) ||
-          String((c as any).user_id) === String(targetChefId)
+          String(c.id) === String(targetChefId) ||
+          String(c.chef_id) === String(targetChefId) ||
+          String((c as any).user_id) === String(targetChefId) ||
+          String(c.name).trim().toLowerCase() === String(targetChefId).trim().toLowerCase()
       );
 
       const rawItem = item as any;
+
+      // Target identifiers list
+      const targetIds: string[] = [String(targetChefId)];
+      if (targetChef) {
+        if (targetChef.id != null) targetIds.push(String(targetChef.id));
+        if (targetChef.chef_id != null) targetIds.push(String(targetChef.chef_id));
+        if ((targetChef as any).user_id != null) targetIds.push(String((targetChef as any).user_id));
+      }
+
+      // Item identifiers
       const itemChefId = rawItem.chef_id != null ? String(rawItem.chef_id) : null;
       const itemChefUserId = rawItem.chef_user_id != null ? String(rawItem.chef_user_id) : null;
       const itemUserId = rawItem.user_id != null ? String(rawItem.user_id) : null;
@@ -279,50 +288,57 @@ const FoodProducts = () => {
       const itemCreatedBy = rawItem.created_by != null ? String(rawItem.created_by).trim() : null;
 
       // 1. Direct ID comparison
-      if (
-        (itemChefId && itemChefId === String(targetChefId)) ||
-        (itemChefUserId && itemChefUserId === String(targetChefId)) ||
-        (itemUserId && itemUserId === String(targetChefId)) ||
-        (itemCreatedById && itemCreatedById === String(targetChefId)) ||
-        (itemCreatedBy && itemCreatedBy === String(targetChefId))
-      ) {
-        return true;
+      for (const tId of targetIds) {
+        if (
+          (itemChefId && itemChefId === tId) ||
+          (itemChefUserId && itemChefUserId === tId) ||
+          (itemUserId && itemUserId === tId) ||
+          (itemCreatedById && itemCreatedById === tId) ||
+          (itemCreatedBy && itemCreatedBy === tId)
+        ) {
+          return true;
+        }
       }
 
       // 2. Matching against target chef's details
       if (targetChef) {
-        const targetIds = [
-          targetChef.id != null ? String(targetChef.id) : null,
-          targetChef.chef_id != null ? String(targetChef.chef_id) : null,
-          (targetChef as any).user_id != null ? String((targetChef as any).user_id) : null,
+        const normItemNames = [
+          rawItem.chef_name?.trim().toLowerCase(),
+          rawItem.chef?.trim().toLowerCase(),
+          rawItem.kitchen_name?.trim().toLowerCase(),
+          rawItem.created_by_name?.trim().toLowerCase(),
+          itemCreatedBy?.toLowerCase(),
         ].filter(Boolean) as string[];
 
-        if (
-          (itemChefId && targetIds.includes(itemChefId)) ||
-          (itemChefUserId && targetIds.includes(itemChefUserId)) ||
-          (itemUserId && targetIds.includes(itemUserId)) ||
-          (itemCreatedById && targetIds.includes(itemCreatedById)) ||
-          (itemCreatedBy && targetIds.includes(itemCreatedBy))
-        ) {
-          return true;
+        const normTargetNames = [
+          targetChef.name?.trim().toLowerCase(),
+          `${(targetChef as any).first_name || ""} ${(targetChef as any).last_name || ""}`.trim().toLowerCase(),
+          (targetChef as any).kitchen_name?.trim().toLowerCase(),
+        ].filter(Boolean) as string[];
+
+        for (const iName of normItemNames) {
+          for (const tName of normTargetNames) {
+            if (iName === tName || (iName.length > 2 && tName.length > 2 && (iName.includes(tName) || tName.includes(iName)))) {
+              return true;
+            }
+          }
         }
 
-        const normItemChefName = item.chef_name?.trim().toLowerCase();
-        const normItemKitchenName = item.kitchen_name?.trim().toLowerCase();
-        const normItemPhone = (item.chef_phone || item.mobile)?.trim();
-        const normItemCreatedBy = itemCreatedBy?.toLowerCase();
+        const normItemPhones = [
+          (rawItem.chef_phone || rawItem.mobile)?.trim(),
+        ].filter(Boolean) as string[];
 
-        const normTargetName = targetChef.name?.trim().toLowerCase();
-        const normTargetFirstLast = `${(targetChef as any).first_name || ""} ${(targetChef as any).last_name || ""}`.trim().toLowerCase();
-        const normTargetKitchen = (targetChef as any).kitchen_name?.trim().toLowerCase();
-        const normTargetPhone = ((targetChef as any).mobile || (targetChef as any).phone)?.trim();
+        const normTargetPhones = [
+          ((targetChef as any).mobile || (targetChef as any).phone)?.trim(),
+        ].filter(Boolean) as string[];
 
-        if (normItemChefName && normTargetName && normItemChefName === normTargetName) return true;
-        if (normItemChefName && normTargetFirstLast && normItemChefName === normTargetFirstLast) return true;
-        if (normItemKitchenName && normTargetKitchen && normItemKitchenName === normTargetKitchen) return true;
-        if (normItemPhone && normTargetPhone && normItemPhone === normTargetPhone) return true;
-        if (normItemCreatedBy && normTargetName && normItemCreatedBy === normTargetName) return true;
-        if (normItemCreatedBy && normTargetKitchen && normItemCreatedBy === normTargetKitchen) return true;
+        for (const iPhone of normItemPhones) {
+          for (const tPhone of normTargetPhones) {
+            if (iPhone === tPhone || iPhone.endsWith(tPhone) || tPhone.endsWith(iPhone)) {
+              return true;
+            }
+          }
+        }
       }
 
       return false;
@@ -335,7 +351,7 @@ const FoodProducts = () => {
       // If we have home chefs registered for this franchise admin, check if item belongs to one of them
       if (chefs.length > 0) {
         const matchesAnyChef = chefs.some((chef) => {
-          const chefId = String(chef.chef_id ?? chef.id);
+          const chefId = String(chef.id ?? chef.chef_id);
           return isChefMatch(item, chefId);
         });
 
@@ -855,7 +871,11 @@ const FoodProducts = () => {
                       {selectedChef === "All"
                         ? "All Chefs"
                         : chefs.find(
-                            (c) => String(c.chef_id ?? c.id) === selectedChef
+                            (c) =>
+                              String(c.id) === selectedChef ||
+                              String(c.chef_id) === selectedChef ||
+                              String(c.chef_id ?? c.id) === selectedChef ||
+                              String(c.id ?? c.chef_id) === selectedChef
                           )?.name || "Chef"}
                     </Text>
                   </View>
@@ -1235,8 +1255,11 @@ const FoodProducts = () => {
               </TouchableOpacity>
 
               {chefs.map((chef) => {
-                const id = String(chef.chef_id ?? chef.id);
-                const active = selectedChef === id;
+                const id = String(chef.id ?? chef.chef_id);
+                const active =
+                  selectedChef === id ||
+                  selectedChef === String(chef.id) ||
+                  selectedChef === String(chef.chef_id);
                 return (
                   <TouchableOpacity
                     key={id}
@@ -1256,7 +1279,7 @@ const FoodProducts = () => {
                         active ? "text-emerald-300" : "text-slate-300"
                       }`}
                     >
-                      {chef.name || "Unnamed Chef"}
+                      {chef.name || (chef as any).kitchen_name || "Unnamed Chef"}
                     </Text>
                     {active ? (
                       <CheckCircle size={17} color="#34d399" />
