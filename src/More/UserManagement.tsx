@@ -1,802 +1,1373 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    FlatList,
-    Modal,
-    ScrollView,
-    ActivityIndicator,
-    RefreshControl,
-    Alert,
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  Modal,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import InnerHeader from "../components/InnerHeader";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-    Users,
-    UserCheck,
-    UserX,
-    Search,
-    Plus,
-    Edit2,
-    Trash2,
-    ShieldAlert,
-    ShieldCheck,
+  Users,
+  UserCheck,
+  UserX,
+  Search,
+  Filter,
+  Eye,
+  Check,
+  ShieldAlert,
+  ShieldCheck,
+  Trash2,
+  Phone,
+  Mail,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  ChevronDown,
+  Pencil,
+  Plus,
+  Shield,
+  Lock,
+  User,
 } from "lucide-react-native";
 
-import {
-    get,
-    post,
-    put,
-    del,
-    patch,
-} from "../services/api";
+import { get, post, put, patch, del } from "../services/api";
+import InnerHeader from "../components/InnerHeader";
+import FloatingActionButton from "../components/FloatingActionButton";
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    phone?: string;
-    role?: string;
-    active?: string;
-    created_at?: string;
+interface UserItem {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  role?: string;
+  active?: string | number | boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
+const AVAILABLE_ROLES = [
+  { label: "User", value: "user" },
+  { label: "Admin", value: "admin" },
+  { label: "Superadmin", value: "superadmin" },
+  { label: "Chef", value: "homechef" },
+  { label: "Franchise", value: "franchise" },
+  { label: "Delivery Partner", value: "delivery_partner" },
+];
+
 const UserManagement = () => {
-    const navigation = useNavigation<any>();
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
-    const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [users, setUsers] = useState<UserItem[]>([]);
 
-    const [roleFilter, setRoleFilter] =
-        useState("All");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [roleFilter, setRoleFilter] = useState("All");
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
-    const [statusFilter, setStatusFilter] =
-        useState("All");
+  // Selected user for Details Modal
+  const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-    const [page, setPage] = useState(1);
+  // Form Modal (Add / Edit)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [formLoading, setFormLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    id: null as number | null,
+    name: "",
+    email: "",
+    phone: "",
+    role: "user",
+    password: "",
+  });
 
-    const itemsPerPage = 10;
+  // Action Confirmation (Block / Unblock / Delete)
+  const [confirmation, setConfirmation] = useState<{
+    type: "block" | "unblock" | "delete";
+    user: UserItem;
+  } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-    const [modalVisible, setModalVisible] =
-        useState(false);
+  // Fetch Users
+  const fetchUsers = async () => {
+    try {
+      const res: any = await get("/admin/users");
+      if (Array.isArray(res)) {
+        setUsers(res);
+      } else if (res && Array.isArray(res.data)) {
+        setUsers(res.data);
+      } else {
+        setUsers([]);
+      }
+    } catch (error: any) {
+      console.log("User Management Fetch Error:", error);
+      Alert.alert("Error", error.message || "Failed to load user accounts.");
+      setUsers([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-    const [isEdit, setIsEdit] =
-        useState(false);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-    const [formData, setFormData] =
-        useState({
-            id: null as number | null,
-            name: "",
-            email: "",
-            phone: "",
-            role: "user",
-            password: "",
-        });
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchUsers();
+  };
 
-    const fetchUsers = async () => {
-        try {
-            setLoading(true);
+  // Helper to test if user is active
+  const isUserActive = (u: UserItem): boolean => {
+    if (u.active === undefined || u.active === null) return false;
+    const str = String(u.active).trim().toLowerCase();
+    return str === "active" || str === "1" || str === "true";
+  };
 
-            const res = await get<User[]>(
-                "/admin/users"
-            );
+  // --------------------------------------------------
+  // SUMMARY COUNTS
+  // --------------------------------------------------
+  const activeCount = useMemo(
+    () => users.filter((u) => isUserActive(u)).length,
+    [users]
+  );
 
-            setUsers(res);
-        } catch (error) {
-            Alert.alert(
-                "Error",
-                "Failed to load users"
-            );
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
+  const blockedCount = useMemo(
+    () => users.filter((u) => !isUserActive(u)).length,
+    [users]
+  );
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+  // --------------------------------------------------
+  // SEARCH & FILTER
+  // --------------------------------------------------
+  const filteredUsers = useMemo(() => {
+    let result = [...users];
+    const query = search.trim().toLowerCase();
 
-    const onRefresh = () => {
-        setRefreshing(true);
-        fetchUsers();
-    };
-
-    const filteredUsers = useMemo(() => {
-        let result = users;
-
-        if (search.trim()) {
-            const value =
-                search.toLowerCase();
-
-            result = result.filter(
-                (u) =>
-                    u.name
-                        ?.toLowerCase()
-                        .includes(value) ||
-                    u.email
-                        ?.toLowerCase()
-                        .includes(value) ||
-                    u.phone?.includes(value)
-            );
-        }
-
-        if (roleFilter !== "All") {
-            result = result.filter(
-                (u) =>
-                    u.role?.toLowerCase() ===
-                    roleFilter.toLowerCase()
-            );
-        }
-
-        if (statusFilter === "Active") {
-            result = result.filter(
-                (u) =>
-                    String(u.active).toLowerCase() ===
-                    "active"
-            );
-        }
-
-        if (statusFilter === "Blocked") {
-            result = result.filter(
-                (u) =>
-                    String(u.active).toLowerCase() !==
-                    "active"
-            );
-        }
-
-        return result;
-    }, [
-        users,
-        search,
-        roleFilter,
-        statusFilter,
-    ]);
-
-    const totalPages = Math.ceil(
-        filteredUsers.length /
-        itemsPerPage
-    );
-
-    const paginatedUsers =
-        filteredUsers.slice(
-            (page - 1) * itemsPerPage,
-            page * itemsPerPage
-        );
-
-    const handleAddUser =
-        async () => {
-            try {
-                await post(
-                    "/admin/users",
-                    formData
-                );
-
-                Alert.alert(
-                    "Success",
-                    "User added successfully"
-                );
-
-                setModalVisible(false);
-
-                fetchUsers();
-            } catch {
-                Alert.alert(
-                    "Error",
-                    "Failed to add user"
-                );
-            }
-        };
-
-    const handleUpdateUser =
-        async () => {
-            try {
-                const payload: any = {
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.phone,
-                    role: formData.role,
-                    ...(formData.password
-                        ? { password: formData.password }
-                        : {}),
-                };
-
-                await put(
-                    `/admin/users/${formData.id}`,
-                    payload
-                );
-
-                Alert.alert(
-                    "Success",
-                    "User updated successfully"
-                );
-
-                setModalVisible(false);
-
-                fetchUsers();
-            } catch {
-                Alert.alert(
-                    "Error",
-                    "Failed to update user"
-                );
-            }
-        };
-
-    const handleDelete =
-        (id: number) => {
-            Alert.alert(
-                "Delete User",
-                "Are you sure?",
-                [
-                    {
-                        text: "Cancel",
-                        style: "cancel",
-                    },
-                    {
-                        text: "Delete",
-                        style: "destructive",
-                        onPress: async () => {
-                            try {
-                                await del(
-                                    `/admin/users/${id}`
-                                );
-
-                                fetchUsers();
-                            } catch {
-                                Alert.alert(
-                                    "Error",
-                                    "Delete failed"
-                                );
-                            }
-                        },
-                    },
-                ]
-            );
-        };
-
-    const toggleStatus =
-        async (
-            id: number,
-            currentStatus: string
-        ) => {
-            try {
-                const active =
-                    currentStatus?.toLowerCase() ===
-                        "active"
-                        ? 0
-                        : 1;
-
-                await patch(
-                    `/admin/users/status/${id}`,
-                    { active }
-                );
-
-                fetchUsers();
-            } catch {
-                Alert.alert(
-                    "Error",
-                    "Status update failed"
-                );
-            }
-        };
-
-    const openAddModal = () => {
-        setIsEdit(false);
-
-        setFormData({
-            id: null,
-            name: "",
-            email: "",
-            phone: "",
-            role: "user",
-            password: "",
-        });
-
-        setModalVisible(true);
-    };
-
-    const openEditModal = (user: User) => {
-        setIsEdit(true);
-
-        setFormData({
-            id: user.id,
-            name: user.name || "",
-            email: user.email || "",
-            phone: user.phone || "",
-            role: user.role || "user",
-            password: "",
-        });
-
-        setModalVisible(true);
-    };
-
-    const getRoleColor = (
-        role?: string
-    ) => {
-        switch (
-        role?.toLowerCase()
-        ) {
-            case "admin":
-                return "#2563eb";
-
-            case "admin":
-                return "#7c3aed";
-
-            case "chef":
-                return "#ea580c";
-
-            case "franchise":
-                return "#ca8a04";
-
-            case "delivery_partner":
-                return "#0284c7";
-
-            default:
-                return "#64748b";
-        }
-    };
-
-    if (loading) {
-        return (
-            <View
-                style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                <ActivityIndicator
-                    size="large"
-                />
-
-                <Text
-                    style={{
-                        marginTop: 10,
-                    }}
-                >
-                    Loading Users...
-                </Text>
-            </View>
-        );
+    if (query) {
+      result = result.filter(
+        (u) =>
+          (u.name || "").toLowerCase().includes(query) ||
+          (u.email || "").toLowerCase().includes(query) ||
+          (u.phone && u.phone.includes(query))
+      );
     }
 
-    const renderUser = ({
-        item,
-    }: {
-        item: User;
-    }) => (
-        <View
-            style={{
-                backgroundColor:
-                    "#fff",
-                marginHorizontal: 20,
-                marginBottom: 12,
-                padding: 15,
-                borderRadius: 16,
-            }}
-        >
+    if (roleFilter !== "All") {
+      result = result.filter(
+        (u) => (u.role || "user").toLowerCase() === roleFilter.toLowerCase()
+      );
+    }
 
-            <Text
-                style={{
-                    fontSize: 16,
-                    fontWeight: "700",
-                }}
-            >
-                {item.name}
-            </Text>
+    if (statusFilter === "Active") {
+      result = result.filter((u) => isUserActive(u));
+    } else if (statusFilter === "Blocked") {
+      result = result.filter((u) => !isUserActive(u));
+    }
 
-            <Text>
-                {item.email}
-            </Text>
+    return result;
+  }, [users, search, roleFilter, statusFilter]);
 
-            <Text>
-                {item.phone ||
-                    "N/A"}
-            </Text>
+  // --------------------------------------------------
+  // PAGINATION
+  // --------------------------------------------------
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
+  const currentPageIndex = Math.min(currentPage, totalPages);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPageIndex - 1) * itemsPerPage,
+    currentPageIndex * itemsPerPage
+  );
 
-            <View
-                style={{
-                    marginTop: 10,
-                }}
-            >
-                <Text
-                    style={{
-                        color:
-                            getRoleColor(
-                                item.role
-                            ),
-                        fontWeight:
-                            "600",
-                    }}
-                >
-                    {item.role}
-                </Text>
-            </View>
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, roleFilter]);
 
-            <View
-                style={{
-                    flexDirection:
-                        "row",
-                    marginTop: 15,
-                    justifyContent:
-                        "space-between",
-                }}
-            >
-
-                <TouchableOpacity
-                    onPress={() =>
-                        toggleStatus(
-                            item.id,
-                            item.active ||
-                            ""
-                        )
-                    }
-                >
-                    {String(
-                        item.active
-                    ).toLowerCase() ===
-                        "active" ? (
-                        <ShieldAlert
-                            color="red"
-                        />
-                    ) : (
-                        <ShieldCheck
-                            color="green"
-                        />
-                    )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    onPress={() =>
-                        openEditModal(
-                            item
-                        )
-                    }
-                >
-                    <Edit2
-                        color="#2563eb"
-                    />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    onPress={() =>
-                        handleDelete(
-                            item.id
-                        )
-                    }
-                >
-                    <Trash2
-                        color="red"
-                    />
-                </TouchableOpacity>
-
-            </View>
-
-        </View>
-    );
-
-    const handleSubmit = () => {
-        if (!formData.name.trim()) {
-            Alert.alert(
-                "Validation",
-                "Name is required"
-            );
-            return;
-        }
-
-        if (!formData.email.trim()) {
-            Alert.alert(
-                "Validation",
-                "Email is required"
-            );
-            return;
-        }
-
-        if (
-            !isEdit &&
-            !formData.password.trim()
-        ) {
-            Alert.alert(
-                "Validation",
-                "Password is required"
-            );
-            return;
-        }
-
-        if (isEdit) {
-            handleUpdateUser();
-        } else {
-            handleAddUser();
-        }
+  // --------------------------------------------------
+  // ROLE & STATUS STYLING
+  // --------------------------------------------------
+  const getRoleStyle = (role?: string) => {
+    const r = String(role || "user").toLowerCase();
+    if (r === "superadmin") {
+      return {
+        bg: "bg-purple-500/15",
+        border: "border-purple-500/30",
+        text: "text-purple-400",
+      };
+    }
+    if (r === "admin") {
+      return {
+        bg: "bg-blue-500/15",
+        border: "border-blue-500/30",
+        text: "text-blue-400",
+      };
+    }
+    if (r === "homechef") {
+      return {
+        bg: "bg-orange-500/15",
+        border: "border-orange-500/30",
+        text: "text-orange-400",
+      };
+    }
+    if (r === "franchise" || r === "franchise admin") {
+      return {
+        bg: "bg-yellow-500/15",
+        border: "border-yellow-500/30",
+        text: "text-yellow-400",
+      };
+    }
+    if (r === "delivery_partner" || r === "delivery partner") {
+      return {
+        bg: "bg-sky-500/15",
+        border: "border-sky-500/30",
+        text: "text-sky-400",
+      };
+    }
+    return {
+      bg: "bg-slate-500/15",
+      border: "border-slate-500/30",
+      text: "text-slate-400",
     };
+  };
 
+  const getStatusStyle = (user: UserItem) => {
+    const active = isUserActive(user);
+    if (active) {
+      return {
+        bg: "bg-emerald-500/15",
+        border: "border-emerald-500/30",
+        text: "text-emerald-400",
+        label: "Active",
+      };
+    }
+    return {
+      bg: "bg-red-500/15",
+      border: "border-red-500/30",
+      text: "text-red-400",
+      label: "Blocked",
+    };
+  };
+
+  // --------------------------------------------------
+  // MODAL HANDLERS (ADD / EDIT)
+  // --------------------------------------------------
+  const openAddModal = () => {
+    setModalMode("add");
+    setFormData({
+      id: null,
+      name: "",
+      email: "",
+      phone: "",
+      role: "user",
+      password: "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (user: UserItem) => {
+    setModalMode("edit");
+    setFormData({
+      id: user.id,
+      name: user.name || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      role: user.role || "user",
+      password: "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleModalSubmit = async () => {
+    if (!formData.name.trim()) {
+      Alert.alert("Validation", "Username is required.");
+      return;
+    }
+    if (!formData.email.trim()) {
+      Alert.alert("Validation", "Email is required.");
+      return;
+    }
+    if (modalMode === "add" && !formData.password.trim()) {
+      Alert.alert("Validation", "Password is required for new users.");
+      return;
+    }
+
+    setFormLoading(true);
+    try {
+      if (modalMode === "add") {
+        await post("/admin/users", formData);
+        Alert.alert("Success", "User added successfully.");
+      } else {
+        const payload: any = { ...formData };
+        if (!payload.password) delete payload.password;
+        await put(`/admin/users/${formData.id}`, payload);
+        Alert.alert("Success", "User updated successfully.");
+
+        if (selectedUser?.id === formData.id) {
+          setSelectedUser({
+            ...selectedUser,
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            role: formData.role,
+          });
+        }
+      }
+      setIsModalOpen(false);
+      fetchUsers();
+    } catch (error: any) {
+      Alert.alert(
+        "Error",
+        error.message || `Failed to ${modalMode === "add" ? "add" : "update"} user.`
+      );
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  // --------------------------------------------------
+  // ACTION HANDLERS
+  // --------------------------------------------------
+  const handleToggleStatusPrompt = (user: UserItem) => {
+    const active = isUserActive(user);
+    setConfirmation({
+      type: active ? "block" : "unblock",
+      user,
+    });
+  };
+
+  const handleDeletePrompt = (user: UserItem) => {
+    setConfirmation({
+      type: "delete",
+      user,
+    });
+  };
+
+  const confirmAction = async () => {
+    if (!confirmation) return;
+    const { type, user } = confirmation;
+    setActionLoading(true);
+    try {
+      if (type === "delete") {
+        await del(`/admin/users/${user.id}`);
+        if (selectedUser?.id === user.id) {
+          setIsDetailOpen(false);
+          setSelectedUser(null);
+        }
+        Alert.alert("Success", "User account deleted successfully.");
+      } else {
+        const nextActive = type === "unblock" ? 1 : 0;
+        await patch(`/admin/users/status/${user.id}`, { active: nextActive });
+        if (selectedUser?.id === user.id) {
+          setSelectedUser({
+            ...selectedUser,
+            active: nextActive === 1 ? "Active" : "Blocked",
+          });
+        }
+        Alert.alert(
+          "Success",
+          `User account ${type === "unblock" ? "unblocked" : "blocked"} successfully.`
+        );
+      }
+      setConfirmation(null);
+      fetchUsers();
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Action could not be completed.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openUserDetails = (user: UserItem) => {
+    setSelectedUser(user);
+    setIsDetailOpen(true);
+  };
+
+  // --------------------------------------------------
+  // LOADING STATE
+  // --------------------------------------------------
+  if (loading) {
     return (
-        <View
-            className="flex-1 bg-slate-50"
-        >
-            <InnerHeader title="User Management" navigation={navigation} />
-            <FlatList
-                data={paginatedUsers}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={renderUser}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                    />
-                }
-                contentContainerStyle={{
-                    paddingBottom: 100,
-                }}
-                ListHeaderComponent={
-                    <>
-                        <View className="p-5">
-                            <View className="flex-row items-center justify-end">
-                                <TouchableOpacity
-                                    onPress={openAddModal}
-                                    className="flex-row items-center rounded-xl bg-slate-800 px-4 py-2.5"
-                                >
-                                    <Plus
-                                        size={18}
-                                        color="#fff"
-                                    />
-
-                                    <Text className="ml-1.5 font-semibold text-white">
-                                        Add User
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            className="mb-5"
-                            contentContainerStyle={{
-                                paddingHorizontal: 20,
-                            }}
-                        >
-                            {/* Total Users */}
-                            <View className="mr-3 w-[170px] rounded-3xl bg-[#131127] p-[18px]">
-                                <Users
-                                    color="#fff"
-                                    size={28}
-                                />
-
-                                <Text className="mt-2.5 text-slate-400">
-                                    Total Users
-                                </Text>
-
-                                <Text className="text-[28px] font-bold text-white">
-                                    {users.length}
-                                </Text>
-                            </View>
-
-                            {/* Active Users */}
-                            <View className="mr-3 w-[170px] rounded-3xl bg-green-950 p-[18px]">
-                                <UserCheck
-                                    color="#fff"
-                                    size={28}
-                                />
-
-                                <Text className="mt-2.5 text-green-300">
-                                    Active
-                                </Text>
-
-                                <Text className="text-[28px] font-bold text-white">
-                                    {
-                                        users.filter(
-                                            (u) =>
-                                                String(u.active).toLowerCase() ===
-                                                "active"
-                                        ).length
-                                    }
-                                </Text>
-                            </View>
-
-                            {/* Blocked Users */}
-                            <View className="w-[170px] rounded-3xl bg-red-950 p-[18px]">
-                                <UserX
-                                    color="#fff"
-                                    size={28}
-                                />
-
-                                <Text className="mt-2.5 text-red-300">
-                                    Blocked
-                                </Text>
-
-                                <Text className="text-[28px] font-bold text-white">
-                                    {
-                                        users.filter(
-                                            (u) =>
-                                                String(u.active).toLowerCase() !==
-                                                "active"
-                                        ).length
-                                    }
-                                </Text>
-                            </View>
-                        </ScrollView>
-
-                        <View className="mb-4 px-5">
-                            <View className="h-14 flex-row items-center rounded-2xl bg-white px-4">
-                                <Search
-                                    size={20}
-                                    color="#64748b"
-                                />
-
-                                <TextInput
-                                    placeholder="Search users..."
-                                    value={search}
-                                    onChangeText={setSearch}
-                                    className="ml-3 flex-1 text-base text-slate-900"
-                                    placeholderTextColor="#94a3b8"
-                                />
-                            </View>
-                        </View>
-                    </>
-                }
-                ListFooterComponent={
-                    <View className="items-center p-5">
-                        <Text className="mb-4 text-slate-500">
-                            Page {page} of {totalPages || 1}
-                        </Text>
-
-                        <View className="flex-row">
-                            <TouchableOpacity
-                                disabled={page === 1}
-                                onPress={() => setPage(page - 1)}
-                                className={`mr-3 rounded-xl px-5 py-2.5 ${page === 1
-                                    ? "bg-slate-300"
-                                    : "bg-blue-600"
-                                    }`}
-                            >
-                                <Text className="font-semibold text-white">
-                                    Prev
-                                </Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                disabled={
-                                    page === totalPages ||
-                                    totalPages === 0
-                                }
-                                onPress={() => setPage(page + 1)}
-                                className={`rounded-xl px-5 py-2.5 ${page === totalPages ||
-                                    totalPages === 0
-                                    ? "bg-slate-300"
-                                    : "bg-blue-600"
-                                    }`}
-                            >
-                                <Text className="font-semibold text-white">
-                                    Next
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                }
-            />
-
-            <Modal
-                visible={modalVisible}
-                animationType="slide"
-                transparent
-            >
-                <View
-                    className="flex-1 justify-center p-5"
-                    style={{
-                        backgroundColor: "rgba(0,0,0,0.5)",
-                    }}
-                >
-                    <View
-                        className="rounded-3xl bg-white p-5"
-                        style={{
-                            maxHeight: "90%",
-                        }}
-                    >
-                        <ScrollView>
-                            <Text className="mb-5 text-[22px] font-bold text-slate-900">
-                                {isEdit ? "Edit User" : "Add User"}
-                            </Text>
-
-                            <TextInput
-                                placeholder="Name"
-                                value={formData.name}
-                                onChangeText={(text) =>
-                                    setFormData({
-                                        ...formData,
-                                        name: text,
-                                    })
-                                }
-                                className="mb-3 rounded-xl border border-slate-200 p-3"
-                            />
-
-                            <TextInput
-                                placeholder="Email"
-                                value={formData.email}
-                                onChangeText={(text) =>
-                                    setFormData({
-                                        ...formData,
-                                        email: text,
-                                    })
-                                }
-                                className="mb-3 rounded-xl border border-slate-200 p-3"
-                            />
-
-                            <TextInput
-                                placeholder="Phone"
-                                value={formData.phone}
-                                onChangeText={(text) =>
-                                    setFormData({
-                                        ...formData,
-                                        phone: text,
-                                    })
-                                }
-                                className="mb-3 rounded-xl border border-slate-200 p-3"
-                            />
-
-                            <TextInput
-                                placeholder="Role"
-                                value={formData.role}
-                                onChangeText={(text) =>
-                                    setFormData({
-                                        ...formData,
-                                        role: text,
-                                    })
-                                }
-                                className="mb-3 rounded-xl border border-slate-200 p-3"
-                            />
-
-                            <TextInput
-                                placeholder={
-                                    isEdit
-                                        ? "Leave empty to keep password"
-                                        : "Password"
-                                }
-                                secureTextEntry
-                                value={formData.password}
-                                onChangeText={(text) =>
-                                    setFormData({
-                                        ...formData,
-                                        password: text,
-                                    })
-                                }
-                                className="mb-5 rounded-xl border border-slate-200 p-3"
-                            />
-
-                            <View className="flex-row justify-end">
-                                <TouchableOpacity
-                                    onPress={() =>
-                                        setModalVisible(false)
-                                    }
-                                    className="mr-3 px-5 py-2.5"
-                                >
-                                    <Text className="font-semibold text-slate-700">
-                                        Cancel
-                                    </Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    onPress={handleSubmit}
-                                    className="rounded-xl bg-blue-600 px-5 py-2.5"
-                                >
-                                    <Text className="font-semibold text-white">
-                                        {isEdit
-                                            ? "Update"
-                                            : "Add User"}
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </ScrollView>
-                    </View>
-                </View>
-            </Modal>
+      <View className="flex-1 bg-slate-950">
+        <InnerHeader title="User Management" navigation={navigation} />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#10b981" />
+          <Text className="text-white mt-3 font-semibold text-xs">
+            Loading Users...
+          </Text>
         </View>
+      </View>
     );
+  }
+
+  // --------------------------------------------------
+  // RENDER MAIN SCREEN
+  // --------------------------------------------------
+  return (
+    <View className="flex-1 bg-slate-950">
+      <InnerHeader title="User Management" navigation={navigation} />
+
+      <FlatList
+        data={paginatedUsers}
+        keyExtractor={(item: UserItem) => String(item.id)}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#10b981"
+            colors={["#10b981"]}
+          />
+        }
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={
+          <View className="px-4 pt-6">
+            {/* ================= HEADER ================= */}
+            <View className="flex-row items-center justify-between mb-5">
+              <View className="flex-1">
+                <Text className="text-white text-3xl font-black">
+                  User Management
+                </Text>
+                <Text className="text-slate-400 mt-1 text-xs">
+                  Manage registered users, roles and access
+                </Text>
+              </View>
+
+              <View className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center">
+                <Users size={20} color="#34d399" />
+              </View>
+            </View>
+
+            {/* ================= SUMMARY METRICS ================= */}
+            <View className="flex-row gap-2 mb-5">
+              {/* TOTAL */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("All");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "All"
+                    ? "border-indigo-400"
+                    : "border-indigo-400/25"
+                }`}
+              >
+                <View className="w-8 h-8 rounded-lg bg-indigo-500/15 items-center justify-center mb-2">
+                  <Users size={16} color="#a5b4fc" />
+                </View>
+                <Text className="text-indigo-200/70 text-[9px] font-bold uppercase">
+                  Total Users
+                </Text>
+                <Text className="text-white text-2xl font-black mt-0.5">
+                  {users.length}
+                </Text>
+              </TouchableOpacity>
+
+              {/* ACTIVE */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("Active");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "Active"
+                    ? "border-emerald-400"
+                    : "border-emerald-400/25"
+                }`}
+              >
+                <View className="w-8 h-8 rounded-lg bg-emerald-500/15 items-center justify-center mb-2">
+                  <UserCheck size={16} color="#6ee7b7" />
+                </View>
+                <Text className="text-emerald-200/70 text-[9px] font-bold uppercase">
+                  Active
+                </Text>
+                <Text className="text-white text-2xl font-black mt-0.5">
+                  {activeCount}
+                </Text>
+              </TouchableOpacity>
+
+              {/* BLOCKED */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("Blocked");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "Blocked"
+                    ? "border-rose-400"
+                    : "border-rose-400/25"
+                }`}
+              >
+                <View className="w-8 h-8 rounded-lg bg-rose-500/15 items-center justify-center mb-2">
+                  <UserX size={16} color="#fda4af" />
+                </View>
+                <Text className="text-rose-200/70 text-[9px] font-bold uppercase">
+                  Blocked
+                </Text>
+                <Text className="text-white text-2xl font-black mt-0.5">
+                  {blockedCount}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* ================= SEARCH INPUT ================= */}
+            <View className="bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 flex-row items-center mb-3">
+              <Search size={18} color="#64748b" />
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search by name, email or phone..."
+                placeholderTextColor="#64748b"
+                className="flex-1 text-white ml-3 text-xs"
+              />
+            </View>
+
+            {/* ================= FILTERS ROW ================= */}
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center">
+                <Filter size={15} color="#94a3b8" />
+                <Text className="text-slate-400 ml-1.5 text-[10px] font-bold uppercase">
+                  Filter users
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => setIsFilterModalOpen(true)}
+                className="flex-row items-center bg-slate-900 border border-white/10 rounded-xl px-3 py-2"
+              >
+                <Text className="text-white text-xs font-bold mr-2">
+                  {statusFilter !== "All"
+                    ? statusFilter
+                    : roleFilter !== "All"
+                    ? roleFilter.replace(/_/g, " ")
+                    : "All Users"}
+                </Text>
+                <ChevronDown size={15} color="#94a3b8" />
+              </TouchableOpacity>
+            </View>
+
+            {/* RESULT COUNT */}
+            <Text className="text-slate-500 text-[11px] mb-3">
+              Showing {paginatedUsers.length} of {filteredUsers.length} users
+            </Text>
+          </View>
+        }
+        renderItem={({ item }: { item: UserItem }) => {
+          const statusStyle = getStatusStyle(item);
+          const roleStyle = getRoleStyle(item.role);
+
+          return (
+            <View className="mx-4 mb-3 bg-slate-900 border border-white/10 rounded-2xl p-4">
+              {/* ================= TOP INFO ================= */}
+              <View className="flex-row items-start">
+                <View className="w-12 h-12 rounded-xl bg-blue-600/15 border border-blue-500/20 items-center justify-center">
+                  <Users size={22} color="#60a5fa" />
+                </View>
+
+                <View className="flex-1 ml-3">
+                  <Text className="text-white text-base font-black">
+                    {item.name || "Unnamed User"}
+                  </Text>
+                  <Text
+                    className="text-slate-400 text-xs mt-0.5"
+                    numberOfLines={1}
+                  >
+                    {item.email || "No email provided"}
+                  </Text>
+                </View>
+
+                {/* Status Pill */}
+                <View
+                  className={`px-2.5 py-1 rounded-lg border ${statusStyle.bg} ${statusStyle.border}`}
+                >
+                  <Text
+                    className={`text-[9px] font-black uppercase tracking-wider ${statusStyle.text}`}
+                  >
+                    {statusStyle.label}
+                  </Text>
+                </View>
+              </View>
+
+              {/* ================= ESSENTIAL DETAILS ================= */}
+              <View className="mt-3.5 flex-row items-center">
+                {/* Mobile */}
+                <View className="flex-row items-center flex-1">
+                  <Phone size={14} color="#64748b" />
+                  <Text
+                    className="text-slate-300 text-xs ml-2"
+                    numberOfLines={1}
+                  >
+                    {item.phone || "N/A"}
+                  </Text>
+                </View>
+
+                {/* Registered Date */}
+                <View className="flex-row items-center flex-1 ml-2">
+                  <Calendar size={14} color="#64748b" />
+                  <Text
+                    className="text-slate-400 text-xs ml-2 flex-1"
+                    numberOfLines={1}
+                  >
+                    {item.created_at
+                      ? new Date(item.created_at).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "N/A"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* ================= ACTION BUTTONS ================= */}
+              <View className="flex-row items-center justify-between mt-3.5 pt-3 border-t border-white/10 gap-2">
+                {/* Role Pill - Left */}
+                <View
+                  className={`px-2.5 py-1 rounded-lg border ${roleStyle.bg} ${roleStyle.border}`}
+                >
+                  <Text
+                    className={`text-[9px] font-black uppercase tracking-wider ${roleStyle.text}`}
+                  >
+                    {item.role?.replace(/_/g, " ") || "user"}
+                  </Text>
+                </View>
+
+                {/* Right Action Icons */}
+                <View className="flex-row items-center gap-2">
+                  {/* View Details */}
+                  <TouchableOpacity
+                    onPress={() => openUserDetails(item)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`View details for ${item.name || "user"}`}
+                    className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
+                  >
+                    <Eye size={15} color="#cbd5e1" />
+                  </TouchableOpacity>
+
+                  {/* Edit User */}
+                  {/* <TouchableOpacity
+                    onPress={() => openEditModal(item)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Edit ${item.name || "user"}`}
+                    className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
+                  >
+                    <Pencil size={16} color="#cbd5e1" />
+                  </TouchableOpacity> */}
+
+                  {/* Toggle Status (Block / Unblock) */}
+                  {isUserActive(item) ? (
+                    <TouchableOpacity
+                      onPress={() => handleToggleStatusPrompt(item)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Block ${item.name || "user"}`}
+                      className="w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl items-center justify-center"
+                    >
+                      <ShieldAlert size={17} color="#fbbf24" />
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => handleToggleStatusPrompt(item)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Unblock ${item.name || "user"}`}
+                      className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-xl items-center justify-center"
+                    >
+                      <ShieldCheck size={17} color="#34d399" />
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Delete User */}
+                  <TouchableOpacity
+                    onPress={() => handleDeletePrompt(item)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Delete ${item.name || "user"}`}
+                    className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-xl items-center justify-center"
+                  >
+                    <Trash2 size={16} color="#f87171" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          );
+        }}
+        ListEmptyComponent={
+          <View className="items-center mt-16 px-5">
+            <Users size={45} color="#475569" />
+            <Text className="text-slate-400 mt-4 text-xs font-semibold">
+              No users found matching your criteria.
+            </Text>
+            <Text className="text-slate-600 mt-1 text-[11px]">
+              Try adjusting your search or filters.
+            </Text>
+          </View>
+        }
+        ListFooterComponent={
+          filteredUsers.length > 0 ? (
+            <View className="flex-row justify-center items-center mt-2 px-4">
+              <TouchableOpacity
+                disabled={currentPage === 1}
+                onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="w-10 h-10 bg-slate-900 border border-white/10 rounded-xl items-center justify-center"
+                style={{ opacity: currentPage === 1 ? 0.4 : 1 }}
+              >
+                <ChevronLeft size={18} color="#ffffff" />
+              </TouchableOpacity>
+
+              <Text className="text-slate-300 text-xs font-bold mx-5">
+                Page {currentPage} of {totalPages}
+              </Text>
+
+              <TouchableOpacity
+                disabled={currentPage === totalPages}
+                onPress={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className="w-10 h-10 bg-slate-900 border border-white/10 rounded-xl items-center justify-center"
+                style={{ opacity: currentPage === totalPages ? 0.4 : 1 }}
+              >
+                <ChevronRight size={18} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+          ) : null
+        }
+      />
+
+      {/* Floating Action Button */}
+      {/*  <View
+        style={{
+          position: "absolute",
+          right: 20,
+          bottom: 25,
+          zIndex: 9999,
+          elevation: 20,
+        }}
+      >
+        <FloatingActionButton onPress={openAddModal} label="Add new user" />
+      </View> */}
+
+      {/* ================================================= */}
+      {/* ADD / EDIT USER MODAL */}
+      {/* ================================================= */}
+      <Modal
+        visible={isModalOpen}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setIsModalOpen(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          className="flex-1 bg-black/80 justify-end"
+        >
+          <View
+            className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[90%] flex-col"
+            style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+          >
+            {/* Modal Header */}
+            <View className="p-5 bg-emerald-700 rounded-t-3xl flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-white text-xl font-black">
+                  {modalMode === "add" ? "Register New User" : "Edit User Account"}
+                </Text>
+                <Text className="text-emerald-200 text-xs font-bold uppercase tracking-wider mt-1">
+                  {modalMode === "add"
+                    ? "Add a new user to the system"
+                    : `Updating ${formData.name || "User"}`}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setIsModalOpen(false)}
+                className="w-9 h-9 bg-black/20 rounded-full items-center justify-center"
+              >
+                <X size={20} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Modal Form Content */}
+            <ScrollView
+              className="p-5"
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Username */}
+              <View className="mb-4">
+                <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
+                  Username / Customer Name *
+                </Text>
+                <View className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-row items-center">
+                  <User size={16} color="#64748b" />
+                  <TextInput
+                    value={formData.name}
+                    onChangeText={(text) =>
+                      setFormData({ ...formData, name: text })
+                    }
+                    placeholder="e.g. John Doe"
+                    placeholderTextColor="#64748b"
+                    className="flex-1 text-white ml-3 text-sm font-semibold"
+                  />
+                </View>
+              </View>
+
+              {/* Email */}
+              <View className="mb-4">
+                <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
+                  Email Address *
+                </Text>
+                <View className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-row items-center">
+                  <Mail size={16} color="#64748b" />
+                  <TextInput
+                    value={formData.email}
+                    onChangeText={(text) =>
+                      setFormData({ ...formData, email: text })
+                    }
+                    placeholder="e.g. john@example.com"
+                    placeholderTextColor="#64748b"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    className="flex-1 text-white ml-3 text-sm font-semibold"
+                  />
+                </View>
+              </View>
+
+              {/* Phone */}
+              <View className="mb-4">
+                <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
+                  Phone / Mobile
+                </Text>
+                <View className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-row items-center">
+                  <Phone size={16} color="#64748b" />
+                  <TextInput
+                    value={formData.phone}
+                    onChangeText={(text) =>
+                      setFormData({ ...formData, phone: text })
+                    }
+                    placeholder="e.g. 9876543210"
+                    placeholderTextColor="#64748b"
+                    keyboardType="phone-pad"
+                    className="flex-1 text-white ml-3 text-sm font-semibold"
+                  />
+                </View>
+              </View>
+
+              {/* Assign Role */}
+              <View className="mb-4">
+                <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
+                  Assign Role *
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {AVAILABLE_ROLES.map((role) => {
+                    const isSelected =
+                      (formData.role || "user").toLowerCase() ===
+                      role.value.toLowerCase();
+                    return (
+                      <TouchableOpacity
+                        key={role.value}
+                        onPress={() =>
+                          setFormData({ ...formData, role: role.value })
+                        }
+                        className={`px-3.5 py-2.5 rounded-xl border ${
+                          isSelected
+                            ? "bg-emerald-500/20 border-emerald-500/50"
+                            : "bg-slate-950 border-slate-800"
+                        }`}
+                      >
+                        <Text
+                          className={`text-xs font-bold uppercase tracking-wider ${
+                            isSelected ? "text-emerald-300" : "text-slate-400"
+                          }`}
+                        >
+                          {role.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Password */}
+              <View className="mb-6">
+                <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
+                  Password {modalMode === "add" ? "*" : "(Leave empty to keep current)"}
+                </Text>
+                <View className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-row items-center">
+                  <Lock size={16} color="#64748b" />
+                  <TextInput
+                    value={formData.password}
+                    onChangeText={(text) =>
+                      setFormData({ ...formData, password: text })
+                    }
+                    placeholder={
+                      modalMode === "add"
+                        ? "Enter a secure password"
+                        : "Enter new password (optional)"
+                    }
+                    placeholderTextColor="#64748b"
+                    secureTextEntry
+                    className="flex-1 text-white ml-3 text-sm font-semibold"
+                  />
+                </View>
+              </View>
+
+              {/* Action Buttons */}
+              <View className="flex-row gap-3 pt-2">
+                <TouchableOpacity
+                  onPress={() => setIsModalOpen(false)}
+                  disabled={formLoading}
+                  className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"
+                >
+                  <Text className="text-slate-300 font-bold text-xs uppercase">
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleModalSubmit}
+                  disabled={formLoading}
+                  className="flex-1 bg-emerald-600 rounded-2xl py-3.5 items-center"
+                >
+                  {formLoading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text className="text-white font-black text-xs uppercase tracking-wider">
+                      {modalMode === "add" ? "Register User" : "Update User"}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ================================================= */}
+      {/* USER DETAILS MODAL */}
+      {/* ================================================= */}
+      <Modal
+        visible={isDetailOpen && !!selectedUser}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setIsDetailOpen(false)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View
+            className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex-col"
+            style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+          >
+            {/* Modal Header */}
+            <View className="p-5 bg-emerald-700 rounded-t-3xl flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text
+                  className="text-white text-xl font-black"
+                  numberOfLines={1}
+                >
+                  {selectedUser?.name || "User Details"}
+                </Text>
+                <Text className="text-emerald-200 text-xs font-bold uppercase tracking-wider mt-1">
+                  User Account Overview
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => setIsDetailOpen(false)}
+                className="w-9 h-9 bg-black/20 rounded-full items-center justify-center"
+              >
+                <X size={20} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Modal Body */}
+            <ScrollView className="p-5" showsVerticalScrollIndicator={false}>
+              {/* Personal Information */}
+              <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
+                  👤 Account Information
+                </Text>
+
+                <View className="flex-row flex-wrap">
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      User ID
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      #{selectedUser?.id}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Account Status
+                    </Text>
+                    <Text
+                      className={`text-sm font-bold mt-1 ${
+                        selectedUser && isUserActive(selectedUser)
+                          ? "text-emerald-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {selectedUser && isUserActive(selectedUser)
+                        ? "Active"
+                        : "Blocked"}
+                    </Text>
+                  </View>
+
+                  <View className="w-full p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Username
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedUser?.name || "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-full p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Email Address
+                    </Text>
+                    <Text
+                      className="text-white text-sm font-semibold mt-1"
+                      numberOfLines={1}
+                    >
+                      {selectedUser?.email || "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Phone Number
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedUser?.phone || "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Assigned Role
+                    </Text>
+                    <Text className="text-emerald-400 text-sm font-bold uppercase mt-1">
+                      {selectedUser?.role?.replace(/_/g, " ") || "user"}
+                    </Text>
+                  </View>
+
+                  <View className="w-full p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Registration Date
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedUser?.created_at
+                        ? new Date(selectedUser.created_at).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            }
+                          )
+                        : "—"}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Roles & Permissions Box */}
+              <View className="bg-slate-950 rounded-2xl p-4 mb-6 border border-slate-800">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
+                  🛡️ Access & Permissions
+                </Text>
+                <View className="p-1.5">
+                  <Text className="text-slate-400 text-xs font-bold uppercase">
+                    System Level
+                  </Text>
+                  <Text className="text-slate-300 text-xs mt-1 leading-5">
+                    {selectedUser?.role === "superadmin"
+                      ? "Full administrative access with user and role management authority."
+                      : selectedUser?.role === "admin"
+                      ? "Administrative dashboard access with order, product and partner management."
+                      : selectedUser?.role === "homechef"
+                      ? "Home chef portal access for managing kitchen orders and menu."
+                      : selectedUser?.role === "delivery_partner"
+                      ? "Delivery partner access for active fleet and deliveries."
+                      : "Standard customer account with order placement capabilities."}
+                  </Text>
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Bottom Actions */}
+            <View className="p-4 border-t border-slate-800 bg-slate-950 flex-row gap-2">
+              {/* <TouchableOpacity
+                onPress={() => {
+                  const target = selectedUser;
+                  setIsDetailOpen(false);
+                  if (target) openEditModal(target);
+                }}
+                className="px-4 bg-slate-800 py-3 rounded-2xl items-center flex-row"
+              >
+                <Pencil size={17} color="#cbd5e1" />
+                <Text className="text-slate-300 font-bold text-sm uppercase ml-1.5">
+                  Edit
+                </Text>
+              </TouchableOpacity> */}
+
+              {selectedUser && (
+                <TouchableOpacity
+                  onPress={() => {
+                    const target = selectedUser;
+                    setIsDetailOpen(false);
+                    handleToggleStatusPrompt(target);
+                  }}
+                  className={`flex-1 py-3 rounded-2xl items-center ${
+                    isUserActive(selectedUser) ? "bg-amber-600" : "bg-emerald-600"
+                  }`}
+                >
+                  <Text className="text-white font-black text-sm uppercase tracking-wider">
+                    {isUserActive(selectedUser) ? "Block User" : "Activate User"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                onPress={() => setIsDetailOpen(false)}
+                className="px-5 bg-slate-800 py-3 rounded-2xl items-center"
+              >
+                <Text className="text-slate-300 font-bold text-sm uppercase">
+                  Close
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ================================================= */}
+      {/* CONFIRMATION MODAL (BLOCK / UNBLOCK / DELETE) */}
+      {/* ================================================= */}
+      <Modal
+        visible={!!confirmation}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setConfirmation(null)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
+            <View
+              className={`w-12 h-12 rounded-2xl items-center justify-center mb-4 ${
+                confirmation?.type === "delete"
+                  ? "bg-red-500/15"
+                  : confirmation?.type === "block"
+                  ? "bg-amber-500/15"
+                  : "bg-emerald-500/15"
+              }`}
+            >
+              {confirmation?.type === "delete" ? (
+                <Trash2 size={23} color="#f87171" />
+              ) : confirmation?.type === "block" ? (
+                <ShieldAlert size={23} color="#fbbf24" />
+              ) : (
+                <ShieldCheck size={23} color="#34d399" />
+              )}
+            </View>
+
+            <Text className="text-white text-lg font-black">
+              {confirmation?.type === "delete"
+                ? "Delete this user account?"
+                : confirmation?.type === "block"
+                ? "Block this user?"
+                : "Unblock this user?"}
+            </Text>
+
+            <Text className="text-slate-400 text-sm mt-2 leading-5">
+              {confirmation?.type === "delete"
+                ? `${
+                    confirmation?.user?.name || "This user"
+                  } will be permanently removed from the system.`
+                : confirmation?.type === "block"
+                ? `${
+                    confirmation?.user?.name || "This user"
+                  } will be blocked from logging into the platform.`
+                : `${
+                    confirmation?.user?.name || "This user"
+                  } will regain full access to their account.`}
+            </Text>
+
+            <View className="flex-row gap-3 mt-6">
+              <TouchableOpacity
+                onPress={() => setConfirmation(null)}
+                disabled={actionLoading}
+                className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"
+              >
+                <Text className="text-slate-300 font-bold text-xs uppercase">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={confirmAction}
+                disabled={actionLoading}
+                className={`flex-1 rounded-2xl py-3.5 items-center ${
+                  confirmation?.type === "delete"
+                    ? "bg-red-600"
+                    : confirmation?.type === "block"
+                    ? "bg-amber-500"
+                    : "bg-emerald-600"
+                }`}
+              >
+                {actionLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className="text-white font-black text-xs uppercase">
+                    {confirmation?.type === "delete"
+                      ? "Delete Account"
+                      : confirmation?.type === "block"
+                      ? "Block User"
+                      : "Unblock User"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ================================================= */}
+      {/* STATUS & ROLE FILTER MODAL */}
+      {/* ================================================= */}
+      <Modal
+        visible={isFilterModalOpen}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setIsFilterModalOpen(false)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
+            <View className="flex-row items-center justify-between mb-4">
+              <View>
+                <Text className="text-white text-base font-black">
+                  Filter Users
+                </Text>
+                <Text className="text-slate-400 text-xs mt-1">
+                  Choose status or role criteria
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setIsFilterModalOpen(false)}
+                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+              >
+                <X size={17} color="#cbd5e1" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Status Section */}
+            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">
+              By Status
+            </Text>
+            <View className="flex-row gap-2 mb-4">
+              {["All", "Active", "Blocked"].map((status) => {
+                const active = statusFilter === status;
+                return (
+                  <TouchableOpacity
+                    key={status}
+                    onPress={() => setStatusFilter(status)}
+                    className={`flex-1 py-3 rounded-xl border items-center ${
+                      active
+                        ? "bg-emerald-500/15 border-emerald-500/40"
+                        : "bg-slate-950 border-white/5"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-bold uppercase ${
+                        active ? "text-emerald-300" : "text-slate-400"
+                      }`}
+                    >
+                      {status}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Role Section */}
+            <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">
+              By Role
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="mb-5"
+            >
+              <View className="flex-row gap-2">
+                {[
+                  { label: "All Roles", value: "All" },
+                  ...AVAILABLE_ROLES,
+                ].map((role) => {
+                  const active =
+                    roleFilter.toLowerCase() === role.value.toLowerCase();
+                  return (
+                    <TouchableOpacity
+                      key={role.value}
+                      onPress={() => setRoleFilter(role.value)}
+                      className={`px-4 py-3 rounded-xl border ${
+                        active
+                          ? "bg-indigo-500/15 border-indigo-500/40"
+                          : "bg-slate-950 border-white/5"
+                      }`}
+                    >
+                      <Text
+                        className={`text-xs font-bold uppercase ${
+                          active ? "text-indigo-300" : "text-slate-400"
+                        }`}
+                      >
+                        {role.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </ScrollView>
+
+            <TouchableOpacity
+              onPress={() => setIsFilterModalOpen(false)}
+              className="w-full bg-emerald-600 py-3.5 rounded-2xl items-center"
+            >
+              <Text className="text-white font-black text-xs uppercase tracking-wider">
+                Apply Filters
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
 };
 
 export default UserManagement;

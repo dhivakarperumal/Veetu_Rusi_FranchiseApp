@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // const BASE_URL = "https://veeturusi.qtechx.com/api";
-const BASE_URL = "http://192.168.1.4:5000/api";
+const BASE_URL = "http://192.168.1.3:5000/api";
 
 export type LoginPayload = {
   identifier: string;
