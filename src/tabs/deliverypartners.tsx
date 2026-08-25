@@ -366,8 +366,11 @@ const DeliveryPartners = () => {
                   <Text className="text-white text-base font-black">
                     {item.name || `${item.first_name || ""} ${item.last_name || ""}`.trim() || "-"}
                   </Text>
-                  <Text className="text-slate-400 text-xs mt-0.5 font-medium">
-                    {item.vehicle_type || "Bike"} &bull; {item.vehicle_number || "No Vehicle No"}
+                  <Text
+                    className="text-slate-400 text-xs mt-0.5"
+                    numberOfLines={1}
+                  >
+                    {item.email || "No email"}
                   </Text>
                 </View>
 
@@ -407,7 +410,16 @@ const DeliveryPartners = () => {
               </View>
 
               {/* ================= ACTION BUTTONS ================= */}
-              <View className="flex-row items-center mt-3.5 pt-3 border-t border-white/10 gap-2">
+              <View className="flex-row items-center justify-between mt-3.5 pt-3 border-t border-white/10 gap-2">
+
+                {/* Bike Number - Left */}
+                <Text
+                  className="text-slate-300 text-xs font-semibold flex-1"
+                  numberOfLines={1}
+                >
+                  {item.vehicle_type || "Bike"} • {item.vehicle_number || "No Vehicle No"}
+                </Text>
+
                 {/* Details Button */}
                 <TouchableOpacity
                   onPress={() => openPartnerDetails(item)}
@@ -604,8 +616,8 @@ const DeliveryPartners = () => {
                     setIsFilterOpen(false);
                   }}
                   className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${active
-                      ? "bg-emerald-500/15 border-emerald-500/40"
-                      : "bg-slate-950 border-white/5"
+                    ? "bg-emerald-500/15 border-emerald-500/40"
+                    : "bg-slate-950 border-white/5"
                     }`}
                 >
                   <Text className={`text-sm font-bold ${active ? "text-emerald-300" : "text-slate-300"}`}>
