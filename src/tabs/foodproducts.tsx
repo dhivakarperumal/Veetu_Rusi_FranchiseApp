@@ -15,15 +15,19 @@ import {
 import {
   Search,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Eye,
   Pencil,
   Trash2,
   X,
   Check,
-  FastForward,
   Utensils,
 } from "lucide-react-native";
 import { get, put, del } from "../services/api";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import FloatingActionButton from "../components/FloatingActionButton";
+import { useNavigation } from "@react-navigation/native";
 // If your api file doesn't export del, change del(...) to your delete method.
 
 const API_BASE_URL = "https://veeturusi.qtechx.com";
@@ -69,6 +73,7 @@ const STATUS_OPTIONS = [
 const ITEMS_PER_PAGE = 10;
 
 const FoodProducts = () => {
+  const navigation = useNavigation<any>();
   const [foods, setFoods] = useState<Food[]>([]);
   const [chefs, setChefs] = useState<Chef[]>([]);
 
@@ -89,6 +94,12 @@ const FoodProducts = () => {
   const [showChefDropdown, setShowChefDropdown] = useState(false);
 
   const [approvalItem, setApprovalItem] = useState<Food | null>(null);
+  const [confirmation, setConfirmation] = useState<{
+    type: "activate" | "deactivate" | "delete";
+    item: Food;
+  } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const [approvalChecklist, setApprovalChecklist] = useState({
     taste: false,
@@ -241,7 +252,7 @@ const FoodProducts = () => {
   useEffect(() => {
     setCurrentPage(1);
     fetchFoods();
-  }, [activeTab, selectedChef]);
+  }, [activeTab, selectedChef, fetchFoods]);
 
   /*
    * Search with small delay
@@ -253,7 +264,7 @@ const FoodProducts = () => {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, fetchFoods]);
 
   /*
    * -------------------------------------------------------
@@ -432,11 +443,6 @@ const FoodProducts = () => {
         status: newStatus,
       });
 
-      Alert.alert(
-        "Success",
-        `Food status updated to ${newStatus}`
-      );
-
       fetchFoods();
     } catch (error) {
       console.log(
@@ -501,50 +507,41 @@ const FoodProducts = () => {
     closeApprovalModal();
   };
 
+  const requestStatusUpdate = (item: Food, status: "Active" | "Inactive") => {
+    setConfirmation({
+      type: status === "Active" ? "activate" : "deactivate",
+      item,
+    });
+  };
+
   /*
    * -------------------------------------------------------
    * DELETE
    * -------------------------------------------------------
    */
   const handleDelete = (item: Food) => {
-    Alert.alert(
-      "Delete Food",
-      "Are you sure you want to delete this item?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const endpoint =
-                activeTab === "food"
-                  ? `/chef-foods/${item.id}`
-                  : `/products/${item.id}`;
+    setConfirmation({ type: "delete", item });
+  };
 
-              await del(endpoint);
-
-              Alert.alert(
-                "Success",
-                "Item deleted successfully"
-              );
-
-              fetchFoods();
-            } catch (error) {
-              console.log("Delete error:", error);
-
-              Alert.alert(
-                "Error",
-                "Failed to delete item"
-              );
-            }
-          },
-        },
-      ]
-    );
+  const confirmAction = async () => {
+    if (!confirmation) return;
+    const { type, item } = confirmation;
+    setActionLoading(true);
+    try {
+      const endpoint = activeTab === "food" ? `/chef-foods/${item.id}` : `/products/${item.id}`;
+      if (type === "delete") {
+        await del(endpoint);
+      } else {
+        await handleStatusUpdate(item, type === "activate" ? "Active" : "Inactive");
+      }
+      setConfirmation(null);
+      if (type === "delete") fetchFoods();
+    } catch (error) {
+      console.log("Food action error:", error);
+      Alert.alert("Error", "The food product action could not be completed.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   /*
@@ -557,6 +554,8 @@ const FoodProducts = () => {
       visible={showStatusDropdown}
       transparent
       animationType="fade"
+      statusBarTranslucent
+      navigationBarTranslucent
       onRequestClose={() =>
         setShowStatusDropdown(false)
       }
@@ -566,9 +565,9 @@ const FoodProducts = () => {
         onPress={() =>
           setShowStatusDropdown(false)
         }
-        className="flex-1 bg-black/60 justify-center px-6"
+        className="flex-1 bg-black/80 justify-end px-5"
       >
-        <View className="bg-slate-900 rounded-2xl overflow-hidden">
+        <View className="bg-slate-900 rounded-t-3xl overflow-hidden" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
           <Text className="text-white text-lg font-bold px-5 py-4 border-b border-slate-700">
             Select Status
           </Text>
@@ -613,6 +612,8 @@ const FoodProducts = () => {
       visible={showChefDropdown}
       transparent
       animationType="fade"
+      statusBarTranslucent
+      navigationBarTranslucent
       onRequestClose={() =>
         setShowChefDropdown(false)
       }
@@ -622,9 +623,9 @@ const FoodProducts = () => {
         onPress={() =>
           setShowChefDropdown(false)
         }
-        className="flex-1 bg-black/60 justify-center px-6"
+        className="flex-1 bg-black/80 justify-end px-5"
       >
-        <View className="bg-slate-900 rounded-2xl overflow-hidden">
+        <View className="bg-slate-900 rounded-t-3xl overflow-hidden" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
           <Text className="text-white text-lg font-bold px-5 py-4 border-b border-slate-700">
             Select Chef
           </Text>
@@ -693,53 +694,18 @@ const FoodProducts = () => {
     title,
     value,
     icon,
-    active,
     onPress,
-    iconBg,
-    iconColor,
   }: any) => (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className={`rounded-3xl p-5 mr-3 w-64 ${active
-          ? "bg-slate-800"
-          : "bg-slate-900"
-        }`}
-      style={{
-        borderWidth: active ? 2 : 1,
-        borderColor: active
-          ? iconColor
-          : "#1e293b",
-      }}
+      className="flex-1 h-44 rounded-2xl p-3 mr-2 bg-white"
     >
-      <View className="flex-row items-center justify-between">
-        <View
-          className="w-12 h-12 rounded-2xl items-center justify-center"
-          style={{
-            backgroundColor: iconBg,
-          }}
-        >
-          <Text className="text-2xl">
-            {icon}
-          </Text>
-        </View>
-
-        <Text className="text-slate-400 text-[10px] font-bold uppercase">
-          {title}
-        </Text>
+      <View className="w-8 h-8 rounded-lg bg-emerald-50 items-center justify-center mb-2">
+        <Text className="text-lg">{icon}</Text>
       </View>
-
-      <Text className="text-white text-4xl font-black mt-5">
-        {value}
-      </Text>
-
-      <Text className="text-slate-400 text-xs mt-2">
-        {title === "Total Foods"
-          ? "All chef food items currently loaded."
-          : title === "Active Foods"
-            ? "Active food items ready for sale."
-            : "Food items currently inactive or blocked."}
-      </Text>
+      <Text className="text-slate-500 text-[9px] font-bold uppercase">{title}</Text>
+      <Text className="text-slate-900 text-2xl font-black mt-0.5">{value}</Text>
     </TouchableOpacity>
   );
 
@@ -750,7 +716,7 @@ const FoodProducts = () => {
    */
   const renderFood = ({
     item,
-    index,
+    _index,
   }: {
     item: Food;
     index: number;
@@ -762,9 +728,9 @@ const FoodProducts = () => {
     );
 
     return (
-      <View className="bg-white mx-4 mb-5 rounded-3xl overflow-hidden border border-slate-200">
+      <View className="bg-white mx-4 mb-3 rounded-2xl overflow-hidden">
         {/* Header / Image */}
-        <View className="bg-slate-950 h-48 relative overflow-hidden">
+        <View className="bg-slate-100 h-32 relative overflow-hidden">
           {imageUrl ? (
             <Image
               source={{ uri: imageUrl }}
@@ -784,12 +750,12 @@ const FoodProducts = () => {
 
           <View className="absolute inset-0 p-5 flex-row justify-between">
             <View className="flex-1 pr-3">
-              <Text className="text-slate-300 text-[10px] font-bold uppercase tracking-widest">
+              <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
                 {item.category || "Food Product"}
               </Text>
 
               <Text
-                className="text-white text-xl font-black mt-2"
+                className="text-slate-900 text-xl font-black mt-2"
                 numberOfLines={2}
               >
                 {item.name ||
@@ -871,12 +837,7 @@ const FoodProducts = () => {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                onPress={() =>
-                  handleStatusUpdate(
-                    item,
-                    "Inactive"
-                  )
-                }
+                onPress={() => requestStatusUpdate(item, "Inactive")}
                 className="bg-rose-50 border border-rose-200 px-4 py-3 rounded-2xl"
               >
                 <Text className="text-rose-700 text-xs font-black uppercase">
@@ -887,7 +848,7 @@ const FoodProducts = () => {
           </View>
 
           {/* Actions */}
-          <View className="flex-row gap-2 mt-4">
+          <View className="flex-row gap-2 mt-4 pt-3 border-t border-slate-100">
             <TouchableOpacity
               onPress={() => {
                 // Connect your navigation here
@@ -896,13 +857,10 @@ const FoodProducts = () => {
                   `View food #${item.id}`
                 );
               }}
-              className="flex-1 flex-row items-center justify-center bg-slate-50 border border-slate-200 rounded-2xl py-3"
+              className="w-10 h-10 items-center justify-center bg-slate-100 rounded-xl"
             >
               <Eye size={16} color="#475569" />
 
-              <Text className="text-slate-700 text-xs font-black ml-2">
-                VIEW
-              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -913,26 +871,20 @@ const FoodProducts = () => {
                   `Edit food #${item.id}`
                 );
               }}
-              className="flex-1 flex-row items-center justify-center bg-slate-50 border border-slate-200 rounded-2xl py-3"
+              className="w-10 h-10 items-center justify-center bg-slate-100 rounded-xl"
             >
               <Pencil size={16} color="#475569" />
 
-              <Text className="text-slate-700 text-xs font-black ml-2">
-                EDIT
-              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() =>
                 handleDelete(item)
               }
-              className="flex-1 flex-row items-center justify-center bg-rose-50 border border-rose-200 rounded-2xl py-3"
+              className="w-10 h-10 items-center justify-center bg-rose-50 rounded-xl"
             >
               <Trash2 size={16} color="#e11d48" />
 
-              <Text className="text-rose-700 text-xs font-black ml-2">
-                DELETE
-              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -992,15 +944,7 @@ const FoodProducts = () => {
             </View>
 
             {/* Summary cards */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingLeft: 16,
-                paddingRight: 16,
-                paddingBottom: 18,
-              }}
-            >
+            <View className="flex-row px-4 mb-5">
               <SummaryCard
                 title="Total Foods"
                 value={summary.total}
@@ -1043,7 +987,7 @@ const FoodProducts = () => {
                 iconBg="#7f1d1d"
                 iconColor="#f43f5e"
               />
-            </ScrollView>
+            </View>
 
             {/* Search */}
             <View className="px-4">
@@ -1061,7 +1005,7 @@ const FoodProducts = () => {
             </View>
 
             {/* Filters */}
-            <View className="px-4 mt-3 flex-row gap-3">
+            <View className="px-4 mt-3 flex-row gap-3 mb-1">
               {/* Chef */}
               {chefs.length > 0 && (
                 <TouchableOpacity
@@ -1196,19 +1140,10 @@ const FoodProducts = () => {
                     Math.max(prev - 1, 1)
                   )
                 }
-                className={`px-5 py-3 rounded-xl ${currentPage === 1
-                    ? "bg-slate-900"
-                    : "bg-slate-700"
-                  }`}
+                className="w-10 h-10 bg-slate-900 border border-white/10 rounded-xl items-center justify-center"
+                style={{ opacity: currentPage === 1 ? 0.4 : 1 }}
               >
-                <Text
-                  className={`font-bold ${currentPage === 1
-                      ? "text-slate-600"
-                      : "text-white"
-                    }`}
-                >
-                  Previous
-                </Text>
+                <ChevronLeft size={18} color="#ffffff" />
               </TouchableOpacity>
 
               <Text className="text-slate-300 font-semibold">
@@ -1228,19 +1163,10 @@ const FoodProducts = () => {
                     )
                   )
                 }
-                className={`px-5 py-3 rounded-xl ${currentPage === totalPages
-                    ? "bg-slate-900"
-                    : "bg-slate-700"
-                  }`}
+                className="w-10 h-10 bg-slate-900 border border-white/10 rounded-xl items-center justify-center"
+                style={{ opacity: currentPage === totalPages ? 0.4 : 1 }}
               >
-                <Text
-                  className={`font-bold ${currentPage === totalPages
-                      ? "text-slate-600"
-                      : "text-white"
-                    }`}
-                >
-                  Next
-                </Text>
+                <ChevronRight size={18} color="#ffffff" />
               </TouchableOpacity>
             </View>
           ) : (
@@ -1253,15 +1179,47 @@ const FoodProducts = () => {
       {renderStatusDropdown()}
       {renderChefDropdown()}
 
+      <FloatingActionButton
+        onPress={() => navigation.navigate("AddProduct")}
+        label="Add food product"
+      />
+
+      <Modal
+        visible={!!confirmation}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setConfirmation(null)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View className="bg-slate-900 rounded-t-3xl border-t border-white/10 p-5" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
+            <Trash2 size={25} color={confirmation?.type === "delete" ? "#f87171" : "#fbbf24"} />
+            <Text className="text-white text-lg font-black mt-4">
+              {confirmation?.type === "delete" ? "Delete this food?" : confirmation?.type === "activate" ? "Activate this food?" : "Deactivate this food?"}
+            </Text>
+            <Text className="text-slate-400 text-sm mt-2">
+              {confirmation?.item.name || "This food product"} will be {confirmation?.type === "delete" ? "permanently removed" : confirmation?.type === "activate" ? "made available for sale" : "taken offline"}.
+            </Text>
+            <View className="flex-row gap-3 mt-6">
+              <TouchableOpacity onPress={() => setConfirmation(null)} disabled={actionLoading} className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"><Text className="text-slate-300 font-bold text-xs uppercase">Cancel</Text></TouchableOpacity>
+              <TouchableOpacity onPress={confirmAction} disabled={actionLoading} className={`flex-1 rounded-2xl py-3.5 items-center ${confirmation?.type === "delete" ? "bg-red-600" : confirmation?.type === "activate" ? "bg-emerald-600" : "bg-amber-500"}`}>{actionLoading ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-black text-xs uppercase">{confirmation?.type === "delete" ? "Delete" : confirmation?.type === "activate" ? "Activate" : "Deactivate"}</Text>}</TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Approval Modal */}
       <Modal
         visible={!!approvalItem}
         transparent
         animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={closeApprovalModal}
       >
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-950 rounded-t-[32px] p-6 max-h-[90%]">
+          <View className="bg-slate-950 rounded-t-[32px] p-6 max-h-[90%]" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <View className="flex-row justify-between items-start">
                 <View className="flex-1">
