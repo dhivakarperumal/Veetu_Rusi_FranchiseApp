@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Bike,
   CheckCircle,
@@ -38,6 +39,7 @@ import FloatingActionButton from "../components/FloatingActionButton";
 
 const DeliveryPartners = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -540,10 +542,15 @@ const DeliveryPartners = () => {
         visible={!!confirmation}
         transparent
         animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={() => setConfirmation(null)}
       >
-        <View className="flex-1 bg-black/75 justify-end">
-          <View className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5">
+        <View className="flex-1 bg-black justify-end">
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
             <View className={`w-12 h-12 rounded-2xl items-center justify-center mb-4 ${confirmation?.type === "delete" ? "bg-red-500/15" : "bg-amber-500/15"}`}>
               {confirmation?.type === "delete" ? (
                 <Trash2 size={23} color="#f87171" />
@@ -590,10 +597,15 @@ const DeliveryPartners = () => {
         visible={isFilterOpen}
         transparent
         animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={() => setIsFilterOpen(false)}
       >
         <View className="flex-1 bg-black/70 justify-end">
-          <View className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5">
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
             <View className="flex-row items-center justify-between mb-4">
               <View>
                 <Text className="text-white text-base font-black">Filter partners</Text>
