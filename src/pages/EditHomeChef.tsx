@@ -212,30 +212,7 @@ const EditHomeChef = () => {
   const [uploadMediaType, setUploadMediaType] = useState<"photo" | "video">("photo");
   const [successVisible, setSuccessVisible] = useState(false);
 
-  useEffect(() => {
-    if (initialChef) {
-      populateChefData(initialChef);
-    } else if (chefId) {
-      loadChef();
-    }
-  }, [chefId, initialChef, loadChef]);
-
-  const loadChef = useCallback(async () => {
-    try {
-      setInitialLoading(true);
-      const res: any = await get(`/admin/homechefs/${chefId}`);
-      const data = res?.data || res;
-      if (data) {
-        populateChefData(data);
-      }
-    } catch (e) {
-      console.log("Failed to load chef for edit", e);
-    } finally {
-      setInitialLoading(false);
-    }
-  }, [chefId]);
-
-  const populateChefData = (chef: any) => {
+  const populateChefData = useCallback((chef: any) => {
     let cuisines: string[] = [];
     if (Array.isArray(chef.cuisine_type)) {
       cuisines = chef.cuisine_type;
@@ -328,7 +305,30 @@ const EditHomeChef = () => {
       opening_time: chef.opening_time || "",
       closing_time: chef.closing_time || "",
     });
-  };
+  }, []);
+
+  const loadChef = useCallback(async () => {
+    try {
+      setInitialLoading(true);
+      const res: any = await get(`/admin/homechefs/${chefId}`);
+      const data = res?.data || res;
+      if (data) {
+        populateChefData(data);
+      }
+    } catch (e) {
+      console.log("Failed to load chef for edit", e);
+    } finally {
+      setInitialLoading(false);
+    }
+  }, [chefId, populateChefData]);
+
+  useEffect(() => {
+    if (initialChef) {
+      populateChefData(initialChef);
+    } else if (chefId) {
+      loadChef();
+    }
+  }, [chefId, initialChef, loadChef, populateChefData]);
 
   const updateField = (field: string, value: any) => {
     setForm((prev: any) => ({ ...prev, [field]: value }));

@@ -13,22 +13,28 @@ import {
   ScrollView,
 } from "react-native";
 import {
+  Utensils,
+  CheckCircle,
+  Clock,
   Search,
-  ChevronDown,
+  Filter,
+  Eye,
+  Check,
+  ShieldAlert,
+  Trash2,
+  Phone,
   ChevronLeft,
   ChevronRight,
-  Eye,
-  Pencil,
-  Trash2,
   X,
-  Check,
-  Utensils,
+  ChevronDown,
+  Pencil,
+  ChefHat,
+  Package,
 } from "lucide-react-native";
 import { get, put, del } from "../services/api";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FloatingActionButton from "../components/FloatingActionButton";
 import { useNavigation } from "@react-navigation/native";
-// If your api file doesn't export del, change del(...) to your delete method.
 
 const API_BASE_URL = "https://veeturusi.qtechx.com";
 
@@ -70,10 +76,12 @@ const STATUS_OPTIONS = [
   "Rejected",
 ];
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 6;
 
 const FoodProducts = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+
   const [foods, setFoods] = useState<Food[]>([]);
   const [chefs, setChefs] = useState<Chef[]>([]);
 
@@ -84,14 +92,14 @@ const FoodProducts = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedChef, setSelectedChef] = useState("All");
 
-  const [activeTab, setActiveTab] = useState<"food" | "foodProducts">(
-    "food"
-  );
-
+  const [activeTab, setActiveTab] = useState<"food" | "foodProducts">("food");
   const [currentPage, setCurrentPage] = useState(1);
 
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [showChefDropdown, setShowChefDropdown] = useState(false);
+
+  // Selected food for details modal
+  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
 
   const [approvalItem, setApprovalItem] = useState<Food | null>(null);
   const [confirmation, setConfirmation] = useState<{
@@ -99,7 +107,6 @@ const FoodProducts = () => {
     item: Food;
   } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const insets = useSafeAreaInsets();
 
   const [approvalChecklist, setApprovalChecklist] = useState({
     taste: false,
@@ -110,12 +117,10 @@ const FoodProducts = () => {
   /*
    * -------------------------------------------------------
    * IMAGE URL
-   * Same logic as web version
    * -------------------------------------------------------
    */
   const getImageUrl = (item: Food) => {
     let imgPath: string | null = null;
-
     let parsedImages: any = item.images;
 
     if (typeof parsedImages === "string") {
@@ -140,15 +145,11 @@ const FoodProducts = () => {
       return null;
     }
 
-    if (
-      imgPath.startsWith("http") ||
-      imgPath.startsWith("data:")
-    ) {
+    if (imgPath.startsWith("http") || imgPath.startsWith("data:")) {
       return imgPath;
     }
 
-    return `${API_BASE_URL}${imgPath.startsWith("/") ? "" : "/"
-      }${imgPath}`;
+    return `${API_BASE_URL}${imgPath.startsWith("/") ? "" : "/"}${imgPath}`;
   };
 
   /*
@@ -159,9 +160,7 @@ const FoodProducts = () => {
   const fetchChefs = async () => {
     try {
       const response = await get<any>("/admin/homechefs");
-
       const data = response?.data ?? response;
-
       setChefs(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log("Failed to load chefs:", error);
@@ -176,60 +175,25 @@ const FoodProducts = () => {
   const fetchFoods = useCallback(async () => {
     try {
       setLoading(true);
-
-      let endpoint =
-        activeTab === "food"
-          ? "/chef-foods"
-          : "/products";
-
-      const params: any = {};
-
-      /*
-       * Chef filter
-       */
+      const endpoint =
+        activeTab === "food" ? "/chef-foods" : "/products";
+      let queryString = "";
+      const queryParts: string[] = [];
       if (selectedChef !== "All") {
-        params.chef_id = selectedChef;
+        queryParts.push(`chef_id=${encodeURIComponent(selectedChef)}`);
       }
-
-      /*
-       * Search
-       *
-       * Backend may support search.
-       * Status filtering is intentionally done locally,
-       * same as web version.
-       */
       if (search.trim()) {
-        params.search = search.trim();
+        queryParts.push(`search=${encodeURIComponent(search.trim())}`);
       }
-
-      /*
-       * Food Products tab
-       */
       if (activeTab === "foodProducts") {
-        params.source = "chef_products";
+        queryParts.push(`source=chef_products`);
+      }
+      if (queryParts.length > 0) {
+        queryString = `?${queryParts.join("&")}`;
       }
 
-      /*
-       * IMPORTANT:
-       * If you have auth context, you can add the same
-       * role-based restrictions here.
-       *
-       * Example:
-       *
-       * if (user?.role === "home_chef") {
-       *   params.chef_user_id = user.user_id || user.id;
-       * }
-       */
-
-      let response: any;
-
-      /*
-       * Most API wrappers accept params as the second argument.
-       */
-      response = await get<any>(endpoint, params);
-
+      const response: any = await get<any>(`${endpoint}${queryString}`);
       const data = response?.data ?? response;
-
       setFoods(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log("Food Products Error:", error);
@@ -240,11 +204,6 @@ const FoodProducts = () => {
     }
   }, [activeTab, selectedChef, search]);
 
-  /*
-   * -------------------------------------------------------
-   * INITIAL LOAD
-   * -------------------------------------------------------
-   */
   useEffect(() => {
     fetchChefs();
   }, []);
@@ -254,9 +213,6 @@ const FoodProducts = () => {
     fetchFoods();
   }, [activeTab, selectedChef, fetchFoods]);
 
-  /*
-   * Search with small delay
-   */
   useEffect(() => {
     const timer = setTimeout(() => {
       setCurrentPage(1);
@@ -266,11 +222,6 @@ const FoodProducts = () => {
     return () => clearTimeout(timer);
   }, [search, fetchFoods]);
 
-  /*
-   * -------------------------------------------------------
-   * REFRESH
-   * -------------------------------------------------------
-   */
   const onRefresh = () => {
     setRefreshing(true);
     fetchFoods();
@@ -278,8 +229,45 @@ const FoodProducts = () => {
 
   /*
    * -------------------------------------------------------
-   * STATUS FILTER
-   * Same logic as web
+   * STATUS STYLE
+   * -------------------------------------------------------
+   */
+  const getStatusStyle = (status?: string) => {
+    switch (status) {
+      case "Approved":
+      case "Active":
+        return {
+          bg: "bg-emerald-500/15",
+          border: "border-emerald-500/30",
+          text: "text-emerald-400",
+        };
+      case "Pending":
+        return {
+          bg: "bg-amber-500/15",
+          border: "border-amber-500/30",
+          text: "text-amber-400",
+        };
+      case "Inactive":
+      case "Suspended":
+      case "Rejected":
+      case "Not Approved":
+        return {
+          bg: "bg-red-500/15",
+          border: "border-red-500/30",
+          text: "text-red-400",
+        };
+      default:
+        return {
+          bg: "bg-slate-500/15",
+          border: "border-slate-500/30",
+          text: "text-slate-400",
+        };
+    }
+  };
+
+  /*
+   * -------------------------------------------------------
+   * STATUS FILTER & SEARCH
    * -------------------------------------------------------
    */
   const filteredFoods = useMemo(() => {
@@ -288,34 +276,30 @@ const FoodProducts = () => {
 
       const matchesSearch = searchText
         ? [
-          item.name,
-          item.product_code,
-          item.category,
-          item.cuisine,
-          item.product_type,
-          item.chef_name,
-          item.chef_phone,
-          item.created_by,
-          item.franchise_name,
-        ]
-          .filter(Boolean)
-          .some((value) =>
-            String(value)
-              .toLowerCase()
-              .includes(searchText)
-          )
+            item.name,
+            item.product_code,
+            item.category,
+            item.cuisine,
+            item.product_type,
+            item.chef_name,
+            item.chef_phone,
+            item.created_by,
+            item.franchise_name,
+          ]
+            .filter(Boolean)
+            .some((value) =>
+              String(value).toLowerCase().includes(searchText)
+            )
         : true;
 
       let matchesStatus = true;
 
       if (statusFilter === "Approved") {
         matchesStatus =
-          item.status === "Active" ||
-          item.status === "Approved";
+          item.status === "Active" || item.status === "Approved";
       } else if (statusFilter === "Not Approved") {
         matchesStatus =
-          item.status !== "Active" &&
-          item.status !== "Approved";
+          item.status !== "Active" && item.status !== "Approved";
       } else if (statusFilter !== "All") {
         matchesStatus = item.status === statusFilter;
       }
@@ -326,23 +310,16 @@ const FoodProducts = () => {
 
   /*
    * -------------------------------------------------------
-   * SUMMARY
-   * Same as web
+   * SUMMARY METRICS
    * -------------------------------------------------------
    */
   const summary = useMemo(() => {
     const total = foods.length;
-
     const active = foods.filter(
-      (item) =>
-        item.status === "Active" ||
-        item.status === "Approved"
+      (item) => item.status === "Active" || item.status === "Approved"
     ).length;
-
     const inactive = foods.filter((item) =>
-      ["Inactive", "Suspended", "Rejected"].includes(
-        item.status || ""
-      )
+      ["Inactive", "Suspended", "Rejected"].includes(item.status || "")
     ).length;
 
     return {
@@ -357,8 +334,9 @@ const FoodProducts = () => {
    * PAGINATION
    * -------------------------------------------------------
    */
-  const totalPages = Math.ceil(
-    filteredFoods.length / ITEMS_PER_PAGE
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredFoods.length / ITEMS_PER_PAGE)
   );
 
   const paginatedFoods = filteredFoods.slice(
@@ -379,60 +357,17 @@ const FoodProducts = () => {
     "N/A";
 
   const getTypeDisplay = (item: Food) =>
-    item.cuisine ||
-    item.product_type ||
-    item.category ||
-    "-";
+    item.cuisine || item.product_type || item.category || "-";
 
   const getMobile = (item: Food) =>
-    item.chef_phone ||
-    item.mobile ||
-    "-";
-
-  const getDescription = (item: Food) =>
-    item.description ||
-    item.category ||
-    item.product_type ||
-    "No description";
-
-  /*
-   * -------------------------------------------------------
-   * STATUS COLOR
-   * -------------------------------------------------------
-   */
-  const getStatusColor = (status?: string) => {
-    if (
-      status === "Active" ||
-      status === "Approved"
-    ) {
-      return {
-        bg: "#064e3b",
-        text: "#34d399",
-      };
-    }
-
-    if (status === "Pending") {
-      return {
-        bg: "#713f12",
-        text: "#facc15",
-      };
-    }
-
-    return {
-      bg: "#7f1d1d",
-      text: "#f87171",
-    };
-  };
+    item.chef_phone || item.mobile || "-";
 
   /*
    * -------------------------------------------------------
    * UPDATE STATUS
    * -------------------------------------------------------
    */
-  const handleStatusUpdate = async (
-    item: Food,
-    newStatus: string
-  ) => {
+  const handleStatusUpdate = async (item: Food, newStatus: string) => {
     try {
       const endpoint =
         activeTab === "food"
@@ -443,28 +378,24 @@ const FoodProducts = () => {
         status: newStatus,
       });
 
+      if (selectedFood?.id === item.id) {
+        setSelectedFood({ ...selectedFood, status: newStatus });
+      }
+
       fetchFoods();
     } catch (error) {
-      console.log(
-        "Failed to update food status:",
-        error
-      );
-
-      Alert.alert(
-        "Error",
-        "Failed to update food status"
-      );
+      console.log("Failed to update food status:", error);
+      Alert.alert("Error", "Failed to update food status");
     }
   };
 
   /*
    * -------------------------------------------------------
-   * APPROVAL MODAL
+   * APPROVAL CHECKLIST
    * -------------------------------------------------------
    */
   const openApprovalModal = (item: Food) => {
     setApprovalItem(item);
-
     setApprovalChecklist({
       taste: false,
       quality: false,
@@ -474,7 +405,6 @@ const FoodProducts = () => {
 
   const closeApprovalModal = () => {
     setApprovalItem(null);
-
     setApprovalChecklist({
       taste: false,
       quality: false,
@@ -482,9 +412,7 @@ const FoodProducts = () => {
     });
   };
 
-  const toggleChecklist = (
-    key: "taste" | "quality" | "packaging"
-  ) => {
+  const toggleChecklist = (key: "taste" | "quality" | "packaging") => {
     setApprovalChecklist((prev) => ({
       ...prev,
       [key]: !prev[key],
@@ -498,12 +426,7 @@ const FoodProducts = () => {
 
   const handleApprove = async () => {
     if (!approvalItem || !canApprove) return;
-
-    await handleStatusUpdate(
-      approvalItem,
-      "Active"
-    );
-
+    await handleStatusUpdate(approvalItem, "Active");
     closeApprovalModal();
   };
 
@@ -514,11 +437,6 @@ const FoodProducts = () => {
     });
   };
 
-  /*
-   * -------------------------------------------------------
-   * DELETE
-   * -------------------------------------------------------
-   */
   const handleDelete = (item: Food) => {
     setConfirmation({ type: "delete", item });
   };
@@ -528,11 +446,20 @@ const FoodProducts = () => {
     const { type, item } = confirmation;
     setActionLoading(true);
     try {
-      const endpoint = activeTab === "food" ? `/chef-foods/${item.id}` : `/products/${item.id}`;
+      const endpoint =
+        activeTab === "food"
+          ? `/chef-foods/${item.id}`
+          : `/products/${item.id}`;
       if (type === "delete") {
         await del(endpoint);
+        if (selectedFood?.id === item.id) {
+          setSelectedFood(null);
+        }
       } else {
-        await handleStatusUpdate(item, type === "activate" ? "Active" : "Inactive");
+        await handleStatusUpdate(
+          item,
+          type === "activate" ? "Active" : "Inactive"
+        );
       }
       setConfirmation(null);
       if (type === "delete") fetchFoods();
@@ -546,367 +473,15 @@ const FoodProducts = () => {
 
   /*
    * -------------------------------------------------------
-   * STATUS DROPDOWN
-   * -------------------------------------------------------
-   */
-  const renderStatusDropdown = () => (
-    <Modal
-      visible={showStatusDropdown}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={() =>
-        setShowStatusDropdown(false)
-      }
-    >
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() =>
-          setShowStatusDropdown(false)
-        }
-        className="flex-1 bg-black/80 justify-end px-5"
-      >
-        <View className="bg-slate-900 rounded-t-3xl overflow-hidden" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
-          <Text className="text-white text-lg font-bold px-5 py-4 border-b border-slate-700">
-            Select Status
-          </Text>
-
-          {STATUS_OPTIONS.map((status) => (
-            <TouchableOpacity
-              key={status}
-              onPress={() => {
-                setStatusFilter(status);
-                setCurrentPage(1);
-                setShowStatusDropdown(false);
-              }}
-              className={`px-5 py-4 border-b border-slate-800 ${statusFilter === status
-                  ? "bg-emerald-900/40"
-                  : ""
-                }`}
-            >
-              <Text
-                className={`font-semibold ${statusFilter === status
-                    ? "text-emerald-400"
-                    : "text-slate-200"
-                  }`}
-              >
-                {status === "All"
-                  ? "All Statuses"
-                  : status}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  );
-
-  /*
-   * -------------------------------------------------------
-   * CHEF DROPDOWN
-   * -------------------------------------------------------
-   */
-  const renderChefDropdown = () => (
-    <Modal
-      visible={showChefDropdown}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={() =>
-        setShowChefDropdown(false)
-      }
-    >
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() =>
-          setShowChefDropdown(false)
-        }
-        className="flex-1 bg-black/80 justify-end px-5"
-      >
-        <View className="bg-slate-900 rounded-t-3xl overflow-hidden" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
-          <Text className="text-white text-lg font-bold px-5 py-4 border-b border-slate-700">
-            Select Chef
-          </Text>
-
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedChef("All");
-              setCurrentPage(1);
-              setShowChefDropdown(false);
-            }}
-            className={`px-5 py-4 border-b border-slate-800 ${selectedChef === "All"
-                ? "bg-emerald-900/40"
-                : ""
-              }`}
-          >
-            <Text
-              className={`font-semibold ${selectedChef === "All"
-                  ? "text-emerald-400"
-                  : "text-slate-200"
-                }`}
-            >
-              All Chefs
-            </Text>
-          </TouchableOpacity>
-
-          {chefs.map((chef) => {
-            const id = String(
-              chef.chef_id ?? chef.id
-            );
-
-            return (
-              <TouchableOpacity
-                key={id}
-                onPress={() => {
-                  setSelectedChef(id);
-                  setCurrentPage(1);
-                  setShowChefDropdown(false);
-                }}
-                className={`px-5 py-4 border-b border-slate-800 ${selectedChef === id
-                    ? "bg-emerald-900/40"
-                    : ""
-                  }`}
-              >
-                <Text
-                  className={`font-semibold ${selectedChef === id
-                      ? "text-emerald-400"
-                      : "text-slate-200"
-                    }`}
-                >
-                  {chef.name || "Unnamed Chef"}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  );
-
-  /*
-   * -------------------------------------------------------
-   * SUMMARY CARD
-   * -------------------------------------------------------
-   */
-  const SummaryCard = ({
-    title,
-    value,
-    icon,
-    onPress,
-  }: any) => (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      className="flex-1 h-44 rounded-2xl p-3 mr-2 bg-white"
-    >
-      <View className="w-8 h-8 rounded-lg bg-emerald-50 items-center justify-center mb-2">
-        <Text className="text-lg">{icon}</Text>
-      </View>
-      <Text className="text-slate-500 text-[9px] font-bold uppercase">{title}</Text>
-      <Text className="text-slate-900 text-2xl font-black mt-0.5">{value}</Text>
-    </TouchableOpacity>
-  );
-
-  /*
-   * -------------------------------------------------------
-   * FOOD CARD
-   * -------------------------------------------------------
-   */
-  const renderFood = ({
-    item,
-    _index,
-  }: {
-    item: Food;
-    index: number;
-  }) => {
-    const imageUrl = getImageUrl(item);
-
-    const statusColor = getStatusColor(
-      item.status
-    );
-
-    return (
-      <View className="bg-white mx-4 mb-3 rounded-2xl overflow-hidden">
-        {/* Header / Image */}
-        <View className="bg-slate-100 h-32 relative overflow-hidden">
-          {imageUrl ? (
-            <Image
-              source={{ uri: imageUrl }}
-              className="absolute inset-0 w-full h-full"
-              resizeMode="cover"
-            />
-          ) : null}
-
-          <View
-            className="absolute inset-0"
-            style={{
-              backgroundColor: imageUrl
-                ? "rgba(2,6,23,0.60)"
-                : "#020617",
-            }}
-          />
-
-          <View className="absolute inset-0 p-5 flex-row justify-between">
-            <View className="flex-1 pr-3">
-              <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-                {item.category || "Food Product"}
-              </Text>
-
-              <Text
-                className="text-slate-900 text-xl font-black mt-2"
-                numberOfLines={2}
-              >
-                {item.name ||
-                  item.product_code ||
-                  "Unnamed Food"}
-              </Text>
-            </View>
-
-            <View
-              className="px-3 py-1.5 rounded-full self-start"
-              style={{
-                backgroundColor:
-                  statusColor.bg,
-              }}
-            >
-              <Text
-                className="text-[10px] font-black uppercase"
-                style={{
-                  color: statusColor.text,
-                }}
-              >
-                {item.status || "Unknown"}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Details */}
-        <View className="p-5">
-          <Text
-            className="text-slate-600 text-sm"
-            numberOfLines={2}
-          >
-            {getDescription(item)}
-          </Text>
-
-          <View className="mt-4">
-            <InfoRow
-              label="Kitchen"
-              value={getKitchenName(item)}
-            />
-
-            <InfoRow
-              label="Cuisine"
-              value={getTypeDisplay(item)}
-            />
-
-            <InfoRow
-              label="Phone"
-              value={getMobile(item)}
-            />
-          </View>
-
-          {/* Price + Approve */}
-          <View className="flex-row items-center justify-between mt-5">
-            <View>
-              <Text className="text-slate-400 text-[10px] uppercase font-bold">
-                Price
-              </Text>
-
-              <Text className="text-slate-900 text-xl font-black mt-1">
-                ₹
-                {item.final_price ??
-                  item.mrp ??
-                  "0.00"}
-              </Text>
-            </View>
-
-            {item.status !== "Active" ? (
-              <TouchableOpacity
-                onPress={() =>
-                  openApprovalModal(item)
-                }
-                className="bg-emerald-50 border border-emerald-200 px-4 py-3 rounded-2xl"
-              >
-                <Text className="text-emerald-700 text-xs font-black uppercase">
-                  Approve
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => requestStatusUpdate(item, "Inactive")}
-                className="bg-rose-50 border border-rose-200 px-4 py-3 rounded-2xl"
-              >
-                <Text className="text-rose-700 text-xs font-black uppercase">
-                  Deactivate
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Actions */}
-          <View className="flex-row gap-2 mt-4 pt-3 border-t border-slate-100">
-            <TouchableOpacity
-              onPress={() => {
-                // Connect your navigation here
-                Alert.alert(
-                  "View",
-                  `View food #${item.id}`
-                );
-              }}
-              className="w-10 h-10 items-center justify-center bg-slate-100 rounded-xl"
-            >
-              <Eye size={16} color="#475569" />
-
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                // Connect your navigation here
-                Alert.alert(
-                  "Edit",
-                  `Edit food #${item.id}`
-                );
-              }}
-              className="w-10 h-10 items-center justify-center bg-slate-100 rounded-xl"
-            >
-              <Pencil size={16} color="#475569" />
-
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() =>
-                handleDelete(item)
-              }
-              className="w-10 h-10 items-center justify-center bg-rose-50 rounded-xl"
-            >
-              <Trash2 size={16} color="#e11d48" />
-
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
-  /*
-   * -------------------------------------------------------
-   * LOADING
+   * LOADING STATE
    * -------------------------------------------------------
    */
   if (loading && !refreshing && foods.length === 0) {
     return (
       <View className="flex-1 bg-slate-950 justify-center items-center">
-        <ActivityIndicator
-          size="large"
-          color="#14B8A6"
-        />
-
-        <Text className="text-slate-400 mt-4">
-          Loading food products...
+        <ActivityIndicator size="large" color="#10b981" />
+        <Text className="text-white mt-3 font-semibold text-xs">
+          Loading Food Products...
         </Text>
       </View>
     );
@@ -916,252 +491,430 @@ const FoodProducts = () => {
     <View className="flex-1 bg-slate-950">
       <FlatList
         data={paginatedFoods}
-        renderItem={renderFood}
-        keyExtractor={(item, index) =>
-          String(item.id ?? index)
-        }
+        keyExtractor={(item, index) => String(item.id ?? index)}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#14B8A6"
-            colors={["#14B8A6"]}
+            tintColor="#10b981"
+            colors={["#10b981"]}
           />
         }
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
         ListHeaderComponent={
-          <View>
-            {/* Title */}
-            <View className="px-4 pt-5 pb-4">
-              <Text className="text-white text-2xl font-black">
-                Food Products
-              </Text>
+          <View className="px-4 pt-6">
+            {/* ================= HEADER ================= */}
+            <View className="flex-row items-center justify-between mb-5">
+              <View className="flex-1">
+                <Text className="text-white text-3xl font-black">
+                  Food Products
+                </Text>
+                <Text className="text-slate-400 mt-1 text-xs">
+                  Manage and monitor food catalog & items
+                </Text>
+              </View>
 
-              <Text className="text-slate-400 mt-1">
-                Manage chef food items and products
-              </Text>
+              <View className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center">
+                <Utensils size={20} color="#34d399" />
+              </View>
             </View>
 
-            {/* Summary cards */}
-            <View className="flex-row px-4 mb-5">
-              <SummaryCard
-                title="Total Foods"
-                value={summary.total}
-                icon="🥘"
-                active={statusFilter === "All"}
+            {/* ================= SUMMARY METRICS ================= */}
+            <View className="flex-row gap-2 mb-5">
+              {/* TOTAL */}
+              <TouchableOpacity
+                activeOpacity={0.8}
                 onPress={() => {
                   setStatusFilter("All");
                   setCurrentPage(1);
                 }}
-                iconBg="#4c1d95"
-                iconColor="#8b5cf6"
-              />
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "All"
+                    ? "border-indigo-400"
+                    : "border-indigo-400/25"
+                }`}
+              >
+                <View className="w-8 h-8 rounded-lg bg-indigo-500/15 items-center justify-center mb-2">
+                  <Utensils size={16} color="#a5b4fc" />
+                </View>
+                <Text className="text-indigo-200/70 text-[9px] font-bold uppercase">
+                  Total
+                </Text>
+                <Text className="text-white text-2xl font-black mt-0.5">
+                  {summary.total}
+                </Text>
+              </TouchableOpacity>
 
-              <SummaryCard
-                title="Active Foods"
-                value={summary.active}
-                icon="✅"
-                active={
-                  statusFilter === "Approved"
-                }
+              {/* APPROVED / ACTIVE */}
+              <TouchableOpacity
+                activeOpacity={0.8}
                 onPress={() => {
                   setStatusFilter("Approved");
                   setCurrentPage(1);
                 }}
-                iconBg="#064e3b"
-                iconColor="#10b981"
-              />
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "Approved"
+                    ? "border-emerald-400"
+                    : "border-emerald-400/25"
+                }`}
+              >
+                <View className="w-8 h-8 rounded-lg bg-emerald-500/15 items-center justify-center mb-2">
+                  <CheckCircle size={16} color="#6ee7b7" />
+                </View>
+                <Text className="text-emerald-200/70 text-[9px] font-bold uppercase">
+                  Active
+                </Text>
+                <Text className="text-white text-2xl font-black mt-0.5">
+                  {summary.active}
+                </Text>
+              </TouchableOpacity>
 
-              <SummaryCard
-                title="Inactive / Suspended"
-                value={summary.inactive}
-                icon="⛔"
-                active={
-                  statusFilter === "Not Approved"
-                }
+              {/* NEEDS REVIEW / INACTIVE */}
+              <TouchableOpacity
+                activeOpacity={0.8}
                 onPress={() => {
                   setStatusFilter("Not Approved");
                   setCurrentPage(1);
                 }}
-                iconBg="#7f1d1d"
-                iconColor="#f43f5e"
-              />
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "Not Approved"
+                    ? "border-amber-400"
+                    : "border-amber-400/25"
+                }`}
+              >
+                <View className="w-8 h-8 rounded-lg bg-amber-500/15 items-center justify-center mb-2">
+                  <Clock size={16} color="#fcd34d" />
+                </View>
+                <Text className="text-amber-200/70 text-[9px] font-bold uppercase">
+                  Needs review
+                </Text>
+                <Text className="text-white text-2xl font-black mt-0.5">
+                  {summary.inactive}
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            {/* Search */}
-            <View className="px-4">
-              <View className="bg-slate-900 border border-slate-700 rounded-2xl flex-row items-center px-4">
-                <Search size={20} color="#94a3b8" />
-
-                <TextInput
-                  value={search}
-                  onChangeText={setSearch}
-                  placeholder="Search food, chef, category..."
-                  placeholderTextColor="#64748b"
-                  className="flex-1 text-white py-4 ml-3"
+            {/* ================= TAB SWITCHER ================= */}
+            <View className="flex-row bg-slate-900 border border-white/10 rounded-2xl p-1 mb-4">
+              <TouchableOpacity
+                onPress={() => {
+                  setActiveTab("food");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 py-2.5 rounded-xl items-center flex-row justify-center ${
+                  activeTab === "food"
+                    ? "bg-emerald-500/20 border border-emerald-500/30"
+                    : ""
+                }`}
+              >
+                <Utensils
+                  size={14}
+                  color={activeTab === "food" ? "#34d399" : "#64748b"}
                 />
-              </View>
+                <Text
+                  className={`ml-2 text-xs font-bold ${
+                    activeTab === "food"
+                      ? "text-emerald-300"
+                      : "text-slate-400"
+                  }`}
+                >
+                  Chef Foods
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setActiveTab("foodProducts");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 py-2.5 rounded-xl items-center flex-row justify-center ${
+                  activeTab === "foodProducts"
+                    ? "bg-emerald-500/20 border border-emerald-500/30"
+                    : ""
+                }`}
+              >
+                <Package
+                  size={14}
+                  color={activeTab === "foodProducts" ? "#34d399" : "#64748b"}
+                />
+                <Text
+                  className={`ml-2 text-xs font-bold ${
+                    activeTab === "foodProducts"
+                      ? "text-emerald-300"
+                      : "text-slate-400"
+                  }`}
+                >
+                  Products
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            {/* Filters */}
-            <View className="px-4 mt-3 flex-row gap-3 mb-1">
-              {/* Chef */}
+            {/* ================= SEARCH INPUT ================= */}
+            <View className="bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 flex-row items-center mb-3">
+              <Search size={18} color="#64748b" />
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search food, chef, cuisine, category..."
+                placeholderTextColor="#64748b"
+                className="flex-1 text-white ml-3 text-xs"
+              />
+              {search.length > 0 && (
+                <TouchableOpacity onPress={() => setSearch("")}>
+                  <X size={16} color="#64748b" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* ================= FILTERS ROW ================= */}
+            <View className="flex-row items-center gap-2 mb-4">
+              {/* Chef Filter */}
               {chefs.length > 0 && (
                 <TouchableOpacity
-                  onPress={() =>
-                    setShowChefDropdown(true)
-                  }
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 flex-row items-center justify-between"
+                  onPress={() => setShowChefDropdown(true)}
+                  className="flex-1 flex-row items-center justify-between bg-slate-900 border border-white/10 rounded-xl px-3 py-2.5"
                 >
-                  <View>
-                    <Text className="text-slate-500 text-[9px] uppercase font-bold">
-                      Chef
-                    </Text>
-
+                  <View className="flex-row items-center flex-1 mr-1">
+                    <ChefHat size={14} color="#94a3b8" />
                     <Text
-                      className="text-white text-xs font-bold mt-1"
+                      className="text-white text-xs font-bold ml-1.5"
                       numberOfLines={1}
                     >
                       {selectedChef === "All"
                         ? "All Chefs"
                         : chefs.find(
-                          (chef) =>
-                            String(
-                              chef.chef_id ??
-                              chef.id
-                            ) ===
-                            selectedChef
-                        )?.name ||
-                        "Selected Chef"}
+                            (c) => String(c.chef_id ?? c.id) === selectedChef
+                          )?.name || "Chef"}
                     </Text>
                   </View>
-
-                  <ChevronDown size={16} color="#94a3b8" />
+                  <ChevronDown size={14} color="#94a3b8" />
                 </TouchableOpacity>
               )}
 
-              {/* Status */}
+              {/* Status Filter */}
               <TouchableOpacity
-                onPress={() =>
-                  setShowStatusDropdown(true)
-                }
-                className="flex-1 bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 flex-row items-center justify-between"
+                onPress={() => setShowStatusDropdown(true)}
+                className="flex-1 flex-row items-center justify-between bg-slate-900 border border-white/10 rounded-xl px-3 py-2.5"
               >
-                <View>
-                  <Text className="text-slate-500 text-[9px] uppercase font-bold">
-                    Status
+                <View className="flex-row items-center flex-1 mr-1">
+                  <Filter size={14} color="#94a3b8" />
+                  <Text
+                    className="text-white text-xs font-bold ml-1.5"
+                    numberOfLines={1}
+                  >
+                    {statusFilter === "All" ? "All Statuses" : statusFilter}
                   </Text>
+                </View>
+                <ChevronDown size={14} color="#94a3b8" />
+              </TouchableOpacity>
+            </View>
 
-                  <Text className="text-white text-xs font-bold mt-1">
-                    {statusFilter === "All"
-                      ? "All Statuses"
-                      : statusFilter}
+            {/* ================= RESULT COUNT ================= */}
+            <Text className="text-slate-500 text-[11px] mb-3">
+              Showing {paginatedFoods.length} of {filteredFoods.length}{" "}
+              {activeTab === "food" ? "food items" : "products"}
+            </Text>
+          </View>
+        }
+        renderItem={({ item }: { item: Food }) => {
+          const statusStyle = getStatusStyle(item.status);
+          const imageUrl = getImageUrl(item);
+          const kitchen = getKitchenName(item);
+          const cuisine = getTypeDisplay(item);
+          const mobile = getMobile(item);
+          const price = item.final_price ?? item.mrp ?? "0.00";
+
+          return (
+            <View className="mx-4 mb-3 bg-slate-900 border border-white/10 rounded-2xl p-4">
+              {/* ================= TOP INFO ================= */}
+              <View className="flex-row items-start">
+                {imageUrl ? (
+                  <View className="w-12 h-12 rounded-xl overflow-hidden bg-slate-800 border border-white/10">
+                    <Image
+                      source={{ uri: imageUrl }}
+                      className="w-full h-full"
+                      resizeMode="cover"
+                    />
+                  </View>
+                ) : (
+                  <View className="w-12 h-12 rounded-xl bg-emerald-600/15 border border-emerald-500/20 items-center justify-center">
+                    <Utensils size={22} color="#34d399" />
+                  </View>
+                )}
+
+                <View className="flex-1 ml-3">
+                  <Text
+                    className="text-white text-base font-black"
+                    numberOfLines={1}
+                  >
+                    {item.name || item.product_code || "Unnamed Food"}
+                  </Text>
+                  <Text
+                    className="text-slate-400 text-xs mt-0.5"
+                    numberOfLines={1}
+                  >
+                    {item.category || item.product_type || "Food Product"}
+                    {cuisine && cuisine !== "-" ? ` • ${cuisine}` : ""}
                   </Text>
                 </View>
 
-                <ChevronDown size={16} color="#94a3b8" /> 
-              </TouchableOpacity>
-            </View>
-
-            {/* Tabs */}
-            <View className="mx-4 mt-4 bg-slate-900 p-1 rounded-2xl flex-row border border-slate-800">
-              <TouchableOpacity
-                onPress={() =>
-                  setActiveTab("food")
-                }
-                className={`flex-1 py-3 rounded-xl items-center ${activeTab === "food"
-                    ? "bg-white"
-                    : ""
-                  }`}
-              >
-                <Text
-                  className={`font-bold text-sm ${activeTab === "food"
-                      ? "text-emerald-700"
-                      : "text-slate-400"
-                    }`}
+                <View
+                  className={`px-2.5 py-1 rounded-lg border ${statusStyle.bg} ${statusStyle.border}`}
                 >
-                  Food
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    className={`text-[9px] font-black uppercase ${statusStyle.text}`}
+                  >
+                    {item.status || "Unknown"}
+                  </Text>
+                </View>
+              </View>
 
-              <TouchableOpacity
-                onPress={() =>
-                  setActiveTab("foodProducts")
-                }
-                className={`flex-1 py-3 rounded-xl items-center ${activeTab === "foodProducts"
-                    ? "bg-white"
-                    : ""
-                  }`}
-              >
+              {/* ================= ESSENTIAL DETAILS ================= */}
+              <View className="mt-3.5 flex-row items-center">
+                {/* Kitchen / Chef */}
+                <View className="flex-row items-center flex-1">
+                  <ChefHat size={14} color="#64748b" />
+                  <Text
+                    className="text-slate-300 text-xs ml-2"
+                    numberOfLines={1}
+                  >
+                    {kitchen}
+                  </Text>
+                </View>
+
+                {/* Mobile */}
+                {mobile && mobile !== "-" && (
+                  <View className="flex-row items-center flex-1 ml-2">
+                    <Phone size={14} color="#64748b" />
+                    <Text
+                      className="text-slate-400 text-xs ml-2 flex-1"
+                      numberOfLines={1}
+                    >
+                      {mobile}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Description preview */}
+              {item.description ? (
                 <Text
-                  className={`font-bold text-sm ${activeTab === "foodProducts"
-                      ? "text-emerald-700"
-                      : "text-slate-400"
-                    }`}
+                  className="text-slate-400 text-xs mt-2.5 leading-4"
+                  numberOfLines={2}
                 >
-                  Food Products
+                  {item.description}
                 </Text>
-              </TouchableOpacity>
-            </View>
+              ) : null}
 
-            {/* Result info */}
-            <View className="px-4 py-4">
-              <Text className="text-slate-400 text-xs">
-                {activeTab === "food"
-                  ? "Showing chef food items from chef_food_table."
-                  : "Showing chef products from chef_products table."}
-              </Text>
+              {/* ================= ACTION BUTTONS & PRICE ================= */}
+              <View className="flex-row items-center justify-between mt-3.5 pt-3 border-t border-white/10 gap-2">
+                {/* Price Tag - Left */}
+                <View className="flex-row items-baseline flex-1">
+                  <Text className="text-emerald-400 text-base font-black">
+                    ₹{price}
+                  </Text>
+                  {item.mrp &&
+                  item.final_price &&
+                  Number(item.mrp) > Number(item.final_price) ? (
+                    <Text className="text-slate-500 text-xs line-through ml-1.5 font-semibold">
+                      ₹{item.mrp}
+                    </Text>
+                  ) : null}
+                </View>
 
-              <Text className="text-slate-500 text-xs mt-1">
-                Showing{" "}
-                {paginatedFoods.length} of{" "}
-                {filteredFoods.length} items
-              </Text>
+                {/* Details Button */}
+                <TouchableOpacity
+                  onPress={() => setSelectedFood(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`View details for ${
+                    item.name || "food"
+                  }`}
+                  className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
+                >
+                  <Eye size={15} color="#cbd5e1" />
+                </TouchableOpacity>
+
+                {/* Edit Button */}
+                {/* <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("AddProduct");
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit ${item.name || "food"}`}
+                  className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
+                >
+                  <Pencil size={16} color="#cbd5e1" />
+                </TouchableOpacity> */}
+
+                {/* Approve Button */}
+                {item.status !== "Active" && item.status !== "Approved" && (
+                  <TouchableOpacity
+                    onPress={() => openApprovalModal(item)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Approve ${item.name || "food"}`}
+                    className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-xl items-center justify-center"
+                  >
+                    <Check size={17} color="#34d399" />
+                  </TouchableOpacity>
+                )}
+
+                {/* Suspend / Deactivate Button */}
+                {(item.status === "Active" || item.status === "Approved") && (
+                  <TouchableOpacity
+                    onPress={() => requestStatusUpdate(item, "Inactive")}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Deactivate ${item.name || "food"}`}
+                    className="w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl items-center justify-center"
+                  >
+                    <ShieldAlert size={17} color="#fbbf24" />
+                  </TouchableOpacity>
+                )}
+
+                {/* Delete Button */}
+                <TouchableOpacity
+                  onPress={() => handleDelete(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Delete ${item.name || "food"}`}
+                  className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-xl items-center justify-center"
+                >
+                  <Trash2 size={16} color="#f87171" />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        }
+          );
+        }}
         ListEmptyComponent={
-          <View className="items-center py-16">
-            <Utensils size={50} color="#475569" />
-
-            <Text className="text-slate-400 mt-4 font-semibold">
-              No food products found.
+          <View className="items-center mt-16 px-5">
+            <Utensils size={45} color="#475569" />
+            <Text className="text-slate-400 mt-4 text-xs">
+              No food products match your criteria.
             </Text>
           </View>
         }
         ListFooterComponent={
-          totalPages > 1 ? (
-            <View className="flex-row items-center justify-center gap-3 py-6">
+          filteredFoods.length > 0 ? (
+            <View className="flex-row justify-center items-center mt-2 px-4">
               <TouchableOpacity
                 disabled={currentPage === 1}
-                onPress={() =>
-                  setCurrentPage((prev) =>
-                    Math.max(prev - 1, 1)
-                  )
-                }
+                onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 className="w-10 h-10 bg-slate-900 border border-white/10 rounded-xl items-center justify-center"
                 style={{ opacity: currentPage === 1 ? 0.4 : 1 }}
               >
                 <ChevronLeft size={18} color="#ffffff" />
               </TouchableOpacity>
 
-              <Text className="text-slate-300 font-semibold">
-                Page {currentPage} of{" "}
-                {totalPages}
+              <Text className="text-slate-300 text-xs font-bold mx-5">
+                Page {currentPage} of {totalPages}
               </Text>
 
               <TouchableOpacity
-                disabled={
-                  currentPage === totalPages
-                }
+                disabled={currentPage === totalPages}
                 onPress={() =>
-                  setCurrentPage((prev) =>
-                    Math.min(
-                      prev + 1,
-                      totalPages
-                    )
-                  )
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                 }
                 className="w-10 h-10 bg-slate-900 border border-white/10 rounded-xl items-center justify-center"
                 style={{ opacity: currentPage === totalPages ? 0.4 : 1 }}
@@ -1169,21 +922,188 @@ const FoodProducts = () => {
                 <ChevronRight size={18} color="#ffffff" />
               </TouchableOpacity>
             </View>
-          ) : (
-            <View className="h-8" />
-          )
+          ) : null
         }
       />
 
-      {/* Dropdowns */}
-      {renderStatusDropdown()}
-      {renderChefDropdown()}
+      {/* Floating Action Button */}
+      <View
+        style={{
+          position: "absolute",
+          right: 20,
+          bottom: 25,
+          zIndex: 9999,
+          elevation: 20,
+        }}
+      >
+        <FloatingActionButton
+          onPress={() => navigation.navigate("AddProduct")}
+          label="Add food product"
+        />
+      </View>
 
-      <FloatingActionButton
-        onPress={() => navigation.navigate("AddProduct")}
-        label="Add food product"
-      />
+      {/* ================================================= */}
+      {/* STATUS FILTER MODAL */}
+      {/* ================================================= */}
+      <Modal
+        visible={showStatusDropdown}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setShowStatusDropdown(false)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
+            <View className="flex-row items-center justify-between mb-4">
+              <View>
+                <Text className="text-white text-base font-black">
+                  Filter products
+                </Text>
+                <Text className="text-slate-400 text-xs mt-1">
+                  Choose a product status
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowStatusDropdown(false)}
+                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+              >
+                <X size={17} color="#cbd5e1" />
+              </TouchableOpacity>
+            </View>
 
+            {STATUS_OPTIONS.map((status) => {
+              const active = statusFilter === status;
+              return (
+                <TouchableOpacity
+                  key={status}
+                  onPress={() => {
+                    setStatusFilter(status);
+                    setCurrentPage(1);
+                    setShowStatusDropdown(false);
+                  }}
+                  className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${
+                    active
+                      ? "bg-emerald-500/15 border-emerald-500/40"
+                      : "bg-slate-950 border-white/5"
+                  }`}
+                >
+                  <Text
+                    className={`text-sm font-bold ${
+                      active ? "text-emerald-300" : "text-slate-300"
+                    }`}
+                  >
+                    {status === "All" ? "All statuses" : status}
+                  </Text>
+                  {active ? <CheckCircle size={17} color="#34d399" /> : null}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </Modal>
+
+      {/* ================================================= */}
+      {/* CHEF FILTER MODAL */}
+      {/* ================================================= */}
+      <Modal
+        visible={showChefDropdown}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setShowChefDropdown(false)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5 max-h-[75%]"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
+            <View className="flex-row items-center justify-between mb-4">
+              <View>
+                <Text className="text-white text-base font-black">
+                  Filter by Chef
+                </Text>
+                <Text className="text-slate-400 text-xs mt-1">
+                  Choose a chef to display foods
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowChefDropdown(false)}
+                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+              >
+                <X size={17} color="#cbd5e1" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedChef("All");
+                  setCurrentPage(1);
+                  setShowChefDropdown(false);
+                }}
+                className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${
+                  selectedChef === "All"
+                    ? "bg-emerald-500/15 border-emerald-500/40"
+                    : "bg-slate-950 border-white/5"
+                }`}
+              >
+                <Text
+                  className={`text-sm font-bold ${
+                    selectedChef === "All"
+                      ? "text-emerald-300"
+                      : "text-slate-300"
+                  }`}
+                >
+                  All Chefs
+                </Text>
+                {selectedChef === "All" ? (
+                  <CheckCircle size={17} color="#34d399" />
+                ) : null}
+              </TouchableOpacity>
+
+              {chefs.map((chef) => {
+                const id = String(chef.chef_id ?? chef.id);
+                const active = selectedChef === id;
+                return (
+                  <TouchableOpacity
+                    key={id}
+                    onPress={() => {
+                      setSelectedChef(id);
+                      setCurrentPage(1);
+                      setShowChefDropdown(false);
+                    }}
+                    className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${
+                      active
+                        ? "bg-emerald-500/15 border-emerald-500/40"
+                        : "bg-slate-950 border-white/5"
+                    }`}
+                  >
+                    <Text
+                      className={`text-sm font-bold ${
+                        active ? "text-emerald-300" : "text-slate-300"
+                      }`}
+                    >
+                      {chef.name || "Unnamed Chef"}
+                    </Text>
+                    {active ? (
+                      <CheckCircle size={17} color="#34d399" />
+                    ) : null}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ================================================= */}
+      {/* CONFIRMATION MODAL */}
+      {/* ================================================= */}
       <Modal
         visible={!!confirmation}
         transparent
@@ -1193,23 +1113,92 @@ const FoodProducts = () => {
         onRequestClose={() => setConfirmation(null)}
       >
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-900 rounded-t-3xl border-t border-white/10 p-5" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
-            <Trash2 size={25} color={confirmation?.type === "delete" ? "#f87171" : "#fbbf24"} />
-            <Text className="text-white text-lg font-black mt-4">
-              {confirmation?.type === "delete" ? "Delete this food?" : confirmation?.type === "activate" ? "Activate this food?" : "Deactivate this food?"}
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
+            <View
+              className={`w-12 h-12 rounded-2xl items-center justify-center mb-4 ${
+                confirmation?.type === "delete"
+                  ? "bg-red-500/15"
+                  : confirmation?.type === "activate"
+                  ? "bg-emerald-500/15"
+                  : "bg-amber-500/15"
+              }`}
+            >
+              {confirmation?.type === "delete" ? (
+                <Trash2 size={23} color="#f87171" />
+              ) : confirmation?.type === "activate" ? (
+                <Check size={23} color="#34d399" />
+              ) : (
+                <ShieldAlert size={23} color="#fbbf24" />
+              )}
+            </View>
+
+            <Text className="text-white text-lg font-black">
+              {confirmation?.type === "delete"
+                ? "Remove this food item?"
+                : confirmation?.type === "activate"
+                ? "Activate this food item?"
+                : "Deactivate this food item?"}
             </Text>
-            <Text className="text-slate-400 text-sm mt-2">
-              {confirmation?.item.name || "This food product"} will be {confirmation?.type === "delete" ? "permanently removed" : confirmation?.type === "activate" ? "made available for sale" : "taken offline"}.
+
+            <Text className="text-slate-400 text-sm mt-2 leading-5">
+              {confirmation?.type === "delete"
+                ? `${
+                    confirmation?.item?.name || "This food product"
+                  } will be permanently removed.`
+                : confirmation?.type === "activate"
+                ? `${
+                    confirmation?.item?.name || "This food product"
+                  } will be made available for customer orders.`
+                : `${
+                    confirmation?.item?.name || "This food product"
+                  } will be taken offline and hidden from the catalog.`}
             </Text>
+
             <View className="flex-row gap-3 mt-6">
-              <TouchableOpacity onPress={() => setConfirmation(null)} disabled={actionLoading} className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"><Text className="text-slate-300 font-bold text-xs uppercase">Cancel</Text></TouchableOpacity>
-              <TouchableOpacity onPress={confirmAction} disabled={actionLoading} className={`flex-1 rounded-2xl py-3.5 items-center ${confirmation?.type === "delete" ? "bg-red-600" : confirmation?.type === "activate" ? "bg-emerald-600" : "bg-amber-500"}`}>{actionLoading ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-black text-xs uppercase">{confirmation?.type === "delete" ? "Delete" : confirmation?.type === "activate" ? "Activate" : "Deactivate"}</Text>}</TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setConfirmation(null)}
+                disabled={actionLoading}
+                className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"
+              >
+                <Text className="text-slate-300 font-bold text-xs uppercase">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={confirmAction}
+                disabled={actionLoading}
+                className={`flex-1 rounded-2xl py-3.5 items-center ${
+                  confirmation?.type === "delete"
+                    ? "bg-red-600"
+                    : confirmation?.type === "activate"
+                    ? "bg-emerald-600"
+                    : "bg-amber-500"
+                }`}
+              >
+                {actionLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className="text-white font-black text-xs uppercase">
+                    {confirmation?.type === "delete"
+                      ? "Remove item"
+                      : confirmation?.type === "activate"
+                      ? "Activate item"
+                      : "Deactivate item"}
+                  </Text>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* Approval Modal */}
+      {/* ================================================= */}
+      {/* APPROVAL CHECKLIST MODAL */}
+      {/* ================================================= */}
       <Modal
         visible={!!approvalItem}
         transparent
@@ -1219,182 +1208,405 @@ const FoodProducts = () => {
         onRequestClose={closeApprovalModal}
       >
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-950 rounded-t-[32px] p-6 max-h-[90%]" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View className="flex-row justify-between items-start">
-                <View className="flex-1">
-                  <Text className="text-white text-2xl font-black">
-                    Approve Food Item
-                  </Text>
-
-                  <Text className="text-slate-400 text-sm mt-2">
-                    Complete all required checks before approving.
-                  </Text>
-                </View>
-
-                <TouchableOpacity
-                  onPress={closeApprovalModal}
-                  className="bg-slate-800 rounded-xl p-2"
-                >
-                  <X size={22} color="#cbd5e1" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Food */}
-              <View className="mt-6 bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                <Text className="text-slate-500 text-[10px] font-black uppercase tracking-widest">
-                  Food
+          <View
+            className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-h-[85%]"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
+            <View className="flex-row items-center justify-between mb-4">
+              <View>
+                <Text className="text-white text-xl font-black">
+                  Approve Food Item
                 </Text>
-
-                <Text className="text-white text-xl font-black mt-2">
-                  {approvalItem?.name ||
-                    "Unnamed Food"}
-                </Text>
-
-                <Text className="text-slate-500 text-sm mt-1">
-                  {approvalItem?.category ||
-                    "No category specified"}
+                <Text className="text-slate-400 text-xs mt-1">
+                  Complete required checks before activation
                 </Text>
               </View>
-
-              {/* Checklist */}
-              <View className="mt-5 bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                <Text className="text-slate-400 text-xs font-black uppercase tracking-widest">
-                  Approval Checklist
-                </Text>
-
-                <ChecklistRow
-                  title="Taste"
-                  checked={
-                    approvalChecklist.taste
-                  }
-                  onPress={() =>
-                    toggleChecklist("taste")
-                  }
-                />
-
-                <ChecklistRow
-                  title="Quality"
-                  checked={
-                    approvalChecklist.quality
-                  }
-                  onPress={() =>
-                    toggleChecklist("quality")
-                  }
-                />
-
-                <ChecklistRow
-                  title="Packaging"
-                  checked={
-                    approvalChecklist.packaging
-                  }
-                  onPress={() =>
-                    toggleChecklist("packaging")
-                  }
-                />
-              </View>
-
-              <Text className="text-slate-500 text-xs mt-4">
-                Only when all checklist items are
-                selected will the approve button
-                become available.
-              </Text>
-
-              <TouchableOpacity
-                disabled={!canApprove}
-                onPress={handleApprove}
-                className={`mt-6 rounded-2xl py-4 items-center ${canApprove
-                    ? "bg-emerald-500"
-                    : "bg-slate-800"
-                  }`}
-              >
-                <Text
-                  className={`font-black uppercase tracking-widest ${canApprove
-                      ? "text-white"
-                      : "text-slate-500"
-                    }`}
-                >
-                  Approve Product
-                </Text>
-              </TouchableOpacity>
-
               <TouchableOpacity
                 onPress={closeApprovalModal}
-                className="mt-3 border border-slate-700 rounded-2xl py-4 items-center"
+                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
               >
-                <Text className="text-slate-300 font-black uppercase tracking-widest">
+                <X size={17} color="#cbd5e1" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Item Preview */}
+            <View className="bg-slate-950 rounded-2xl p-4 mb-4 border border-slate-800">
+              <Text className="text-emerald-400 text-xs font-black uppercase tracking-wider mb-1">
+                Item Overview
+              </Text>
+              <Text className="text-white text-base font-bold">
+                {approvalItem?.name ||
+                  approvalItem?.product_code ||
+                  "Unnamed Item"}
+              </Text>
+              <Text className="text-slate-400 text-xs mt-0.5">
+                {approvalItem?.category || "No Category"} • ₹
+                {approvalItem?.final_price ??
+                  approvalItem?.mrp ??
+                  "0.00"}
+              </Text>
+            </View>
+
+            {/* Checklist items */}
+            <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
+              Quality Checklist
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => toggleChecklist("taste")}
+              className="flex-row items-center bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 mb-2"
+            >
+              <View
+                className={`w-6 h-6 rounded-lg items-center justify-center border ${
+                  approvalChecklist.taste
+                    ? "bg-emerald-500 border-emerald-500"
+                    : "border-slate-600 bg-slate-900"
+                }`}
+              >
+                {approvalChecklist.taste && <Check size={14} color="white" />}
+              </View>
+              <Text className="text-white font-bold ml-3 text-sm">
+                Taste & Flavor Verified
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => toggleChecklist("quality")}
+              className="flex-row items-center bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 mb-2"
+            >
+              <View
+                className={`w-6 h-6 rounded-lg items-center justify-center border ${
+                  approvalChecklist.quality
+                    ? "bg-emerald-500 border-emerald-500"
+                    : "border-slate-600 bg-slate-900"
+                }`}
+              >
+                {approvalChecklist.quality && <Check size={14} color="white" />}
+              </View>
+              <Text className="text-white font-bold ml-3 text-sm">
+                Ingredients & Hygiene Checked
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => toggleChecklist("packaging")}
+              className="flex-row items-center bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 mb-2"
+            >
+              <View
+                className={`w-6 h-6 rounded-lg items-center justify-center border ${
+                  approvalChecklist.packaging
+                    ? "bg-emerald-500 border-emerald-500"
+                    : "border-slate-600 bg-slate-900"
+                }`}
+              >
+                {approvalChecklist.packaging && (
+                  <Check size={14} color="white" />
+                )}
+              </View>
+              <Text className="text-white font-bold ml-3 text-sm">
+                Packaging & Presentation Standard
+              </Text>
+            </TouchableOpacity>
+
+            <View className="flex-row gap-3 mt-4">
+              <TouchableOpacity
+                onPress={closeApprovalModal}
+                className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"
+              >
+                <Text className="text-slate-300 font-bold text-xs uppercase">
                   Cancel
                 </Text>
               </TouchableOpacity>
 
-              <View className="h-5" />
+              <TouchableOpacity
+                disabled={!canApprove}
+                onPress={handleApprove}
+                className={`flex-1 rounded-2xl py-3.5 items-center ${
+                  canApprove ? "bg-emerald-600" : "bg-slate-800 opacity-50"
+                }`}
+              >
+                <Text className="text-white font-black text-xs uppercase">
+                  Approve Item
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ================================================= */}
+      {/* FOOD DETAILS POPUP MODAL */}
+      {/* ================================================= */}
+      <Modal
+        visible={!!selectedFood}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setSelectedFood(null)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View
+            className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex-col"
+            style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+          >
+            {/* ================= MODAL HEADER ================= */}
+            <View className="p-5 bg-emerald-700 rounded-t-3xl flex-row items-center justify-between">
+              <View className="flex-1 pr-3">
+                <Text
+                  className="text-white text-xl font-black"
+                  numberOfLines={1}
+                >
+                  {selectedFood?.name ||
+                    selectedFood?.product_code ||
+                    "Food Details"}
+                </Text>
+                <Text className="text-emerald-200 text-sm font-bold uppercase tracking-wider mt-1">
+                  Food Product Overview
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => setSelectedFood(null)}
+                className="w-9 h-9 bg-black/20 rounded-full items-center justify-center"
+              >
+                <X size={21} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            {/* ================= MODAL BODY ================= */}
+            <ScrollView
+              className="p-5"
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Image Banner if available */}
+              {selectedFood && getImageUrl(selectedFood) ? (
+                <View className="w-full h-44 rounded-2xl overflow-hidden mb-3 border border-slate-800 bg-slate-950">
+                  <Image
+                    source={{ uri: getImageUrl(selectedFood)! }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                </View>
+              ) : null}
+
+              {/* ================= FOOD INFORMATION ================= */}
+              <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
+                  🍲 Food Information
+                </Text>
+
+                <View className="flex-row flex-wrap">
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Name
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedFood?.name || "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Product Code
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedFood?.product_code || "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Category
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedFood?.category || "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Cuisine / Type
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedFood?.cuisine ||
+                        selectedFood?.product_type ||
+                        "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Final Price
+                    </Text>
+                    <Text className="text-emerald-400 text-sm font-bold mt-1">
+                      ₹
+                      {selectedFood?.final_price ??
+                        selectedFood?.mrp ??
+                        "0.00"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      MRP
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      ₹{selectedFood?.mrp ?? "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-full p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Status
+                    </Text>
+                    <View className="mt-1 self-start">
+                      {(() => {
+                        const st = getStatusStyle(selectedFood?.status);
+                        return (
+                          <View
+                            className={`px-2.5 py-1 rounded-lg border ${st.bg} ${st.border}`}
+                          >
+                            <Text
+                              className={`text-[9px] font-black uppercase ${st.text}`}
+                            >
+                              {selectedFood?.status || "Unknown"}
+                            </Text>
+                          </View>
+                        );
+                      })()}
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              {/* ================= CHEF & KITCHEN ================= */}
+              <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
+                <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
+                  👨‍🍳 Chef & Kitchen Details
+                </Text>
+
+                <View className="flex-row flex-wrap">
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Chef Name
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedFood?.chef_name || "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Kitchen
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedFood?.kitchen_name ||
+                        selectedFood?.franchise_name ||
+                        "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Chef Phone
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedFood?.chef_phone ||
+                        selectedFood?.mobile ||
+                        "—"}
+                    </Text>
+                  </View>
+
+                  <View className="w-1/2 p-1.5">
+                    <Text className="text-slate-400 text-xs font-bold uppercase">
+                      Created By
+                    </Text>
+                    <Text className="text-white text-sm font-semibold mt-1">
+                      {selectedFood?.created_by || "—"}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* ================= DESCRIPTION ================= */}
+              {selectedFood?.description ? (
+                <View className="bg-slate-950 rounded-2xl p-4 mb-6 border border-slate-800">
+                  <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-3">
+                    📝 Description
+                  </Text>
+                  <Text className="text-slate-300 text-sm leading-5">
+                    {selectedFood.description}
+                  </Text>
+                </View>
+              ) : null}
             </ScrollView>
+
+            {/* ================= BOTTOM ACTIONS ================= */}
+            <View className="p-4 border-t border-slate-800 bg-slate-950 flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedFood(null);
+                  navigation.navigate("AddProduct");
+                }}
+                className="px-4 bg-slate-800 py-3 rounded-2xl items-center flex-row"
+              >
+                <Pencil size={17} color="#cbd5e1" />
+                <Text className="text-slate-300 font-bold text-sm uppercase ml-1.5">
+                  Edit
+                </Text>
+              </TouchableOpacity>
+
+              {selectedFood?.status !== "Active" &&
+                selectedFood?.status !== "Approved" && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      const target = selectedFood;
+                      setSelectedFood(null);
+                      if (target) {
+                        openApprovalModal(target);
+                      }
+                    }}
+                    className="flex-1 bg-emerald-600 py-3 rounded-2xl items-center"
+                  >
+                    <Text className="text-white font-black text-sm uppercase tracking-wider">
+                      Approve Item
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+              {(selectedFood?.status === "Active" ||
+                selectedFood?.status === "Approved") && (
+                <TouchableOpacity
+                  onPress={() => {
+                    const target = selectedFood;
+                    setSelectedFood(null);
+                    if (target) {
+                      requestStatusUpdate(target, "Inactive");
+                    }
+                  }}
+                  className="flex-1 bg-amber-500 py-3 rounded-2xl items-center"
+                >
+                  <Text className="text-white font-black text-sm uppercase tracking-wider">
+                    Deactivate Item
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                onPress={() => setSelectedFood(null)}
+                className="px-5 bg-slate-800 py-3 rounded-2xl items-center"
+              >
+                <Text className="text-slate-300 font-bold text-sm uppercase">
+                  Close
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
     </View>
   );
 };
-
-/*
- * -------------------------------------------------------
- * INFO ROW
- * -------------------------------------------------------
- */
-const InfoRow = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) => (
-  <View className="flex-row justify-between py-2">
-    <Text className="text-slate-900 text-sm font-black">
-      {label}
-    </Text>
-
-    <Text
-      className="text-slate-500 text-sm flex-1 text-right ml-4"
-      numberOfLines={1}
-    >
-      {value}
-    </Text>
-  </View>
-);
-
-/*
- * -------------------------------------------------------
- * CHECKLIST ROW
- * -------------------------------------------------------
- */
-const ChecklistRow = ({
-  title,
-  checked,
-  onPress,
-}: {
-  title: string;
-  checked: boolean;
-  onPress: () => void;
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    className="flex-row items-center bg-slate-800 border border-slate-700 rounded-2xl px-4 py-4 mt-3"
-  >
-    <View
-      className={`w-6 h-6 rounded-lg items-center justify-center border ${checked
-          ? "bg-emerald-500 border-emerald-500"
-          : "border-slate-500"
-        }`}
-    >
-      {checked && (
-        <Check size={16} color="white" />
-      )}
-    </View>
-
-    <Text className="text-white font-bold ml-3">
-      {title}
-    </Text>
-  </TouchableOpacity>
-);
 
 export default FoodProducts;
