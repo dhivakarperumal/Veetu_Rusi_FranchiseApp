@@ -110,13 +110,11 @@ const EditDeliveryPartner = () => {
     gender: "Male",
     date_of_birth: "",
     age: "",
-    blood_group: "O+",
     mobile: "",
     alt_mobile: "",
     email: "",
     password: "",
     confirmPassword: "",
-    profile_photo: null as Asset | string | null,
 
     current_address: "",
     permanent_address: "",
@@ -473,7 +471,7 @@ const EditDeliveryPartner = () => {
 
     return (
       <View className="mb-4">
-        <Text className="text-slate-300 text-xs font-bold uppercase mb-2">
+        <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
           {label}
         </Text>
         <TouchableOpacity
@@ -585,10 +583,10 @@ const EditDeliveryPartner = () => {
         >
           {/* STEP 1: PERSONAL */}
           {currentStep === 1 && (
-            <View className="space-y-4">
+            <View className="space-y-5">
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     First Name *
                   </Text>
                   <TextInput
@@ -600,7 +598,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Last Name *
                   </Text>
                   <TextInput
@@ -615,7 +613,7 @@ const EditDeliveryPartner = () => {
 
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Gender
                   </Text>
                   <View className="flex-row gap-2">
@@ -641,7 +639,7 @@ const EditDeliveryPartner = () => {
                   </View>
                 </View>
                 <View className="w-28">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Blood Group
                   </Text>
                   <TextInput
@@ -656,7 +654,7 @@ const EditDeliveryPartner = () => {
 
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Date of Birth
                   </Text>
                   <TouchableOpacity
@@ -670,7 +668,7 @@ const EditDeliveryPartner = () => {
                   </TouchableOpacity>
                 </View>
                 <View className="w-24">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Age
                   </Text>
                   <TextInput
@@ -685,7 +683,7 @@ const EditDeliveryPartner = () => {
 
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Mobile *
                   </Text>
                   <TextInput
@@ -698,7 +696,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Alt Mobile
                   </Text>
                   <TextInput
@@ -713,7 +711,7 @@ const EditDeliveryPartner = () => {
               </View>
 
               <View>
-                <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Email
                 </Text>
                 <TextInput
@@ -727,7 +725,7 @@ const EditDeliveryPartner = () => {
               </View>
 
               <View>
-                <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Password (Leave empty to keep unchanged)
                 </Text>
                 <TextInput
@@ -746,9 +744,9 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 2: ADDRESS */}
           {currentStep === 2 && (
-            <View className="space-y-4">
+            <View className="space-y-5">
               <View>
-                <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Current Address
                 </Text>
                 <TextInput
@@ -760,7 +758,7 @@ const EditDeliveryPartner = () => {
                 />
               </View>
               <View>
-                <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Permanent Address
                 </Text>
                 <TextInput
@@ -773,7 +771,7 @@ const EditDeliveryPartner = () => {
               </View>
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     City
                   </Text>
                   <TextInput
@@ -785,7 +783,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     State
                   </Text>
                   <TouchableOpacity
@@ -798,7 +796,7 @@ const EditDeliveryPartner = () => {
               </View>
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Pincode
                   </Text>
                   <TextInput
@@ -811,7 +809,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Live GPS Location
                   </Text>
                   <TextInput
@@ -828,9 +826,9 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 3: EMERGENCY */}
           {currentStep === 3 && (
-            <View className="space-y-4">
+            <View className="space-y-5">
               <View>
-                <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Emergency Contact Name
                 </Text>
                 <TextInput
@@ -843,7 +841,7 @@ const EditDeliveryPartner = () => {
               </View>
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Relationship
                   </Text>
                   <TextInput
@@ -855,7 +853,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Emergency Phone
                   </Text>
                   <TextInput
@@ -873,10 +871,10 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 4: VEHICLE */}
           {currentStep === 4 && (
-            <View className="space-y-4">
+            <View className="space-y-5">
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Vehicle Type
                   </Text>
                   <View className="flex-row gap-2">
@@ -902,7 +900,7 @@ const EditDeliveryPartner = () => {
                   </View>
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Vehicle Brand
                   </Text>
                   <TouchableOpacity
@@ -916,7 +914,7 @@ const EditDeliveryPartner = () => {
 
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Vehicle Model
                   </Text>
                   <TextInput
@@ -928,7 +926,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Vehicle Number
                   </Text>
                   <TextInput
@@ -949,9 +947,9 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 5: DRIVING */}
           {currentStep === 5 && (
-            <View className="space-y-4">
+            <View className="space-y-5">
               <View>
-                <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Driving License Number
                 </Text>
                 <TextInput
@@ -964,7 +962,7 @@ const EditDeliveryPartner = () => {
                 />
               </View>
               <View>
-                <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   License Holder Name
                 </Text>
                 <TextInput
@@ -977,7 +975,7 @@ const EditDeliveryPartner = () => {
               </View>
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Issue Date
                   </Text>
                   <TouchableOpacity
@@ -989,7 +987,7 @@ const EditDeliveryPartner = () => {
                   </TouchableOpacity>
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Expiry Date
                   </Text>
                   <TouchableOpacity
@@ -1009,10 +1007,10 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 6: BANK */}
           {currentStep === 6 && (
-            <View className="space-y-4">
+            <View className="space-y-5">
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Bank Name
                   </Text>
                   <TextInput
@@ -1024,7 +1022,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Account Number
                   </Text>
                   <TextInput
@@ -1039,7 +1037,7 @@ const EditDeliveryPartner = () => {
               </View>
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     IFSC Code
                   </Text>
                   <TextInput
@@ -1052,7 +1050,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     UPI ID
                   </Text>
                   <TextInput
@@ -1066,7 +1064,7 @@ const EditDeliveryPartner = () => {
               </View>
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Aadhaar Number
                   </Text>
                   <TextInput
@@ -1079,7 +1077,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     PAN Number
                   </Text>
                   <TextInput
@@ -1097,7 +1095,7 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 7: DOCUMENTS */}
           {currentStep === 7 && (
-            <View className="space-y-4">
+            <View className="space-y-5">
               {renderFileInput("aadhaar_front_url", "Aadhaar Card - Front")}
               {renderFileInput("aadhaar_back_url", "Aadhaar Card - Back")}
               {renderFileInput("pan_card_url", "PAN Card")}
@@ -1109,9 +1107,9 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 8: PREFERENCES */}
           {currentStep === 8 && (
-            <View className="space-y-4">
+            <View className="space-y-5">
               <View>
-                <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Available Areas
                 </Text>
                 <TextInput
@@ -1124,7 +1122,7 @@ const EditDeliveryPartner = () => {
               </View>
 
               <View>
-                <Text className="text-slate-300 text-xs font-bold uppercase mb-2">
+                <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                   Preferred Distance
                 </Text>
                 <View className="flex-row gap-2">
@@ -1152,7 +1150,7 @@ const EditDeliveryPartner = () => {
 
               <View className="flex-row gap-3">
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Delivery Radius (KM)
                   </Text>
                   <TextInput
@@ -1165,7 +1163,7 @@ const EditDeliveryPartner = () => {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
+                  <Text className="text-slate-300 text-xs font-bold uppercase mb-3">
                     Driving Experience (Yrs)
                   </Text>
                   <TextInput
@@ -1183,7 +1181,7 @@ const EditDeliveryPartner = () => {
 
           {/* STEP 9: REVIEW */}
           {currentStep === 9 && (
-            <View className="space-y-4">
+            <View className="space-y-5">
               <View className="bg-slate-900 border border-emerald-500/30 rounded-2xl p-4">
                 <Text className="text-emerald-400 font-black text-sm uppercase mb-3">
                   Summary of Changes
