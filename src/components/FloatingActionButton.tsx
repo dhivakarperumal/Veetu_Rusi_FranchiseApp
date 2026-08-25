@@ -15,7 +15,7 @@ const FloatingActionButton = ({
     onPress={onPress}
     accessibilityRole="button"
     accessibilityLabel={label}
-    className="absolute right-2 bottom-6 w-16 h-16 rounded-full bg-emerald-600 items-center justify-center shadow-lg"
+    className="absolute right-5 bottom-6 w-16 h-16 rounded-full bg-emerald-600 items-center justify-center shadow-lg"
     style={{ elevation: 9 }}
   >
     <Plus size={30} color="#ffffff" strokeWidth={2.5} />
