@@ -546,7 +546,7 @@ const DeliveryPartners = () => {
         navigationBarTranslucent
         onRequestClose={() => setConfirmation(null)}
       >
-        <View className="flex-1 bg-black justify-end">
+        <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
             style={{ paddingBottom: Math.max(insets.bottom, 20) }}
@@ -601,7 +601,7 @@ const DeliveryPartners = () => {
         navigationBarTranslucent
         onRequestClose={() => setIsFilterOpen(false)}
       >
-        <View className="flex-1 bg-black/70 justify-end">
+        <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
             style={{ paddingBottom: Math.max(insets.bottom, 20) }}
