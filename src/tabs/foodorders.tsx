@@ -659,13 +659,13 @@ const FoodOrders = () => {
                   setStatusFilter("All");
                   setCurrentPage(1);
                 }}
-                className={`w-32 mr-2.5 bg-slate-900 border rounded-2xl p-3 ${
+                className={`w-32 mr-3 bg-slate-900 border rounded-2xl p-3 ${
                   statusFilter === "All"
                     ? "border-indigo-400"
                     : "border-indigo-400/25"
                 }`}
               >
-                <View className="w-8 h-8 rounded-lg bg-indigo-500/15 items-center justify-center mb-2">
+                <View className="w-8 h-8 rounded-lg bg-indigo-500/15  items-center justify-center mb-2">
                   <ShoppingBag size={16} color="#a5b4fc" />
                 </View>
                 <Text className="text-indigo-200/70 text-[9px] font-bold uppercase">
@@ -683,7 +683,7 @@ const FoodOrders = () => {
                   setStatusFilter("Pending");
                   setCurrentPage(1);
                 }}
-                className={`w-32 mr-2.5 bg-slate-900 border rounded-2xl p-3 ${
+                className={`w-32 mr-3 bg-slate-900 border rounded-2xl p-3 ${
                   statusFilter === "Pending"
                     ? "border-amber-400"
                     : "border-amber-400/25"
@@ -707,7 +707,7 @@ const FoodOrders = () => {
                   setStatusFilter("Preparing");
                   setCurrentPage(1);
                 }}
-                className={`w-32 mr-2.5 bg-slate-900 border rounded-2xl p-3 ${
+                className={`w-32 mr-3 bg-slate-900 border rounded-2xl p-3 ${
                   statusFilter === "Preparing"
                     ? "border-purple-400"
                     : "border-purple-400/25"
@@ -731,7 +731,7 @@ const FoodOrders = () => {
                   setStatusFilter("Delivered");
                   setCurrentPage(1);
                 }}
-                className={`w-32 mr-2.5 bg-slate-900 border rounded-2xl p-3 ${
+                className={`w-32 mr-3 bg-slate-900 border rounded-2xl p-3 ${
                   statusFilter === "Delivered"
                     ? "border-emerald-400"
                     : "border-emerald-400/25"
