@@ -38,6 +38,7 @@ import AddProduct from "./src/More/AddProduct";
 import AddCategory from "./src/More/AddCategory";
 import AddStock from "./src/More/AddStock";
 import Orders from "./src/More/Orders";
+import Reviews from "./src/More/Reviews";
 
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
@@ -172,6 +173,11 @@ const AppNavigator = () => {
               <Stack.Screen
                 name="AddStock"
                 component={AddStock}
+              />
+
+              <Stack.Screen
+                name="Reviews"
+                component={Reviews}
               />
             </Stack.Group>
           </>

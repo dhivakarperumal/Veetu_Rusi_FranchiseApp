@@ -15,6 +15,7 @@ import {
   FileText,
   ClipboardList,
   ArrowRight,
+  Star,
 } from "lucide-react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -49,6 +50,15 @@ const More = () => {
       color: "#0f766e",
       bgColor: "#ccfbf1",
       onPress: () => navigation.navigate("Orders"),
+    },
+    {
+      id: "reviews",
+      label: "Reviews & Ratings",
+      description: "Manage product & delivery feedback",
+      icon: Star,
+      color: "#f59e0b",
+      bgColor: "#fef3c7",
+      onPress: () => navigation.navigate("Reviews"),
     },
   ];
 
