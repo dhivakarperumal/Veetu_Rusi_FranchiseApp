@@ -21,7 +21,7 @@ import {
   Trash2,
   Image as ImageIcon,
   Sparkles,
-  Calendar,
+  Calendar as CalendarIcon,
   Tag,
   CheckCircle,
   AlertTriangle,
@@ -37,6 +37,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { get, post, put } from "../services/api";
 import InnerHeader from "../components/InnerHeader";
 import CenteredDialog from "../components/CenteredDialog";
+import DatePickerModal from "../components/DatePickerModal";
 
 const parseJsonSafely = (val: any) => {
   if (!val) return [];
@@ -93,6 +94,21 @@ const AddProduct = () => {
 
   // Category Picker Modal
   const [isCatModalOpen, setIsCatModalOpen] = useState(false);
+
+  // Date Picker Modal state
+  const [datePickerConfig, setDatePickerConfig] = useState<{
+    visible: boolean;
+    title: string;
+    targetField: "mfg" | "exp";
+    isSingle: boolean;
+    initialDate: string;
+  }>({
+    visible: false,
+    title: "",
+    targetField: "mfg",
+    isSingle: true,
+    initialDate: "",
+  });
 
   // Product Selection Modal for Combo Items
   const [comboItemIndexForPicker, setComboItemIndexForPicker] = useState<number | null>(null);
@@ -209,7 +225,7 @@ const AddProduct = () => {
           category: editItem.category || "Combo Packs",
           status: editItem.status || "Active",
           manufactureDate: editItem.manufactureDate || editItem.mfg_date || "",
-          expiryDate: editItem.expiryDate || "",
+          expiryDate: editItem.expiryDate || editItem.exp_date || "",
           totalStock: String(editItem.total_stock || editItem.stock || "0"),
           totalWeight: Number(parsedDetails.totalWeight || editItem.totalWeight || 0),
           barcodeValue: editItem.barcodeValue || editItem.productId || "",
@@ -237,7 +253,7 @@ const AddProduct = () => {
           category: editItem.category || "",
           status: editItem.status || "Active",
           manufactureDate: editItem.manufactureDate || editItem.mfg_date || "",
-          expiryDate: editItem.expiryDate || "",
+          expiryDate: editItem.expiryDate || editItem.exp_date || "",
           totalStock: String(editItem.total_stock || editItem.stock || "0"),
           totalWeight: Number(editItem.totalWeight || 0),
           barcodeValue: editItem.barcodeValue || editItem.productId || "",
@@ -303,6 +319,48 @@ const AddProduct = () => {
       }));
     }
   }, [comboSummary, comboManualWeight, comboManualStock]);
+
+  // --------------------------------------------------
+  // DATE PICKER HANDLER
+  // --------------------------------------------------
+  const openDatePicker = (
+    field: "mfg" | "exp",
+    isSingle: boolean,
+    title: string
+  ) => {
+    const initialDate = isSingle
+      ? field === "mfg"
+        ? singleForm.manufactureDate
+        : singleForm.expiryDate
+      : field === "mfg"
+      ? comboForm.manufactureDate
+      : comboForm.expiryDate;
+
+    setDatePickerConfig({
+      visible: true,
+      title,
+      targetField: field,
+      isSingle,
+      initialDate,
+    });
+  };
+
+  const handleDateSelected = (selectedDateStr: string) => {
+    const { targetField, isSingle } = datePickerConfig;
+    if (isSingle) {
+      if (targetField === "mfg") {
+        setSingleForm((prev) => ({ ...prev, manufactureDate: selectedDateStr }));
+      } else {
+        setSingleForm((prev) => ({ ...prev, expiryDate: selectedDateStr }));
+      }
+    } else {
+      if (targetField === "mfg") {
+        setComboForm((prev) => ({ ...prev, manufactureDate: selectedDateStr }));
+      } else {
+        setComboForm((prev) => ({ ...prev, expiryDate: selectedDateStr }));
+      }
+    }
+  };
 
   // --------------------------------------------------
   // IMAGE PICKER
@@ -658,36 +716,92 @@ const AddProduct = () => {
                   </View>
                 </View>
 
-                {/* Manufacture & Expiry Dates */}
+                {/* Manufacture & Expiry Dates with DatePicker Modal Trigger */}
                 <View className="flex-row gap-3 mb-4">
+                  {/* Manufacture Date */}
                   <View className="flex-1">
                     <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                       Manufacture Date
                     </Text>
-                    <TextInput
-                      value={singleForm.manufactureDate}
-                      onChangeText={(text) =>
-                        setSingleForm({ ...singleForm, manufactureDate: text })
+                    <TouchableOpacity
+                      onPress={() =>
+                        openDatePicker(
+                          "mfg",
+                          true,
+                          "Select Manufacture Date"
+                        )
                       }
-                      placeholder="YYYY-MM-DD"
-                      placeholderTextColor="#64748b"
-                      className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-xs font-mono"
-                    />
+                      className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
+                    >
+                      <View className="flex-row items-center flex-1 mr-1">
+                        <CalendarIcon size={14} color="#34d399" />
+                        <Text
+                          className={`ml-2 text-xs font-mono font-bold ${
+                            singleForm.manufactureDate
+                              ? "text-white"
+                              : "text-slate-500"
+                          }`}
+                        >
+                          {singleForm.manufactureDate || "YYYY-MM-DD"}
+                        </Text>
+                      </View>
+                      {singleForm.manufactureDate ? (
+                        <TouchableOpacity
+                          onPress={() =>
+                            setSingleForm((prev) => ({
+                              ...prev,
+                              manufactureDate: "",
+                            }))
+                          }
+                          className="p-1"
+                        >
+                          <X size={12} color="#94a3b8" />
+                        </TouchableOpacity>
+                      ) : null}
+                    </TouchableOpacity>
                   </View>
 
+                  {/* Expiry Date */}
                   <View className="flex-1">
                     <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                       Expiry Date
                     </Text>
-                    <TextInput
-                      value={singleForm.expiryDate}
-                      onChangeText={(text) =>
-                        setSingleForm({ ...singleForm, expiryDate: text })
+                    <TouchableOpacity
+                      onPress={() =>
+                        openDatePicker(
+                          "exp",
+                          true,
+                          "Select Expiry Date"
+                        )
                       }
-                      placeholder="YYYY-MM-DD"
-                      placeholderTextColor="#64748b"
-                      className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-xs font-mono"
-                    />
+                      className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
+                    >
+                      <View className="flex-row items-center flex-1 mr-1">
+                        <CalendarIcon size={14} color="#f59e0b" />
+                        <Text
+                          className={`ml-2 text-xs font-mono font-bold ${
+                            singleForm.expiryDate
+                              ? "text-white"
+                              : "text-slate-500"
+                          }`}
+                        >
+                          {singleForm.expiryDate || "YYYY-MM-DD"}
+                        </Text>
+                      </View>
+                      {singleForm.expiryDate ? (
+                        <TouchableOpacity
+                          onPress={() =>
+                            setSingleForm((prev) => ({
+                              ...prev,
+                              expiryDate: "",
+                            }))
+                          }
+                          className="p-1"
+                        >
+                          <X size={12} color="#94a3b8" />
+                        </TouchableOpacity>
+                      ) : null}
+                    </TouchableOpacity>
                   </View>
                 </View>
 
@@ -1113,36 +1227,92 @@ const AddProduct = () => {
                   </View>
                 </View>
 
-                {/* Dates */}
+                {/* Dates with DatePicker Modal Trigger */}
                 <View className="flex-row gap-3 mb-4">
+                  {/* Manufacture Date */}
                   <View className="flex-1">
                     <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                       Manufacture Date
                     </Text>
-                    <TextInput
-                      value={comboForm.manufactureDate}
-                      onChangeText={(text) =>
-                        setComboForm({ ...comboForm, manufactureDate: text })
+                    <TouchableOpacity
+                      onPress={() =>
+                        openDatePicker(
+                          "mfg",
+                          false,
+                          "Select Combo Manufacture Date"
+                        )
                       }
-                      placeholder="YYYY-MM-DD"
-                      placeholderTextColor="#64748b"
-                      className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-xs font-mono"
-                    />
+                      className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
+                    >
+                      <View className="flex-row items-center flex-1 mr-1">
+                        <CalendarIcon size={14} color="#fbbf24" />
+                        <Text
+                          className={`ml-2 text-xs font-mono font-bold ${
+                            comboForm.manufactureDate
+                              ? "text-white"
+                              : "text-slate-500"
+                          }`}
+                        >
+                          {comboForm.manufactureDate || "YYYY-MM-DD"}
+                        </Text>
+                      </View>
+                      {comboForm.manufactureDate ? (
+                        <TouchableOpacity
+                          onPress={() =>
+                            setComboForm((prev) => ({
+                              ...prev,
+                              manufactureDate: "",
+                            }))
+                          }
+                          className="p-1"
+                        >
+                          <X size={12} color="#94a3b8" />
+                        </TouchableOpacity>
+                      ) : null}
+                    </TouchableOpacity>
                   </View>
 
+                  {/* Expiry Date */}
                   <View className="flex-1">
                     <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                       Expiry Date
                     </Text>
-                    <TextInput
-                      value={comboForm.expiryDate}
-                      onChangeText={(text) =>
-                        setComboForm({ ...comboForm, expiryDate: text })
+                    <TouchableOpacity
+                      onPress={() =>
+                        openDatePicker(
+                          "exp",
+                          false,
+                          "Select Combo Expiry Date"
+                        )
                       }
-                      placeholder="YYYY-MM-DD"
-                      placeholderTextColor="#64748b"
-                      className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-xs font-mono"
-                    />
+                      className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
+                    >
+                      <View className="flex-row items-center flex-1 mr-1">
+                        <CalendarIcon size={14} color="#f59e0b" />
+                        <Text
+                          className={`ml-2 text-xs font-mono font-bold ${
+                            comboForm.expiryDate
+                              ? "text-white"
+                              : "text-slate-500"
+                          }`}
+                        >
+                          {comboForm.expiryDate || "YYYY-MM-DD"}
+                        </Text>
+                      </View>
+                      {comboForm.expiryDate ? (
+                        <TouchableOpacity
+                          onPress={() =>
+                            setComboForm((prev) => ({
+                              ...prev,
+                              expiryDate: "",
+                            }))
+                          }
+                          className="p-1"
+                        >
+                          <X size={12} color="#94a3b8" />
+                        </TouchableOpacity>
+                      ) : null}
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
@@ -1404,6 +1574,19 @@ const AddProduct = () => {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* ================================================= */}
+      {/* DATE PICKER MODAL */}
+      {/* ================================================= */}
+      <DatePickerModal
+        visible={datePickerConfig.visible}
+        title={datePickerConfig.title}
+        initialDate={datePickerConfig.initialDate}
+        onClose={() =>
+          setDatePickerConfig((prev) => ({ ...prev, visible: false }))
+        }
+        onSelectDate={handleDateSelected}
+      />
 
       {/* ================================================= */}
       {/* CATEGORY PICKER MODAL */}

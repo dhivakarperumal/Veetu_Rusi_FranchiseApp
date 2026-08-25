@@ -72,7 +72,9 @@ interface ProductItem {
   comboItems?: ComboItem[] | string;
   comboDetails?: any;
   manufactureDate?: string;
+  mfg_date?: string;
   expiryDate?: string;
+  exp_date?: string;
   barcodeValue?: string;
   type?: "single" | "combo";
 }
@@ -280,6 +282,16 @@ const Products = () => {
     const images = parseJsonSafely(item.images);
     if (images && images.length > 0) return images[0];
     return null;
+  };
+
+  const getMfgDate = (item: ProductItem | null) => {
+    if (!item) return "—";
+    return item.manufactureDate || item.mfg_date || "—";
+  };
+
+  const getExpDate = (item: ProductItem | null) => {
+    if (!item) return "—";
+    return item.expiryDate || item.exp_date || "—";
   };
 
   // --------------------------------------------------
@@ -513,6 +525,8 @@ const Products = () => {
           const variants = parseJsonSafely(item.variants);
           const comboItems = parseJsonSafely(item.comboItems);
           const isActive = (item.status || "Active").toLowerCase() === "active";
+          const mfg = getMfgDate(item);
+          const exp = getExpDate(item);
 
           const displayPrice =
             item.offer_price ||
@@ -614,8 +628,25 @@ const Products = () => {
                 </View>
               </View>
 
+              {/* ================= MANUFACTURE & EXPIRY DATES BADGE ================= */}
+              <View className="mt-2.5 flex-row items-center justify-between bg-slate-950/60 border border-slate-800/80 rounded-xl px-3 py-2">
+                <View className="flex-row items-center">
+                  <Calendar size={12} color="#34d399" />
+                  <Text className="text-slate-400 text-[11px] ml-1.5 font-mono">
+                    MFG: <Text className="text-white font-bold">{mfg}</Text>
+                  </Text>
+                </View>
+
+                <View className="flex-row items-center">
+                  <Calendar size={12} color="#f59e0b" />
+                  <Text className="text-slate-400 text-[11px] ml-1.5 font-mono">
+                    EXP: <Text className="text-amber-400 font-bold">{exp}</Text>
+                  </Text>
+                </View>
+              </View>
+
               {/* ================= ACTION BUTTONS ================= */}
-              <View className="flex-row items-center justify-between mt-3.5 pt-3 border-t border-white/10 gap-2">
+              <View className="flex-row items-center justify-between mt-3 pt-3 border-t border-white/10 gap-2">
                 <Text className="text-slate-400 text-xs font-semibold flex-1" numberOfLines={1}>
                   {item.description || "Studio Product"}
                 </Text>
@@ -781,6 +812,33 @@ const Products = () => {
                 return null;
               })()}
 
+              {/* Manufacturing & Expiry Highlights */}
+              <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800 flex-row gap-2">
+                <View className="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-3">
+                  <View className="flex-row items-center mb-1">
+                    <Calendar size={13} color="#34d399" />
+                    <Text className="text-slate-400 text-[10px] font-black uppercase ml-1.5">
+                      Manufacture Date
+                    </Text>
+                  </View>
+                  <Text className="text-white font-mono font-bold text-xs mt-0.5">
+                    {getMfgDate(selectedItem)}
+                  </Text>
+                </View>
+
+                <View className="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-3">
+                  <View className="flex-row items-center mb-1">
+                    <Calendar size={13} color="#f59e0b" />
+                    <Text className="text-amber-300 text-[10px] font-black uppercase ml-1.5">
+                      Expiry Date
+                    </Text>
+                  </View>
+                  <Text className="text-amber-400 font-mono font-bold text-xs mt-0.5">
+                    {getExpDate(selectedItem)}
+                  </Text>
+                </View>
+              </View>
+
               {/* Description Card */}
               <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
                 <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider mb-2">
@@ -809,18 +867,18 @@ const Products = () => {
                   </View>
                   <View className="w-1/2 p-1">
                     <Text className="text-slate-500 text-[10px] font-bold uppercase">
-                      Manufacture Date
+                      Total Stock
                     </Text>
                     <Text className="text-white text-xs font-bold mt-0.5">
-                      {selectedItem?.manufactureDate || "—"}
+                      {selectedItem?.total_stock || selectedItem?.totalWeight || 0} units
                     </Text>
                   </View>
                   <View className="w-1/2 p-1">
                     <Text className="text-slate-500 text-[10px] font-bold uppercase">
-                      Expiry Date
+                      Product ID / SKU
                     </Text>
-                    <Text className="text-white text-xs font-bold mt-0.5">
-                      {selectedItem?.expiryDate || "—"}
+                    <Text className="text-white text-xs font-bold mt-0.5 font-mono">
+                      {selectedItem?.productId || `#${selectedItem?.id}`}
                     </Text>
                   </View>
                 </View>

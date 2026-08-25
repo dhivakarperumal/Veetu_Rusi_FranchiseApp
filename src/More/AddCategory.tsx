@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   LayoutGrid,
   Plus,
@@ -21,14 +21,55 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { launchImageLibrary } from "react-native-image-picker";
 
-import { post } from "../services/api";
+import { post, put } from "../services/api";
 import InnerHeader from "../components/InnerHeader";
 import CenteredDialog from "../components/CenteredDialog";
 
+const parseImages = (val: any): string[] => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
+const generateCategoryId = (existingCategories: any[], franchiseUserId: any) => {
+  const franchiseCategories = (existingCategories || []).filter(
+    (cat) =>
+      cat.franchise_user_id === franchiseUserId ||
+      (!cat.franchise_user_id && !franchiseUserId)
+  );
+
+  if (!franchiseCategories || franchiseCategories.length === 0) return "CAT001";
+
+  const ids = franchiseCategories
+    .map((cat) => {
+      const match = (cat.catId || "").match(/\d+/);
+      return match ? parseInt(match[0], 10) : 0;
+    })
+    .filter((id) => !isNaN(id));
+
+  const maxId = ids.length > 0 ? Math.max(...ids) : 0;
+  return `CAT${String(maxId + 1).padStart(3, "0")}`;
+};
+
 const AddCategory = () => {
   const navigation: any = useNavigation();
+  const route = useRoute<any>();
+
+  const editCategory = route.params?.editCategory;
+  const existingCategories = route.params?.existingCategories || [];
 
   const [loading, setLoading] = useState(false);
+  const [franchiseUserId, setFranchiseUserId] = useState<any>(null);
+  const [franchiseId, setFranchiseId] = useState<any>(null);
+
   const [form, setForm] = useState({
     catId: "",
     name: "",
@@ -50,12 +91,39 @@ const AddCategory = () => {
   });
 
   useEffect(() => {
-    const random = "CAT" + Math.floor(100 + Math.random() * 900);
-    setForm((prev) => ({
-      ...prev,
-      catId: random,
-    }));
-  }, []);
+    const initUser = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("user");
+        let uId = null;
+        let fId = null;
+        if (userData) {
+          const user = JSON.parse(userData);
+          uId = user?.user_id || user?.id || user?.franchise_user_id;
+          fId = user?.franchise_id || user?.id;
+          setFranchiseUserId(uId);
+          setFranchiseId(fId);
+        }
+
+        if (editCategory) {
+          setForm({
+            catId: editCategory.catId || "",
+            name: editCategory.name || editCategory.cname || "",
+            description: editCategory.description || editCategory.cdescription || "",
+          });
+          setImages(parseImages(editCategory.images || editCategory.cimgs));
+        } else {
+          const nextId = generateCategoryId(existingCategories, uId);
+          setForm((prev) => ({
+            ...prev,
+            catId: nextId,
+          }));
+        }
+      } catch (e) {
+        console.log("AddCategory init error:", e);
+      }
+    };
+    initUser();
+  }, [editCategory]);
 
   const pickImages = () => {
     launchImageLibrary(
@@ -90,29 +158,35 @@ const AddCategory = () => {
 
     setLoading(true);
     try {
-      const userData = await AsyncStorage.getItem("user");
-      const user = userData ? JSON.parse(userData) : null;
-      const franchiseUserId =
-        user?.user_id || user?.id || user?.franchise_user_id;
-
       const payload = {
         catId: form.catId,
         name: form.name,
         description: form.description,
         images,
         franchise_user_id: franchiseUserId,
+        franchise_id: franchiseId,
+        created_by_user_id: franchiseUserId,
       };
 
-      await post("/categories", payload);
-
-      setFeedbackDialog({
-        visible: true,
-        title: "Category Created",
-        message: `${form.name} was added to your categories.`,
-        onSuccessGoBack: true,
-      });
+      if (editCategory) {
+        await put(`/categories/${editCategory.id}`, payload);
+        setFeedbackDialog({
+          visible: true,
+          title: "Category Updated",
+          message: `${form.name} has been successfully updated.`,
+          onSuccessGoBack: true,
+        });
+      } else {
+        await post("/categories", payload);
+        setFeedbackDialog({
+          visible: true,
+          title: "Category Created",
+          message: `${form.name} was added to your categories.`,
+          onSuccessGoBack: true,
+        });
+      }
     } catch (error: any) {
-      setErrorMessage(error.message || "Failed to create category.");
+      setErrorMessage(error.message || "Failed to save category.");
     } finally {
       setLoading(false);
     }
@@ -120,7 +194,10 @@ const AddCategory = () => {
 
   return (
     <View className="flex-1 bg-slate-950">
-      <InnerHeader title="Add Category" navigation={navigation} />
+      <InnerHeader
+        title={editCategory ? "Edit Category" : "Add Category"}
+        navigation={navigation}
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -138,10 +215,10 @@ const AddCategory = () => {
           <View className="flex-row items-center justify-between mb-6">
             <View className="flex-1">
               <Text className="text-white text-3xl font-black">
-                New Category
+                {editCategory ? "Update Category" : "New Category"}
               </Text>
               <Text className="text-slate-400 mt-1 text-xs">
-                Create a category to group products & dishes
+                Configure your catalog product classification
               </Text>
             </View>
 
@@ -172,7 +249,7 @@ const AddCategory = () => {
                   {form.catId}
                 </Text>
                 <Text className="text-slate-500 text-[10px] uppercase font-bold">
-                  Auto-Assigned
+                  {editCategory ? "Assigned ID" : "Auto-Generated"}
                 </Text>
               </View>
             </View>
@@ -185,7 +262,7 @@ const AddCategory = () => {
               <TextInput
                 value={form.name}
                 onChangeText={(text) => setForm({ ...form, name: text })}
-                placeholder="e.g. Traditional Sweets & Snacks"
+                placeholder="e.g. Dry Fruits & Nuts"
                 placeholderTextColor="#64748b"
                 className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-sm font-bold"
               />
@@ -194,14 +271,14 @@ const AddCategory = () => {
             {/* Description */}
             <View className="mb-4">
               <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
-                Description *
+                Detailed Description *
               </Text>
               <TextInput
                 value={form.description}
                 onChangeText={(text) =>
                   setForm({ ...form, description: text })
                 }
-                placeholder="Describe what items belong in this category..."
+                placeholder="What items fall under this category?"
                 placeholderTextColor="#64748b"
                 multiline
                 numberOfLines={4}
@@ -213,7 +290,7 @@ const AddCategory = () => {
             <View>
               <View className="flex-row items-center justify-between mb-3">
                 <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                  Category Photos
+                  Visual Branding (Photos)
                 </Text>
                 <TouchableOpacity
                   onPress={pickImages}
@@ -256,7 +333,7 @@ const AddCategory = () => {
                 >
                   <ImageIcon size={28} color="#64748b" />
                   <Text className="text-slate-400 text-xs font-bold mt-2">
-                    Tap to upload category banner images
+                    Tap to upload category photos
                   </Text>
                 </TouchableOpacity>
               )}
@@ -273,7 +350,7 @@ const AddCategory = () => {
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Text className="text-white font-black text-sm uppercase tracking-wider">
-                Create Category
+                {editCategory ? "Commit Update" : "Generate Category"}
               </Text>
             )}
           </TouchableOpacity>

@@ -9,6 +9,7 @@ import {
   TextInput,
   Image,
   Modal,
+  ScrollView,
 } from "react-native";
 import {
   Search,
@@ -18,7 +19,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ImageIcon,
-  Sparkles,
+  Pencil,
+  Eye,
+  X,
   CheckCircle,
 } from "lucide-react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
@@ -32,10 +35,14 @@ import CenteredDialog from "../components/CenteredDialog";
 interface Category {
   id: number;
   catId: string;
-  name: string;
-  description: string;
+  name?: string;
+  cname?: string;
+  description?: string;
+  cdescription?: string;
   images?: string[] | string;
+  cimgs?: string[] | string;
   created_at?: string;
+  franchise_user_id?: string | number;
 }
 
 const parseImages = (val: any): string[] => {
@@ -43,7 +50,8 @@ const parseImages = (val: any): string[] => {
   if (Array.isArray(val)) return val;
   if (typeof val === "string") {
     try {
-      return JSON.parse(val);
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
@@ -60,7 +68,10 @@ const Categories = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 8;
+
+  // Selected Category for Details Modal
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   // Delete Confirmation Modal
   const [deleteConfirmation, setDeleteConfirmation] = useState<Category | null>(null);
@@ -91,8 +102,15 @@ const Categories = () => {
         franchiseUserId ? `/categories?franchise_user_id=${franchiseUserId}` : "/categories"
       );
 
-      const data = Array.isArray(response) ? response : [];
-      setCategories(data);
+      const rawData = Array.isArray(response) ? response : [];
+      const sanitized = rawData.map((cat: any) => ({
+        ...cat,
+        name: cat.name || cat.cname || "",
+        description: cat.description || cat.cdescription || "",
+        images: parseImages(cat.images || cat.cimgs),
+      }));
+
+      setCategories(sanitized);
     } catch (error) {
       console.log("Category Error:", error);
     } finally {
@@ -142,6 +160,16 @@ const Categories = () => {
   }, [search]);
 
   // --------------------------------------------------
+  // EDIT CATEGORY ACTION
+  // --------------------------------------------------
+  const handleEdit = (category: Category) => {
+    navigation.navigate("AddCategory", {
+      editCategory: category,
+      existingCategories: categories,
+    });
+  };
+
+  // --------------------------------------------------
   // DELETE CATEGORY ACTION
   // --------------------------------------------------
   const confirmDelete = async () => {
@@ -153,7 +181,7 @@ const Categories = () => {
       setFeedbackDialog({
         visible: true,
         title: "Category Deleted",
-        message: `${deleteConfirmation.name || "Category"} was removed.`,
+        message: `${deleteConfirmation.name || "Category"} was successfully removed.`,
       });
       fetchCategories();
     } catch (error: any) {
@@ -212,7 +240,7 @@ const Categories = () => {
                   Categories
                 </Text>
                 <Text className="text-slate-400 mt-1 text-xs">
-                  Organize food and product catalog classifications
+                  Organize and manage catalog classifications
                 </Text>
               </View>
 
@@ -273,46 +301,78 @@ const Categories = () => {
           const hasImage = images.length > 0;
 
           return (
-            <View className="mx-4 mb-3 bg-slate-900 border border-white/10 rounded-2xl overflow-hidden">
+            <View className="mx-4 mb-2.5 bg-slate-900 border border-white/10 rounded-2xl p-3 flex-row items-center">
+              {/* Reduced Height Compact Left Thumbnail */}
               {hasImage ? (
                 <Image
                   source={{ uri: images[0] }}
-                  className="w-full h-36 border-b border-white/5"
+                  className="w-16 h-16 rounded-xl border border-white/10"
                   resizeMode="cover"
                 />
               ) : (
-                <View className="w-full h-24 bg-slate-950 items-center justify-center border-b border-white/5">
-                  <LayoutGrid size={32} color="#475569" />
+                <View className="w-16 h-16 rounded-xl bg-slate-950 border border-white/10 items-center justify-center">
+                  <LayoutGrid size={22} color="#475569" />
                 </View>
               )}
 
-              <View className="p-4">
-                <View className="flex-row items-start justify-between">
-                  <View className="flex-1 mr-2">
-                    <Text className="text-white text-base font-black">
-                      {item.name}
-                    </Text>
-                    <Text className="text-indigo-400 text-xs font-mono font-bold mt-0.5">
-                      {item.catId || `#CAT-${item.id}`}
+              {/* Center Content */}
+              <View className="flex-1 ml-3 mr-2">
+                <View className="flex-row items-center gap-1.5">
+                  <Text className="text-white text-sm font-black flex-1" numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  <View className="bg-indigo-500/15 border border-indigo-500/30 px-2 py-0.5 rounded-lg">
+                    <Text className="text-indigo-300 font-mono font-bold text-[10px]">
+                      {item.catId || `#${item.id}`}
                     </Text>
                   </View>
-
-                  <TouchableOpacity
-                    onPress={() => setDeleteConfirmation(item)}
-                    className="w-9 h-9 bg-red-500/10 border border-red-500/20 rounded-xl items-center justify-center"
-                  >
-                    <Trash2 size={16} color="#f87171" />
-                  </TouchableOpacity>
                 </View>
 
-                {item.description ? (
-                  <Text
-                    numberOfLines={2}
-                    className="text-slate-400 text-xs mt-2.5 leading-5"
-                  >
-                    {item.description}
+                <Text
+                  numberOfLines={1}
+                  className="text-slate-400 text-xs mt-1 leading-4"
+                >
+                  {item.description || "Classification category"}
+                </Text>
+
+                {images.length > 1 && (
+                  <Text className="text-slate-500 text-[10px] mt-1">
+                    📷 {images.length} photos
                   </Text>
-                ) : null}
+                )}
+              </View>
+
+              {/* Right Action Buttons: Edit & Delete */}
+              <View className="flex-row items-center gap-1.5">
+                {/* View Details */}
+                <TouchableOpacity
+                  onPress={() => setSelectedCategory(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`View details of ${item.name}`}
+                  className="w-9 h-9 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
+                >
+                  <Eye size={15} color="#cbd5e1" />
+                </TouchableOpacity>
+
+                {/* Edit Category */}
+                <TouchableOpacity
+                  onPress={() => handleEdit(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit ${item.name}`}
+                  className="w-9 h-9 bg-blue-500/10 border border-blue-500/20 rounded-xl items-center justify-center"
+                >
+                  <Pencil size={15} color="#60a5fa" />
+                </TouchableOpacity>
+
+                {/* Delete Category */}
+                <TouchableOpacity
+                  onPress={() => setDeleteConfirmation(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Delete ${item.name}`}
+                  className="w-9 h-9 bg-red-500/10 border border-red-500/20 rounded-xl items-center justify-center"
+                >
+                  <Trash2 size={15} color="#f87171" />
+                </TouchableOpacity>
               </View>
             </View>
           );
@@ -370,10 +430,98 @@ const Categories = () => {
         }}
       >
         <FloatingActionButton
-          onPress={() => navigation.navigate("AddCategory")}
+          onPress={() =>
+            navigation.navigate("AddCategory", {
+              existingCategories: categories,
+            })
+          }
           label="Add category"
         />
       </View>
+
+      {/* ================================================= */}
+      {/* CATEGORY DETAILS MODAL */}
+      {/* ================================================= */}
+      <Modal
+        visible={!!selectedCategory}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setSelectedCategory(null)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 pb-8">
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-1">
+                <Text className="text-white text-xl font-black">
+                  {selectedCategory?.name}
+                </Text>
+                <Text className="text-indigo-400 text-xs font-mono font-bold mt-0.5">
+                  {selectedCategory?.catId}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setSelectedCategory(null)}
+                className="w-8 h-8 rounded-xl bg-slate-800 items-center justify-center"
+              >
+                <X size={16} color="#cbd5e1" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Photos */}
+            {selectedCategory && parseImages(selectedCategory.images).length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+                {parseImages(selectedCategory.images).map((img, idx) => (
+                  <Image
+                    key={idx}
+                    source={{ uri: img }}
+                    className="w-40 h-32 rounded-2xl mr-3 border border-slate-800"
+                    resizeMode="cover"
+                  />
+                ))}
+              </ScrollView>
+            )}
+
+            {/* Description */}
+            <View className="bg-slate-950 rounded-2xl p-4 mb-4 border border-slate-800">
+              <Text className="text-indigo-400 text-xs font-black uppercase mb-1.5">
+                Description
+              </Text>
+              <Text className="text-slate-300 text-xs leading-5">
+                {selectedCategory?.description || "No description provided."}
+              </Text>
+            </View>
+
+            {/* Actions */}
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                onPress={() => {
+                  const cat = selectedCategory;
+                  setSelectedCategory(null);
+                  if (cat) handleEdit(cat);
+                }}
+                className="flex-1 bg-blue-600 rounded-2xl py-3.5 items-center flex-row justify-center"
+              >
+                <Pencil size={15} color="#fff" />
+                <Text className="text-white font-black text-xs uppercase ml-1.5">
+                  Edit Category
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  const cat = selectedCategory;
+                  setSelectedCategory(null);
+                  if (cat) setDeleteConfirmation(cat);
+                }}
+                className="px-5 bg-red-500/10 border border-red-500/20 rounded-2xl py-3.5 items-center justify-center"
+              >
+                <Trash2 size={16} color="#f87171" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* ================================================= */}
       {/* DELETE CONFIRMATION POPUP */}
