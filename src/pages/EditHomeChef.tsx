@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,19 +12,16 @@ import {
   Image,
   Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   MapPin,
   ChevronLeft,
   ChevronRight,
-  Check,
   X,
   Calendar,
   Clock,
   Camera,
   Image as ImageIcon,
-  Video,
-  Trash2,
   UploadCloud,
   CheckCircle,
 } from "lucide-react-native";
@@ -37,6 +34,7 @@ import {
 } from "react-native-image-picker";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { get, put } from "../services/api";
+import CenteredDialog from "../components/CenteredDialog";
 
 const INDIAN_STATES = [
   "Andhra Pradesh",
@@ -110,6 +108,7 @@ const STEPS = [
 
 const EditHomeChef = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const { chefId, chef: initialChef } = route.params || {};
 
@@ -211,6 +210,7 @@ const EditHomeChef = () => {
   const [currentUploadKey, setCurrentUploadKey] = useState<string>("");
   const [isMultiUpload, setIsMultiUpload] = useState(false);
   const [uploadMediaType, setUploadMediaType] = useState<"photo" | "video">("photo");
+  const [successVisible, setSuccessVisible] = useState(false);
 
   useEffect(() => {
     if (initialChef) {
@@ -218,9 +218,9 @@ const EditHomeChef = () => {
     } else if (chefId) {
       loadChef();
     }
-  }, [chefId, initialChef]);
+  }, [chefId, initialChef, loadChef]);
 
-  const loadChef = async () => {
+  const loadChef = useCallback(async () => {
     try {
       setInitialLoading(true);
       const res: any = await get(`/admin/homechefs/${chefId}`);
@@ -233,7 +233,7 @@ const EditHomeChef = () => {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, [chefId]);
 
   const populateChefData = (chef: any) => {
     let cuisines: string[] = [];
@@ -618,12 +618,7 @@ const EditHomeChef = () => {
 
       await put(`/admin/homechefs/${targetId}`, formData);
 
-      Alert.alert("Success", "Home chef updated successfully!", [
-        {
-          text: "OK",
-          onPress: () => navigation.goBack(),
-        },
-      ]);
+      setSuccessVisible(true);
     } catch (err: any) {
       console.log("Chef update error:", err);
       Alert.alert("Error", err.message || "Failed to update home chef profile.");
@@ -792,7 +787,7 @@ const EditHomeChef = () => {
         <ScrollView className="flex-1 p-4" contentContainerStyle={{ paddingBottom: 60 }}>
           {/* STEP 1: PERSONAL */}
           {currentStep === 1 && (
-            <View className="space-y-4">
+            <View className="gap-5">
               <View className="flex-row gap-3">
                 <View className="flex-1">
                   <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
@@ -947,7 +942,7 @@ const EditHomeChef = () => {
 
           {/* STEP 2: ADDRESS */}
           {currentStep === 2 && (
-            <View className="space-y-4">
+            <View className="gap-5">
               <View className="flex-row gap-3">
                 <View className="w-1/3">
                   <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
@@ -1067,7 +1062,7 @@ const EditHomeChef = () => {
 
           {/* STEP 3: KITCHEN */}
           {currentStep === 3 && (
-            <View className="space-y-4">
+            <View className="gap-5">
               <View>
                 <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
                   Kitchen Name *
@@ -1198,7 +1193,7 @@ const EditHomeChef = () => {
 
           {/* STEP 4: AVAILABILITY */}
           {currentStep === 4 && (
-            <View className="space-y-4">
+            <View className="gap-5">
               <View>
                 <Text className="text-slate-300 text-xs font-bold uppercase mb-2">
                   Available Days
@@ -1263,7 +1258,7 @@ const EditHomeChef = () => {
 
           {/* STEP 5: BUSINESS & BANK */}
           {currentStep === 5 && (
-            <View className="space-y-4">
+            <View className="gap-5">
               <View className="flex-row gap-3">
                 <View className="flex-1">
                   <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
@@ -1368,7 +1363,7 @@ const EditHomeChef = () => {
 
           {/* STEP 6: SOCIAL */}
           {currentStep === 6 && (
-            <View className="space-y-4">
+            <View className="gap-5">
               <View>
                 <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
                   Instagram Profile URL
@@ -1422,7 +1417,7 @@ const EditHomeChef = () => {
 
           {/* STEP 7: CREATOR */}
           {currentStep === 7 && (
-            <View className="space-y-4">
+            <View className="gap-5">
               <View>
                 <Text className="text-slate-300 text-xs font-bold uppercase mb-1.5">
                   About Me
@@ -1487,7 +1482,7 @@ const EditHomeChef = () => {
 
           {/* STEP 8: VERIFICATION */}
           {currentStep === 8 && (
-            <View className="space-y-4">
+            <View className="gap-5">
               {renderFileInput("aadhaar_front_url", "Aadhaar Card - Front")}
               {renderFileInput("aadhaar_back_url", "Aadhaar Card - Back")}
               {renderFileInput("pan_card_url", "PAN Card")}
@@ -1497,7 +1492,7 @@ const EditHomeChef = () => {
 
           {/* STEP 9: DELIVERY */}
           {currentStep === 9 && (
-            <View className="space-y-4">
+            <View className="gap-5">
               <View>
                 <Text className="text-slate-300 text-xs font-bold uppercase mb-2">
                   Delivery Radius
@@ -1651,7 +1646,7 @@ const EditHomeChef = () => {
       </KeyboardAvoidingView>
 
       {/* Date Picker Modal */}
-      <Modal visible={showDatePicker} transparent animationType="fade">
+      <Modal visible={showDatePicker} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent>
         <View className="flex-1 bg-black/80 justify-center items-center p-4">
           <View className="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-sm">
             <Text className="text-white font-black text-base mb-4 text-center">
@@ -1711,7 +1706,7 @@ const EditHomeChef = () => {
       </Modal>
 
       {/* Time Picker Modal */}
-      <Modal visible={showTimePicker} transparent animationType="fade">
+      <Modal visible={showTimePicker} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent>
         <View className="flex-1 bg-black/80 justify-center items-center p-4">
           <View className="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-sm">
             <Text className="text-white font-black text-base mb-4 text-center">
@@ -1763,9 +1758,9 @@ const EditHomeChef = () => {
       </Modal>
 
       {/* State Selection Modal */}
-      <Modal visible={showStateModal} transparent animationType="slide">
+      <Modal visible={showStateModal} transparent animationType="slide" statusBarTranslucent navigationBarTranslucent>
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[70%] p-5">
+          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[70%] p-5" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
             <View className="flex-row justify-between items-center mb-3">
               <Text className="text-white font-black text-base">Select State</Text>
               <TouchableOpacity onPress={() => setShowStateModal(false)}>
@@ -1800,7 +1795,7 @@ const EditHomeChef = () => {
       </Modal>
 
       {/* Upload Choice Modal */}
-      <Modal visible={uploadModalVisible} transparent animationType="fade">
+      <Modal visible={uploadModalVisible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent>
         <View className="flex-1 bg-black/80 justify-center items-center p-4">
           <View className="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-sm">
             <Text className="text-white font-black text-base mb-4 text-center">
@@ -1833,6 +1828,15 @@ const EditHomeChef = () => {
           </View>
         </View>
       </Modal>
+      <CenteredDialog
+        visible={successVisible}
+        title="Chef updated"
+        message="The home chef details were updated successfully."
+        onClose={() => {
+          setSuccessVisible(false);
+          navigation.goBack();
+        }}
+      />
     </SafeAreaView>
   );
 };

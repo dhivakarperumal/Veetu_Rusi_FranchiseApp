@@ -15,7 +15,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
     MapPin,
-    Navigation,
     ChevronLeft,
     ChevronRight,
     Check,
@@ -37,7 +36,6 @@ import {
     Share2,
     ShieldCheck,
     Truck,
-    CheckCircle,
 } from "lucide-react-native";
 import {
     launchImageLibrary,
@@ -49,6 +47,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 
 import { post } from "../services/api";
+import CenteredDialog from "../components/CenteredDialog";
 
 // ============================================================
 // CONSTANTS
@@ -215,6 +214,7 @@ const AddHomeChef = () => {
     const [form, setForm] = useState(emptyForm);
     const [currentStep, setCurrentStep] = useState(1);
     const [saving, setSaving] = useState(false);
+    const [successVisible, setSuccessVisible] = useState(false);
     const [fetchingLocation, setFetchingLocation] = useState(false);
 
     // Visibility toggles
@@ -374,7 +374,7 @@ const AddHomeChef = () => {
     const openMediaOptions = (
         field: string,
         mediaType: "photo" | "video" = "photo",
-        multiple: boolean = false
+        _multiple: boolean = false
     ) => {
         setActivePickerField({ field, mediaType, multiple });
         setPickerModalVisible(true);
@@ -700,16 +700,7 @@ const AddHomeChef = () => {
 
             await post("/admin/homechefs", formData);
 
-            Alert.alert(
-                "Success 🎉",
-                "Home Chef registered successfully!",
-                [
-                    {
-                        text: "Done",
-                        onPress: () => navigation.goBack(),
-                    },
-                ]
-            );
+            setSuccessVisible(true);
         } catch (error: any) {
             console.log("Create Home Chef Error:", error);
             Alert.alert("Submission Failed", error.message || "Failed to create home chef.");
@@ -732,7 +723,7 @@ const AddHomeChef = () => {
         field: string,
         value: Asset | Asset[] | null,
         mediaType: "photo" | "video" = "photo",
-        multiple: boolean = false
+        _multiple: boolean = false
     ) => {
         const isMultiple = Array.isArray(value);
 
@@ -2859,6 +2850,15 @@ const AddHomeChef = () => {
                     </View>
                 </View>
             </Modal>
+            <CenteredDialog
+                visible={successVisible}
+                title="Chef created"
+                message="The home chef was added successfully to your network."
+                onClose={() => {
+                    setSuccessVisible(false);
+                    navigation.goBack();
+                }}
+            />
         </SafeAreaView>
     );
 };

@@ -31,15 +31,19 @@ import {
   Utensils,
   ChevronLeft,
   ChevronRight,
-  Plus,
   X,
   ExternalLink,
+  ChevronDown,
+  Pencil,
 } from "lucide-react-native";
 
 import { get, patch, del } from "../services/api";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import FloatingActionButton from "../components/FloatingActionButton";
 
 const HomeChef = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -47,12 +51,15 @@ const HomeChef = () => {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
   // Selected chef for Details Modal
   const [selectedChef, setSelectedChef] = useState<any | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState<{ type: "suspend" | "delete"; chef: any } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchHomeChefs();
@@ -177,6 +184,10 @@ const HomeChef = () => {
   // ACTIONS
   // --------------------------------------------------
   const handleStatusChange = async (chef: any, newStatus: string) => {
+    if (newStatus === "Suspended") {
+      setConfirmation({ type: "suspend", chef });
+      return;
+    }
     Alert.alert(
       `${newStatus} Home Chef`,
       `Are you sure you want to change status of ${chef.name} to ${newStatus}?`,
@@ -204,30 +215,29 @@ const HomeChef = () => {
   };
 
   const handleDelete = async (chef: any) => {
-    Alert.alert(
-      "Delete Home Chef",
-      `Are you sure you want to delete ${chef.name}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await del(`/admin/homechefs/${chef.id}`);
-              Alert.alert("Deleted", "Home chef removed successfully.");
-              if (selectedChef?.id === chef.id) {
-                setIsDetailOpen(false);
-                setSelectedChef(null);
-              }
-              fetchHomeChefs();
-            } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to delete home chef.");
-            }
-          },
-        },
-      ]
-    );
+    setConfirmation({ type: "delete", chef });
+  };
+
+  const confirmAction = async () => {
+    if (!confirmation) return;
+    const { type, chef } = confirmation;
+    setActionLoading(true);
+    try {
+      if (type === "delete") {
+        await del(`/admin/homechefs/${chef.id}`);
+        setIsDetailOpen(false);
+        setSelectedChef(null);
+      } else {
+        await patch(`/admin/homechefs/${chef.id}/status`, { status: "Suspended" });
+        if (selectedChef?.id === chef.id) setSelectedChef({ ...selectedChef, status: "Suspended" });
+      }
+      setConfirmation(null);
+      fetchHomeChefs();
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Action could not be completed.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const openChefDetails = (chef: any) => {
@@ -281,67 +291,33 @@ const HomeChef = () => {
                 </Text>
               </View>
 
-              <TouchableOpacity
-                onPress={() => navigation.navigate("AddHomeChef")}
-                className="bg-emerald-600 px-4 py-3 rounded-xl flex-row items-center"
-              >
-                <Plus size={18} color="#ffffff" />
-                <Text className="text-white font-bold ml-1 text-xs">Add</Text>
-              </TouchableOpacity>
+              <View className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center">
+                <ChefHat size={20} color="#34d399" />
+              </View>
             </View>
 
             {/* ================= SUMMARY CARDS ================= */}
-            <View className="flex-row mb-3">
+            <View className="flex-row gap-2 mb-5">
               {/* TOTAL */}
-              <View className="flex-1 bg-slate-900 border border-indigo-500/20 rounded-2xl p-4 mr-2">
-                <View className="flex-row items-center">
-                  <View className="w-11 h-11 rounded-xl bg-indigo-600/20 items-center justify-center">
-                    <Users size={21} color="#818cf8" />
-                  </View>
-                  <View className="ml-3 flex-1">
-                    <Text className="text-indigo-300/70 text-[9px] font-bold uppercase">
-                      Total
-                    </Text>
-                    <Text className="text-white text-2xl font-black mt-0.5">
-                      {chefs.length}
-                    </Text>
-                  </View>
-                </View>
+              <View className="flex-1 bg-slate-900 border border-indigo-400/25 rounded-2xl p-3">
+                <View className="w-8 h-8 rounded-lg bg-indigo-500/15 items-center justify-center mb-2"><Users size={16} color="#a5b4fc" /></View>
+                <Text className="text-indigo-200/70 text-[9px] font-bold uppercase">Total</Text>
+                <Text className="text-white text-2xl font-black mt-0.5">{chefs.length}</Text>
               </View>
 
               {/* APPROVED */}
-              <View className="flex-1 bg-slate-900 border border-emerald-500/20 rounded-2xl p-4 ml-2">
-                <View className="flex-row items-center">
-                  <View className="w-11 h-11 rounded-xl bg-emerald-600/20 items-center justify-center">
-                    <CheckCircle size={21} color="#34d399" />
-                  </View>
-                  <View className="ml-3 flex-1">
-                    <Text className="text-emerald-300/70 text-[9px] font-bold uppercase">
-                      Approved
-                    </Text>
-                    <Text className="text-white text-2xl font-black mt-0.5">
-                      {approvedCount}
-                    </Text>
-                  </View>
-                </View>
+              <View className="flex-1 bg-slate-900 border border-emerald-400/25 rounded-2xl p-3">
+                <View className="w-8 h-8 rounded-lg bg-emerald-500/15 items-center justify-center mb-2"><CheckCircle size={16} color="#6ee7b7" /></View>
+                <Text className="text-emerald-200/70 text-[9px] font-bold uppercase">Approved</Text>
+                <Text className="text-white text-2xl font-black mt-0.5">{approvedCount}</Text>
               </View>
-            </View>
 
             {/* PENDING CARD */}
-            <View className="bg-slate-900 border border-amber-500/20 rounded-2xl p-4 mb-5">
-              <View className="flex-row items-center">
-                <View className="w-11 h-11 rounded-xl bg-amber-600/20 items-center justify-center">
-                  <Clock size={21} color="#fbbf24" />
-                </View>
-                <View className="ml-3 flex-1">
-                  <Text className="text-amber-300/70 text-[9px] font-bold uppercase">
-                    Pending & Suspended
-                  </Text>
-                  <Text className="text-white text-2xl font-black mt-0.5">
-                    {pendingCount + suspendedCount}
-                  </Text>
-                </View>
-              </View>
+            <View className="flex-1 bg-slate-900 border border-amber-400/25 rounded-2xl p-3 mb-5">
+              <View className="w-8 h-8 rounded-lg bg-amber-500/15 items-center justify-center mb-2"><Clock size={16} color="#fcd34d" /></View>
+              <Text className="text-amber-200/70 text-[9px] font-bold uppercase">Needs review</Text>
+              <Text className="text-white text-2xl font-black mt-0.5">{pendingCount + suspendedCount}</Text>
+            </View>
             </View>
 
             {/* ================= SEARCH ================= */}
@@ -357,35 +333,11 @@ const HomeChef = () => {
             </View>
 
             {/* ================= FILTER ================= */}
-            <View className="flex-row items-center mb-4">
-              <Filter size={15} color="#94a3b8" />
-              <Text className="text-slate-400 ml-1.5 mr-2 text-[10px] font-bold">
-                STATUS
-              </Text>
-              {["All", "Pending", "Approved", "Suspended", "Rejected"].map(
-                (status) => {
-                  const active = statusFilter === status;
-                  return (
-                    <TouchableOpacity
-                      key={status}
-                      onPress={() => setStatusFilter(status)}
-                      className={`px-3 py-1.5 rounded-lg mr-1.5 ${
-                        active
-                          ? "bg-emerald-600"
-                          : "bg-slate-900 border border-white/10"
-                      }`}
-                    >
-                      <Text
-                        className={`text-[10px] font-bold ${
-                          active ? "text-white" : "text-slate-400"
-                        }`}
-                      >
-                        {status}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                }
-              )}
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center"><Filter size={15} color="#94a3b8" /><Text className="text-slate-400 ml-1.5 text-[10px] font-bold uppercase">Filter chefs</Text></View>
+              <TouchableOpacity onPress={() => setIsFilterOpen(true)} className="flex-row items-center bg-slate-900 border border-white/10 rounded-xl px-3 py-2">
+                <Text className="text-white text-xs font-bold mr-2">{statusFilter}</Text><ChevronDown size={15} color="#94a3b8" />
+              </TouchableOpacity>
             </View>
 
             {/* RESULT COUNT */}
@@ -427,7 +379,7 @@ const HomeChef = () => {
               </View>
 
               {/* ================= INFO ================= */}
-              <View className="mt-4 space-y-1.5">
+              <View className="mt-4 gap-2">
                 {/* EMAIL */}
                 <View className="flex-row items-center mb-1.5">
                   <Mail size={14} color="#64748b" />
@@ -512,12 +464,11 @@ const HomeChef = () => {
                 {/* VIEW DETAILS */}
                 <TouchableOpacity
                   onPress={() => openChefDetails(item)}
-                  className="flex-1 bg-slate-800 border border-white/10 rounded-xl py-2.5 flex-row items-center justify-center"
+                  accessibilityRole="button"
+                  accessibilityLabel={`View details for ${item.name || "chef"}`}
+                  className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
                 >
                   <Eye size={15} color="#cbd5e1" />
-                  <Text className="text-slate-200 text-xs font-bold ml-1.5">
-                    Details
-                  </Text>
                 </TouchableOpacity>
 
                 {/* EDIT */}
@@ -528,15 +479,19 @@ const HomeChef = () => {
                       chef: item,
                     })
                   }
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit ${item.name || "chef"}`}
                   className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
                 >
-                  <Edit3 size={16} color="#cbd5e1" />
+                  <Pencil size={16} color="#cbd5e1" />
                 </TouchableOpacity>
 
                 {/* APPROVE */}
                 {item.status !== "Approved" && (
                   <TouchableOpacity
                     onPress={() => handleStatusChange(item, "Approved")}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Approve ${item.name || "chef"}`}
                     className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-xl items-center justify-center"
                   >
                     <Check size={17} color="#34d399" />
@@ -547,6 +502,8 @@ const HomeChef = () => {
                 {item.status === "Approved" && (
                   <TouchableOpacity
                     onPress={() => handleStatusChange(item, "Suspended")}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Suspend ${item.name || "chef"}`}
                     className="w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl items-center justify-center"
                   >
                     <ShieldAlert size={17} color="#fbbf24" />
@@ -556,6 +513,8 @@ const HomeChef = () => {
                 {/* DELETE */}
                 <TouchableOpacity
                   onPress={() => handleDelete(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Delete ${item.name || "chef"}`}
                   className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-xl items-center justify-center"
                 >
                   <Trash2 size={16} color="#f87171" />
@@ -602,6 +561,41 @@ const HomeChef = () => {
           ) : null
         }
       />
+
+      <FloatingActionButton
+        onPress={() => navigation.navigate("AddHomeChef")}
+        label="Add home chef"
+      />
+
+      <Modal
+        visible={!!confirmation}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={() => setConfirmation(null)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
+            {confirmation?.type === "delete" ? <Trash2 size={25} color="#f87171" /> : <ShieldAlert size={25} color="#fbbf24" />}
+            <Text className="text-white text-lg font-black mt-4">{confirmation?.type === "delete" ? "Remove this chef?" : "Suspend this chef?"}</Text>
+            <Text className="text-slate-400 text-sm mt-2">{confirmation?.chef?.name || "This chef"} will be {confirmation?.type === "delete" ? "removed from" : "blocked from"} your home chef network.</Text>
+            <View className="flex-row gap-3 mt-6">
+              <TouchableOpacity onPress={() => setConfirmation(null)} disabled={actionLoading} className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"><Text className="text-slate-300 font-bold text-xs uppercase">Cancel</Text></TouchableOpacity>
+              <TouchableOpacity onPress={confirmAction} disabled={actionLoading} className={`flex-1 rounded-2xl py-3.5 items-center ${confirmation?.type === "delete" ? "bg-red-600" : "bg-amber-500"}`}>{actionLoading ? <ActivityIndicator size="small" color="#fff" /> : <Text className="text-white font-black text-xs uppercase">{confirmation?.type === "delete" ? "Remove chef" : "Suspend chef"}</Text>}</TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={isFilterOpen} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent onRequestClose={() => setIsFilterOpen(false)}>
+        <View className="flex-1 bg-black/80 justify-end">
+          <View className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
+            <View className="flex-row items-center justify-between mb-4"><Text className="text-white text-base font-black">Filter chefs</Text><TouchableOpacity onPress={() => setIsFilterOpen(false)}><X size={18} color="#cbd5e1" /></TouchableOpacity></View>
+            {["All", "Pending", "Approved", "Suspended", "Rejected"].map((status) => <TouchableOpacity key={status} onPress={() => { setStatusFilter(status); setIsFilterOpen(false); }} className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${statusFilter === status ? "bg-emerald-500/15 border-emerald-500/40" : "bg-slate-950 border-white/5"}`}><Text className={`text-sm font-bold ${statusFilter === status ? "text-emerald-300" : "text-slate-300"}`}>{status === "All" ? "All chefs" : status}</Text>{statusFilter === status ? <CheckCircle size={17} color="#34d399" /> : null}</TouchableOpacity>)}
+          </View>
+        </View>
+      </Modal>
 
       {/* ================================================= */}
       {/* CHEF DETAILS POPUP MODAL */}
