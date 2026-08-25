@@ -123,7 +123,9 @@ const DeliveryPartners = () => {
       });
     }
 
-    if (statusFilter !== "All") {
+    if (statusFilter === "Needs Review") {
+      result = result.filter((p) => ["Pending", "Suspended", "Rejected"].includes(p.status));
+    } else if (statusFilter !== "All") {
       result = result.filter((p) => p.status === statusFilter);
     }
 
@@ -292,31 +294,64 @@ const DeliveryPartners = () => {
             {/* ================= SUMMARY METRICS ================= */}
             <View className="flex-row gap-2 mb-5">
               {/* TOTAL */}
-              <View className="flex-1 bg-slate-900 border border-indigo-400/25 rounded-2xl p-3">
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("All");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "All"
+                    ? "border-indigo-400"
+                    : "border-indigo-400/25"
+                }`}
+              >
                 <View className="w-8 h-8 rounded-lg bg-indigo-500/15 items-center justify-center mb-2">
                   <Users size={16} color="#a5b4fc" />
                 </View>
                 <Text className="text-indigo-200/70 text-[9px] font-bold uppercase">Total</Text>
                 <Text className="text-white text-2xl font-black mt-0.5">{partners.length}</Text>
-              </View>
+              </TouchableOpacity>
 
               {/* APPROVED */}
-              <View className="flex-1 bg-slate-900 border border-emerald-400/25 rounded-2xl p-3">
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("Approved");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "Approved"
+                    ? "border-emerald-400"
+                    : "border-emerald-400/25"
+                }`}
+              >
                 <View className="w-8 h-8 rounded-lg bg-emerald-500/15 items-center justify-center mb-2">
                   <CheckCircle size={16} color="#6ee7b7" />
                 </View>
                 <Text className="text-emerald-200/70 text-[9px] font-bold uppercase">Approved</Text>
                 <Text className="text-white text-2xl font-black mt-0.5">{approvedCount}</Text>
-              </View>
+              </TouchableOpacity>
 
               {/* PENDING & SUSPENDED CARD */}
-              <View className="flex-1 bg-slate-900 border border-amber-400/25 rounded-2xl p-3">
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("Needs Review");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "Needs Review"
+                    ? "border-amber-400"
+                    : "border-amber-400/25"
+                }`}
+              >
                 <View className="w-8 h-8 rounded-lg bg-amber-500/15 items-center justify-center mb-2">
                   <Clock size={16} color="#fcd34d" />
                 </View>
                 <Text className="text-amber-200/70 text-[9px] font-bold uppercase">Needs review</Text>
                 <Text className="text-white text-2xl font-black mt-0.5">{pendingCount + suspendedCount}</Text>
-              </View>
+              </TouchableOpacity>
             </View>
 
             {/* ================= SEARCH INPUT ================= */}
@@ -618,7 +653,7 @@ const DeliveryPartners = () => {
                 <X size={17} color="#cbd5e1" />
               </TouchableOpacity>
             </View>
-            {["All", "Pending", "Approved", "Suspended", "Rejected"].map((status) => {
+            {["All", "Approved", "Needs Review", "Pending", "Suspended", "Rejected"].map((status) => {
               const active = statusFilter === status;
               return (
                 <TouchableOpacity
