@@ -7,7 +7,6 @@ import {
   RefreshControl,
   TouchableOpacity,
   TextInput,
-  Alert,
   Modal,
   ScrollView,
   KeyboardAvoidingView,
@@ -22,7 +21,6 @@ import {
   Search,
   Filter,
   Eye,
-  Check,
   ShieldAlert,
   ShieldCheck,
   Trash2,
@@ -35,14 +33,15 @@ import {
   ChevronDown,
   Pencil,
   Plus,
-  Shield,
   Lock,
   User,
+  AlertTriangle,
 } from "lucide-react-native";
 
 import { get, post, put, patch, del } from "../services/api";
 import InnerHeader from "../components/InnerHeader";
 import FloatingActionButton from "../components/FloatingActionButton";
+import CenteredDialog from "../components/CenteredDialog";
 
 interface UserItem {
   id: number;
@@ -59,7 +58,7 @@ const AVAILABLE_ROLES = [
   { label: "User", value: "user" },
   { label: "Admin", value: "admin" },
   { label: "Superadmin", value: "superadmin" },
-  { label: "Chef", value: "homechef" },
+  { label: "Chef", value: "chef" },
   { label: "Franchise", value: "franchise" },
   { label: "Delivery Partner", value: "delivery_partner" },
 ];
@@ -87,6 +86,7 @@ const UserManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState("");
   const [formData, setFormData] = useState({
     id: null as number | null,
     name: "",
@@ -103,6 +103,17 @@ const UserManagement = () => {
   } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Success Feedback Dialog (Custom Popup)
+  const [feedbackDialog, setFeedbackDialog] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+  });
+
   // Fetch Users
   const fetchUsers = async () => {
     try {
@@ -116,8 +127,12 @@ const UserManagement = () => {
       }
     } catch (error: any) {
       console.log("User Management Fetch Error:", error);
-      Alert.alert("Error", error.message || "Failed to load user accounts.");
       setUsers([]);
+      setFeedbackDialog({
+        visible: true,
+        title: "Load Failed",
+        message: error.message || "Failed to load user accounts.",
+      });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -217,7 +232,7 @@ const UserManagement = () => {
         text: "text-blue-400",
       };
     }
-    if (r === "homechef") {
+    if (r === "chef") {
       return {
         bg: "bg-orange-500/15",
         border: "border-orange-500/30",
@@ -268,6 +283,7 @@ const UserManagement = () => {
   // --------------------------------------------------
   const openAddModal = () => {
     setModalMode("add");
+    setFormError("");
     setFormData({
       id: null,
       name: "",
@@ -281,6 +297,7 @@ const UserManagement = () => {
 
   const openEditModal = (user: UserItem) => {
     setModalMode("edit");
+    setFormError("");
     setFormData({
       id: user.id,
       name: user.name || "",
@@ -293,16 +310,17 @@ const UserManagement = () => {
   };
 
   const handleModalSubmit = async () => {
+    setFormError("");
     if (!formData.name.trim()) {
-      Alert.alert("Validation", "Username is required.");
+      setFormError("Username / customer name is required.");
       return;
     }
     if (!formData.email.trim()) {
-      Alert.alert("Validation", "Email is required.");
+      setFormError("Email address is required.");
       return;
     }
     if (modalMode === "add" && !formData.password.trim()) {
-      Alert.alert("Validation", "Password is required for new users.");
+      setFormError("Password is required for new accounts.");
       return;
     }
 
@@ -310,12 +328,16 @@ const UserManagement = () => {
     try {
       if (modalMode === "add") {
         await post("/admin/users", formData);
-        Alert.alert("Success", "User added successfully.");
+        setIsModalOpen(false);
+        setFeedbackDialog({
+          visible: true,
+          title: "User Registered",
+          message: `${formData.name} has been successfully added to the system.`,
+        });
       } else {
         const payload: any = { ...formData };
         if (!payload.password) delete payload.password;
         await put(`/admin/users/${formData.id}`, payload);
-        Alert.alert("Success", "User updated successfully.");
 
         if (selectedUser?.id === formData.id) {
           setSelectedUser({
@@ -326,21 +348,23 @@ const UserManagement = () => {
             role: formData.role,
           });
         }
+        setIsModalOpen(false);
+        setFeedbackDialog({
+          visible: true,
+          title: "User Updated",
+          message: `${formData.name}'s account details were successfully updated.`,
+        });
       }
-      setIsModalOpen(false);
       fetchUsers();
     } catch (error: any) {
-      Alert.alert(
-        "Error",
-        error.message || `Failed to ${modalMode === "add" ? "add" : "update"} user.`
-      );
+      setFormError(error.message || `Failed to ${modalMode === "add" ? "add" : "update"} user.`);
     } finally {
       setFormLoading(false);
     }
   };
 
   // --------------------------------------------------
-  // ACTION HANDLERS
+  // ACTION PROMPT HANDLERS (CUSTOMIZED POPUPS)
   // --------------------------------------------------
   const handleToggleStatusPrompt = (user: UserItem) => {
     const active = isUserActive(user);
@@ -368,7 +392,12 @@ const UserManagement = () => {
           setIsDetailOpen(false);
           setSelectedUser(null);
         }
-        Alert.alert("Success", "User account deleted successfully.");
+        setConfirmation(null);
+        setFeedbackDialog({
+          visible: true,
+          title: "Account Deleted",
+          message: `${user.name || "User account"} has been permanently removed from the system.`,
+        });
       } else {
         const nextActive = type === "unblock" ? 1 : 0;
         await patch(`/admin/users/status/${user.id}`, { active: nextActive });
@@ -378,15 +407,24 @@ const UserManagement = () => {
             active: nextActive === 1 ? "Active" : "Blocked",
           });
         }
-        Alert.alert(
-          "Success",
-          `User account ${type === "unblock" ? "unblocked" : "blocked"} successfully.`
-        );
+        setConfirmation(null);
+        setFeedbackDialog({
+          visible: true,
+          title: type === "unblock" ? "Account Activated" : "Account Blocked",
+          message:
+            type === "unblock"
+              ? `${user.name || "User"} is now unblocked and has active access to the platform.`
+              : `${user.name || "User"} has been blocked and restricted from logging in.`,
+        });
       }
-      setConfirmation(null);
       fetchUsers();
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Action could not be completed.");
+      setConfirmation(null);
+      setFeedbackDialog({
+        visible: true,
+        title: "Action Failed",
+        message: error.message || "Action could not be completed. Please try again.",
+      });
     } finally {
       setActionLoading(false);
     }
@@ -663,14 +701,14 @@ const UserManagement = () => {
                   </TouchableOpacity>
 
                   {/* Edit User */}
-                  {/* <TouchableOpacity
+                  <TouchableOpacity
                     onPress={() => openEditModal(item)}
                     accessibilityRole="button"
                     accessibilityLabel={`Edit ${item.name || "user"}`}
                     className="w-10 h-10 bg-slate-800 border border-white/10 rounded-xl items-center justify-center"
                   >
                     <Pencil size={16} color="#cbd5e1" />
-                  </TouchableOpacity> */}
+                  </TouchableOpacity>
 
                   {/* Toggle Status (Block / Unblock) */}
                   {isUserActive(item) ? (
@@ -750,7 +788,7 @@ const UserManagement = () => {
       />
 
       {/* Floating Action Button */}
-      {/*  <View
+      <View
         style={{
           position: "absolute",
           right: 20,
@@ -760,7 +798,7 @@ const UserManagement = () => {
         }}
       >
         <FloatingActionButton onPress={openAddModal} label="Add new user" />
-      </View> */}
+      </View>
 
       {/* ================================================= */}
       {/* ADD / EDIT USER MODAL */}
@@ -807,6 +845,16 @@ const UserManagement = () => {
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
             >
+              {/* Error Banner */}
+              {formError ? (
+                <View className="mb-4 bg-red-500/15 border border-red-500/30 rounded-2xl p-3.5 flex-row items-center">
+                  <AlertTriangle size={18} color="#f87171" />
+                  <Text className="text-red-400 text-xs font-bold ml-2.5 flex-1">
+                    {formError}
+                  </Text>
+                </View>
+              ) : null}
+
               {/* Username */}
               <View className="mb-4">
                 <Text className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
@@ -816,9 +864,10 @@ const UserManagement = () => {
                   <User size={16} color="#64748b" />
                   <TextInput
                     value={formData.name}
-                    onChangeText={(text) =>
-                      setFormData({ ...formData, name: text })
-                    }
+                    onChangeText={(text) => {
+                      setFormError("");
+                      setFormData({ ...formData, name: text });
+                    }}
                     placeholder="e.g. John Doe"
                     placeholderTextColor="#64748b"
                     className="flex-1 text-white ml-3 text-sm font-semibold"
@@ -835,9 +884,10 @@ const UserManagement = () => {
                   <Mail size={16} color="#64748b" />
                   <TextInput
                     value={formData.email}
-                    onChangeText={(text) =>
-                      setFormData({ ...formData, email: text })
-                    }
+                    onChangeText={(text) => {
+                      setFormError("");
+                      setFormData({ ...formData, email: text });
+                    }}
                     placeholder="e.g. john@example.com"
                     placeholderTextColor="#64748b"
                     keyboardType="email-address"
@@ -911,9 +961,10 @@ const UserManagement = () => {
                   <Lock size={16} color="#64748b" />
                   <TextInput
                     value={formData.password}
-                    onChangeText={(text) =>
-                      setFormData({ ...formData, password: text })
-                    }
+                    onChangeText={(text) => {
+                      setFormError("");
+                      setFormData({ ...formData, password: text });
+                    }}
                     placeholder={
                       modalMode === "add"
                         ? "Enter a secure password"
@@ -1103,7 +1154,7 @@ const UserManagement = () => {
                       ? "Full administrative access with user and role management authority."
                       : selectedUser?.role === "admin"
                       ? "Administrative dashboard access with order, product and partner management."
-                      : selectedUser?.role === "homechef"
+                      : selectedUser?.role === "chef"
                       ? "Home chef portal access for managing kitchen orders and menu."
                       : selectedUser?.role === "delivery_partner"
                       ? "Delivery partner access for active fleet and deliveries."
@@ -1115,7 +1166,7 @@ const UserManagement = () => {
 
             {/* Bottom Actions */}
             <View className="p-4 border-t border-slate-800 bg-slate-950 flex-row gap-2">
-              {/* <TouchableOpacity
+              <TouchableOpacity
                 onPress={() => {
                   const target = selectedUser;
                   setIsDetailOpen(false);
@@ -1127,8 +1178,9 @@ const UserManagement = () => {
                 <Text className="text-slate-300 font-bold text-sm uppercase ml-1.5">
                   Edit
                 </Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
 
+              {/* Toggle Status Action */}
               {selectedUser && (
                 <TouchableOpacity
                   onPress={() => {
@@ -1141,14 +1193,28 @@ const UserManagement = () => {
                   }`}
                 >
                   <Text className="text-white font-black text-sm uppercase tracking-wider">
-                    {isUserActive(selectedUser) ? "Block User" : "Activate User"}
+                    {isUserActive(selectedUser) ? "Block User" : "Unblock User"}
                   </Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Delete Action */}
+              {selectedUser && (
+                <TouchableOpacity
+                  onPress={() => {
+                    const target = selectedUser;
+                    setIsDetailOpen(false);
+                    handleDeletePrompt(target);
+                  }}
+                  className="px-3.5 bg-red-500/10 border border-red-500/20 py-3 rounded-2xl items-center justify-center"
+                >
+                  <Trash2 size={18} color="#f87171" />
                 </TouchableOpacity>
               )}
 
               <TouchableOpacity
                 onPress={() => setIsDetailOpen(false)}
-                className="px-5 bg-slate-800 py-3 rounded-2xl items-center"
+                className="px-4 bg-slate-800 py-3 rounded-2xl items-center"
               >
                 <Text className="text-slate-300 font-bold text-sm uppercase">
                   Close
@@ -1160,7 +1226,7 @@ const UserManagement = () => {
       </Modal>
 
       {/* ================================================= */}
-      {/* CONFIRMATION MODAL (BLOCK / UNBLOCK / DELETE) */}
+      {/* CUSTOMIZED CONFIRMATION MODAL (DELETE / BLOCK / UNBLOCK) */}
       {/* ================================================= */}
       <Modal
         visible={!!confirmation}
@@ -1175,46 +1241,80 @@ const UserManagement = () => {
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
             style={{ paddingBottom: Math.max(insets.bottom, 20) }}
           >
+            {/* Header Icon */}
             <View
-              className={`w-12 h-12 rounded-2xl items-center justify-center mb-4 ${
+              className={`w-14 h-14 rounded-2xl items-center justify-center mb-4 border ${
                 confirmation?.type === "delete"
-                  ? "bg-red-500/15"
+                  ? "bg-red-500/15 border-red-500/30"
                   : confirmation?.type === "block"
-                  ? "bg-amber-500/15"
-                  : "bg-emerald-500/15"
+                  ? "bg-amber-500/15 border-amber-500/30"
+                  : "bg-emerald-500/15 border-emerald-500/30"
               }`}
             >
               {confirmation?.type === "delete" ? (
-                <Trash2 size={23} color="#f87171" />
+                <Trash2 size={26} color="#f87171" />
               ) : confirmation?.type === "block" ? (
-                <ShieldAlert size={23} color="#fbbf24" />
+                <ShieldAlert size={26} color="#fbbf24" />
               ) : (
-                <ShieldCheck size={23} color="#34d399" />
+                <ShieldCheck size={26} color="#34d399" />
               )}
             </View>
 
-            <Text className="text-white text-lg font-black">
+            {/* Modal Title */}
+            <Text className="text-white text-xl font-black">
               {confirmation?.type === "delete"
-                ? "Delete this user account?"
+                ? "Delete User Account?"
                 : confirmation?.type === "block"
-                ? "Block this user?"
-                : "Unblock this user?"}
+                ? "Block User Account?"
+                : "Unblock User Account?"}
             </Text>
 
-            <Text className="text-slate-400 text-sm mt-2 leading-5">
+            {/* User Details Mini Badge */}
+            {confirmation?.user && (
+              <View className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 my-3 flex-row items-center">
+                <View className="w-10 h-10 rounded-xl bg-slate-800 items-center justify-center mr-3">
+                  <User size={18} color="#94a3b8" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-white text-sm font-bold" numberOfLines={1}>
+                    {confirmation.user.name || "User"}
+                  </Text>
+                  <Text className="text-slate-400 text-xs mt-0.5" numberOfLines={1}>
+                    {confirmation.user.email || confirmation.user.phone || "No contact info"}
+                  </Text>
+                </View>
+                <View
+                  className={`px-2 py-1 rounded-lg border ${
+                    getRoleStyle(confirmation.user.role).bg
+                  } ${getRoleStyle(confirmation.user.role).border}`}
+                >
+                  <Text
+                    className={`text-[9px] font-black uppercase ${
+                      getRoleStyle(confirmation.user.role).text
+                    }`}
+                  >
+                    {confirmation.user.role?.replace(/_/g, " ") || "user"}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Detailed Description */}
+            <Text className="text-slate-400 text-sm leading-5">
               {confirmation?.type === "delete"
-                ? `${
-                    confirmation?.user?.name || "This user"
-                  } will be permanently removed from the system.`
+                ? `Are you sure you want to permanently delete the account for ${
+                    confirmation?.user?.name || "this user"
+                  }? This action cannot be undone and all associated records will be removed.`
                 : confirmation?.type === "block"
                 ? `${
                     confirmation?.user?.name || "This user"
-                  } will be blocked from logging into the platform.`
+                  } will be suspended and immediately blocked from logging into the platform until unblocked.`
                 : `${
                     confirmation?.user?.name || "This user"
-                  } will regain full access to their account.`}
+                  }'s account will be restored and they will regain immediate access to login and use the platform.`}
             </Text>
 
+            {/* Modal Action Buttons */}
             <View className="flex-row gap-3 mt-6">
               <TouchableOpacity
                 onPress={() => setConfirmation(null)}
@@ -1240,7 +1340,7 @@ const UserManagement = () => {
                 {actionLoading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Text className="text-white font-black text-xs uppercase">
+                  <Text className="text-white font-black text-xs uppercase tracking-wider">
                     {confirmation?.type === "delete"
                       ? "Delete Account"
                       : confirmation?.type === "block"
@@ -1366,6 +1466,17 @@ const UserManagement = () => {
           </View>
         </View>
       </Modal>
+
+      {/* ================================================= */}
+      {/* CUSTOM FEEDBACK POPUP DIALOG */}
+      {/* ================================================= */}
+      <CenteredDialog
+        visible={feedbackDialog.visible}
+        title={feedbackDialog.title}
+        message={feedbackDialog.message}
+        onClose={() => setFeedbackDialog({ ...feedbackDialog, visible: false })}
+        actionLabel="Okay"
+      />
     </View>
   );
 };
