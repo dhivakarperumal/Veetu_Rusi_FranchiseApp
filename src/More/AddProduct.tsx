@@ -1601,7 +1601,7 @@ const AddProduct = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5 max-h-[70%]"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-white text-base font-black">
@@ -1662,7 +1662,7 @@ const AddProduct = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5 max-h-[75%]"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-white text-base font-black">

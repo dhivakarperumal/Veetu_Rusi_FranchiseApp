@@ -763,7 +763,7 @@ const Products = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex-col"
-            style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             {/* Modal Header */}
             <View
@@ -1013,7 +1013,7 @@ const Products = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             <View className="w-14 h-14 rounded-2xl items-center justify-center mb-4 border bg-red-500/15 border-red-500/30">
               <Trash2 size={26} color="#f87171" />
@@ -1088,7 +1088,7 @@ const Products = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             <View className="flex-row items-center justify-between mb-4">
               <View>

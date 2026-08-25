@@ -29,6 +29,7 @@ import {
   ShoppingBag,
 } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { get, post, put } from "../services/api";
 import InnerHeader from "../components/InnerHeader";
@@ -128,6 +129,7 @@ const CreateOrderModal = ({
   onClose,
   onCreated,
 }: CreateOrderModalProps) => {
+  const insets = useSafeAreaInsets();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -550,7 +552,10 @@ const CreateOrderModal = ({
         </ScrollView>
 
         {/* Bottom CTA */}
-        <View className="border-t border-white/10 bg-slate-900 p-4">
+        <View
+          className="border-t border-white/10 bg-slate-900 p-4"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}
+        >
           <View className="mb-3 flex-row justify-between items-center">
             <Text className="font-bold text-slate-400">
               {items.length} Item(s)
@@ -587,6 +592,7 @@ const CreateOrderModal = ({
 
 const Orders = () => {
   const navigation: any = useNavigation();
+  const insets = useSafeAreaInsets();
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
   const [activeStatus, setActiveStatus] = useState("All");
@@ -939,7 +945,10 @@ const Orders = () => {
         onRequestClose={() => setModalOrder(null)}
       >
         <View className="flex-1 justify-end bg-black/80">
-          <View className="rounded-t-3xl bg-slate-900 border-t border-white/10 p-6">
+          <View
+            className="rounded-t-3xl bg-slate-900 border-t border-white/10 p-6"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
+          >
             <Text className="text-xl font-black text-white">
               {modalStatus} Details
             </Text>

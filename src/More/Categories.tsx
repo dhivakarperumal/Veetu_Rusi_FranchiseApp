@@ -25,6 +25,7 @@ import {
   CheckCircle,
 } from "lucide-react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { get, del } from "../services/api";
@@ -62,6 +63,7 @@ const parseImages = (val: any): string[] => {
 const Categories = () => {
   const navigation: any = useNavigation();
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -450,7 +452,10 @@ const Categories = () => {
         onRequestClose={() => setSelectedCategory(null)}
       >
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 pb-8">
+          <View
+            className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
+          >
             <View className="flex-row items-center justify-between mb-4">
               <View className="flex-1">
                 <Text className="text-white text-xl font-black">
@@ -536,7 +541,7 @@ const Categories = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
-            style={{ paddingBottom: 24 }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             <View className="w-14 h-14 rounded-2xl items-center justify-center mb-4 border bg-red-500/15 border-red-500/30">
               <Trash2 size={26} color="#f87171" />

@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { get, put } from "../services/api";
 import InnerHeader from "../components/InnerHeader";
@@ -44,6 +45,7 @@ interface Product {
 const StockDetails = () => {
   const navigation: any = useNavigation();
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -461,7 +463,7 @@ const StockDetails = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
-            style={{ paddingBottom: 24 }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-white text-base font-black">

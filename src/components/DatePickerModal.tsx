@@ -4,7 +4,6 @@ import {
   Text,
   Modal,
   TouchableOpacity,
-  ScrollView,
 } from "react-native";
 import {
   ChevronLeft,
@@ -13,6 +12,7 @@ import {
   X,
   Check,
 } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface DatePickerModalProps {
   visible: boolean;
@@ -46,6 +46,8 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
   onClose,
   onSelectDate,
 }) => {
+  const insets = useSafeAreaInsets();
+
   const parseInitialDate = () => {
     if (initialDate && /^\d{4}-\d{2}-\d{2}$/.test(initialDate)) {
       const parts = initialDate.split("-").map(Number);
@@ -120,30 +122,37 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
     );
   };
 
-  // Generate calendar grid array
-  const totalSlots = Math.ceil((firstDayIndex + daysInMonth) / 7) * 7;
-  const gridCells = [];
+  // Generate 7-column rows
+  const gridCells: (number | null)[] = [];
+  for (let i = 0; i < firstDayIndex; i++) {
+    gridCells.push(null);
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    gridCells.push(day);
+  }
+  while (gridCells.length % 7 !== 0) {
+    gridCells.push(null);
+  }
 
-  for (let i = 0; i < totalSlots; i++) {
-    const dayNumber = i - firstDayIndex + 1;
-    if (dayNumber > 0 && dayNumber <= daysInMonth) {
-      gridCells.push(dayNumber);
-    } else {
-      gridCells.push(null);
-    }
+  const rows: (number | null)[][] = [];
+  for (let i = 0; i < gridCells.length; i += 7) {
+    rows.push(gridCells.slice(i, i + 7));
   }
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType="slide"
       statusBarTranslucent
       navigationBarTranslucent
       onRequestClose={onClose}
     >
       <View className="flex-1 bg-black/80 justify-end">
-        <View className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5 pb-8">
+        <View
+          className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+          style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
+        >
           {/* Header */}
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center">
@@ -199,7 +208,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
           </View>
 
           {/* Month / Year Navigator */}
-          <View className="flex-row items-center justify-between bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 mb-4">
+          <View className="flex-row items-center justify-between bg-slate-950 border border-slate-800 rounded-2xl px-4 py-2.5 mb-3.5">
             <TouchableOpacity
               onPress={prevMonth}
               className="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 items-center justify-center"
@@ -219,10 +228,10 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Days of Week Header */}
-          <View className="flex-row justify-between mb-2">
+          {/* Days of Week Header (7 Equal Columns) */}
+          <View className="flex-row mb-2">
             {DAYS_OF_WEEK.map((d, i) => (
-              <View key={i} className="w-10 items-center">
+              <View key={i} className="flex-1 items-center justify-center py-1">
                 <Text className="text-slate-500 font-bold text-[10px] uppercase">
                   {d}
                 </Text>
@@ -230,51 +239,61 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
             ))}
           </View>
 
-          {/* Calendar Grid */}
-          <View className="flex-row flex-wrap justify-between mb-5">
-            {gridCells.map((day, index) => {
-              if (day === null) {
-                return <View key={index} className="w-10 h-10 mb-1" />;
-              }
+          {/* Calendar Grid (Strict 7 Columns per Row) */}
+          <View className="mb-4">
+            {rows.map((row, rIdx) => (
+              <View key={rIdx} className="flex-row mb-1.5">
+                {row.map((day, cIdx) => {
+                  if (day === null) {
+                    return (
+                      <View
+                        key={cIdx}
+                        className="flex-1 aspect-square p-0.5"
+                      />
+                    );
+                  }
 
-              const selected = isSelected(day);
-              const today = isToday(day);
+                  const selected = isSelected(day);
+                  const today = isToday(day);
 
-              return (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleDateClick(day)}
-                  className={`w-10 h-10 mb-1 rounded-xl items-center justify-center ${
-                    selected
-                      ? "bg-emerald-600 shadow-md"
-                      : today
-                      ? "bg-slate-800 border border-emerald-500/40"
-                      : "bg-slate-950 border border-slate-800/60"
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-black ${
-                      selected
-                        ? "text-white"
-                        : today
-                        ? "text-emerald-400"
-                        : "text-slate-300"
-                    }`}
-                  >
-                    {day}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+                  return (
+                    <View key={cIdx} className="flex-1 aspect-square p-0.5">
+                      <TouchableOpacity
+                        onPress={() => handleDateClick(day)}
+                        className={`w-full h-full rounded-xl items-center justify-center ${
+                          selected
+                            ? "bg-emerald-600 shadow-md"
+                            : today
+                            ? "bg-slate-800 border border-emerald-500/40"
+                            : "bg-slate-950 border border-slate-800/60"
+                        }`}
+                      >
+                        <Text
+                          className={`text-xs font-black ${
+                            selected
+                              ? "text-white"
+                              : today
+                              ? "text-emerald-400"
+                              : "text-slate-300"
+                          }`}
+                        >
+                          {day}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </View>
+            ))}
           </View>
 
-          {/* Selected Date Summary & Actions */}
-          <View className="flex-row items-center justify-between gap-3 pt-2 border-t border-white/10">
+          {/* Selected Date Summary & Actions with Safe Area Bottom Padding */}
+          <View className="flex-row items-center justify-between gap-3 pt-3 border-t border-white/10">
             <View className="flex-1">
               <Text className="text-slate-400 text-[10px] font-black uppercase">
                 Selected Date
               </Text>
-              <Text className="text-emerald-400 font-mono font-bold text-sm">
+              <Text className="text-emerald-400 font-mono font-bold text-sm mt-0.5">
                 {formatDateString(selectedDate)}
               </Text>
             </View>

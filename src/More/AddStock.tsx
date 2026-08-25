@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Boxes,
   Plus,
@@ -37,6 +38,7 @@ interface Product {
 
 const AddStock = () => {
   const navigation: any = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -260,7 +262,7 @@ const AddStock = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5 max-h-[75%]"
-            style={{ paddingBottom: 24 }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-white text-base font-black">

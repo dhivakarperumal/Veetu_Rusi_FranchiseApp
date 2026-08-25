@@ -1022,7 +1022,7 @@ const UserManagement = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85%] flex-col"
-            style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             {/* Modal Header */}
             <View className="p-5 bg-emerald-700 rounded-t-3xl flex-row items-center justify-between">
@@ -1239,7 +1239,7 @@ const UserManagement = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             {/* Header Icon */}
             <View
@@ -1368,7 +1368,7 @@ const UserManagement = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View
             className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             <View className="flex-row items-center justify-between mb-4">
               <View>
