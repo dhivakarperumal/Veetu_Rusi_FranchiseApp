@@ -33,7 +33,7 @@ import {
 } from "lucide-react-native";
 import { get, put, del } from "../services/api";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import FloatingActionButton from "../components/FloatingActionButton";
+// import FloatingActionButton from "../components/FloatingActionButton";
 import { useNavigation } from "@react-navigation/native";
 
 const API_BASE_URL = "https://veeturusi.qtechx.com";
@@ -927,7 +927,7 @@ const FoodProducts = () => {
       />
 
       {/* Floating Action Button */}
-      <View
+      {/* <View
         style={{
           position: "absolute",
           right: 20,
@@ -940,7 +940,7 @@ const FoodProducts = () => {
           onPress={() => navigation.navigate("AddProduct")}
           label="Add food product"
         />
-      </View>
+      </View> */}
 
       {/* ================================================= */}
       {/* STATUS FILTER MODAL */}
@@ -1544,7 +1544,7 @@ const FoodProducts = () => {
 
             {/* ================= BOTTOM ACTIONS ================= */}
             <View className="p-4 border-t border-slate-800 bg-slate-950 flex-row gap-2">
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => {
                   setSelectedFood(null);
                   navigation.navigate("AddProduct");
@@ -1555,7 +1555,7 @@ const FoodProducts = () => {
                 <Text className="text-slate-300 font-bold text-sm uppercase ml-1.5">
                   Edit
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               {selectedFood?.status !== "Active" &&
                 selectedFood?.status !== "Approved" && (
