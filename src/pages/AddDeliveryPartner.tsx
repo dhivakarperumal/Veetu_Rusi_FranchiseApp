@@ -12,7 +12,7 @@ import {
     Image,
     Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
     ChevronLeft,
     ChevronRight,
@@ -45,6 +45,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 
 import { post } from "../services/api";
+import CenteredDialog from "../components/CenteredDialog";
 
 // ============================================================
 // CONSTANTS
@@ -237,6 +238,7 @@ const emptyForm = {
 
 const AddDeliveryPartner = () => {
     const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
 
     const [form, setForm] = useState(emptyForm);
     const [currentStep, setCurrentStep] = useState(1);
@@ -264,6 +266,7 @@ const AddDeliveryPartner = () => {
 
     // Brand Selector Modal
     const [brandModalVisible, setBrandModalVisible] = useState(false);
+    const [successVisible, setSuccessVisible] = useState(false);
 
     // ============================================================
     // FIELD UPDATER
@@ -682,16 +685,7 @@ const AddDeliveryPartner = () => {
 
             await post("/admin/delivery-partners", formData);
 
-            Alert.alert(
-                "Success 🎉",
-                "Delivery Partner registered successfully!",
-                [
-                    {
-                        text: "Done",
-                        onPress: () => navigation.goBack(),
-                    },
-                ]
-            );
+            setSuccessVisible(true);
         } catch (error: any) {
             console.log("Create Delivery Partner Error:", error);
             Alert.alert("Submission Failed", error.message || "Failed to create delivery partner.");
@@ -2149,10 +2143,15 @@ const AddDeliveryPartner = () => {
                 visible={pickerModalVisible}
                 transparent
                 animationType="fade"
+                statusBarTranslucent
+                navigationBarTranslucent
                 onRequestClose={() => setPickerModalVisible(false)}
             >
                 <View className="flex-1 bg-black/80 justify-end p-5">
-                    <View className="bg-slate-900 border border-slate-800 rounded-3xl p-5 mb-3">
+                    <View
+                        className="bg-slate-900 border border-slate-800 rounded-3xl p-5 mb-3"
+                        style={{ marginBottom: Math.max(insets.bottom, 12) }}
+                    >
                         <Text className="text-white text-base font-black mb-4 text-center">
                             Select Attachment
                         </Text>
@@ -2181,6 +2180,7 @@ const AddDeliveryPartner = () => {
                     <TouchableOpacity
                         onPress={() => setPickerModalVisible(false)}
                         className="bg-slate-900 border border-slate-800 p-4 rounded-2xl items-center"
+                        style={{ marginBottom: insets.bottom }}
                     >
                         <Text className="text-slate-400 font-bold text-sm">
                             Cancel
@@ -2196,6 +2196,8 @@ const AddDeliveryPartner = () => {
                 visible={dateModalVisible}
                 transparent
                 animationType="fade"
+                statusBarTranslucent
+                navigationBarTranslucent
                 onRequestClose={() => setDateModalVisible(false)}
             >
                 <View className="flex-1 bg-black/80 justify-center p-5">
@@ -2351,10 +2353,15 @@ const AddDeliveryPartner = () => {
                 visible={stateModalVisible}
                 transparent
                 animationType="slide"
+                statusBarTranslucent
+                navigationBarTranslucent
                 onRequestClose={() => setStateModalVisible(false)}
             >
                 <View className="flex-1 bg-black/80 justify-end">
-                    <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-h-[70%]">
+                    <View
+                        className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-h-[70%]"
+                        style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+                    >
                         <View className="flex-row items-center justify-between mb-4">
                             <Text className="text-white text-base font-black">
                                 Select State
@@ -2417,10 +2424,15 @@ const AddDeliveryPartner = () => {
                 visible={brandModalVisible}
                 transparent
                 animationType="slide"
+                statusBarTranslucent
+                navigationBarTranslucent
                 onRequestClose={() => setBrandModalVisible(false)}
             >
                 <View className="flex-1 bg-black/80 justify-end">
-                    <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-h-[60%]">
+                    <View
+                        className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-h-[60%]"
+                        style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+                    >
                         <View className="flex-row items-center justify-between mb-4">
                             <Text className="text-white text-base font-black">
                                 Select Vehicle Brand
@@ -2465,6 +2477,15 @@ const AddDeliveryPartner = () => {
                     </View>
                 </View>
             </Modal>
+            <CenteredDialog
+                visible={successVisible}
+                title="Partner created"
+                message="The delivery partner was added successfully to your fleet."
+                onClose={() => {
+                    setSuccessVisible(false);
+                    navigation.goBack();
+                }}
+            />
         </SafeAreaView>
     );
 };

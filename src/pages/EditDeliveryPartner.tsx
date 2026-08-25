@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   Image,
   Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ChevronLeft,
   ChevronRight,
@@ -22,7 +22,6 @@ import {
   X,
   UploadCloud,
   CheckCircle,
-  MapPin,
 } from "lucide-react-native";
 import {
   launchImageLibrary,
@@ -33,6 +32,7 @@ import {
 } from "react-native-image-picker";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { get, put } from "../services/api";
+import CenteredDialog from "../components/CenteredDialog";
 
 const INDIAN_STATES = [
   "Andhra Pradesh",
@@ -96,6 +96,7 @@ const STEPS = [
 
 const EditDeliveryPartner = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const { partnerId, partner: initialPartner } = route.params || {};
 
@@ -187,16 +188,9 @@ const EditDeliveryPartner = () => {
 
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
   const [currentUploadKey, setCurrentUploadKey] = useState<string>("");
+  const [successVisible, setSuccessVisible] = useState(false);
 
-  useEffect(() => {
-    if (initialPartner) {
-      populatePartnerData(initialPartner);
-    } else if (partnerId) {
-      loadPartner();
-    }
-  }, [partnerId, initialPartner]);
-
-  const loadPartner = async () => {
+  const loadPartner = useCallback(async () => {
     try {
       setInitialLoading(true);
       const res: any = await get(`/admin/delivery-partners/${partnerId}`);
@@ -209,7 +203,15 @@ const EditDeliveryPartner = () => {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, [partnerId]);
+
+  useEffect(() => {
+    if (initialPartner) {
+      populatePartnerData(initialPartner);
+    } else if (partnerId) {
+      loadPartner();
+    }
+  }, [partnerId, initialPartner, loadPartner]);
 
   const populatePartnerData = (p: any) => {
     setForm({
@@ -445,12 +447,7 @@ const EditDeliveryPartner = () => {
 
       await put(`/admin/delivery-partners/${targetId}`, formData);
 
-      Alert.alert("Success", "Delivery partner updated successfully!", [
-        {
-          text: "OK",
-          onPress: () => navigation.goBack(),
-        },
-      ]);
+      setSuccessVisible(true);
     } catch (err: any) {
       console.log("Delivery partner update error:", err);
       Alert.alert("Error", err.message || "Failed to update delivery partner.");
@@ -582,7 +579,10 @@ const EditDeliveryPartner = () => {
         </ScrollView>
 
         {/* Step Content */}
-        <ScrollView className="flex-1 p-4" contentContainerStyle={{ paddingBottom: 60 }}>
+        <ScrollView
+          className="flex-1 px-5"
+          contentContainerStyle={{ paddingTop: 20, paddingBottom: 60 }}
+        >
           {/* STEP 1: PERSONAL */}
           {currentStep === 1 && (
             <View className="space-y-4">
@@ -1256,7 +1256,13 @@ const EditDeliveryPartner = () => {
       </KeyboardAvoidingView>
 
       {/* Date Picker Modal */}
-      <Modal visible={showDatePicker} transparent animationType="fade">
+      <Modal
+        visible={showDatePicker}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+      >
         <View className="flex-1 bg-black/80 justify-center items-center p-4">
           <View className="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-sm">
             <Text className="text-white font-black text-base mb-4 text-center">
@@ -1316,9 +1322,18 @@ const EditDeliveryPartner = () => {
       </Modal>
 
       {/* State Modal */}
-      <Modal visible={showStateModal} transparent animationType="slide">
+      <Modal
+        visible={showStateModal}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
+      >
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[70%] p-5">
+          <View
+            className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[70%] p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
             <View className="flex-row justify-between items-center mb-3">
               <Text className="text-white font-black text-base">Select State</Text>
               <TouchableOpacity onPress={() => setShowStateModal(false)}>
@@ -1353,9 +1368,18 @@ const EditDeliveryPartner = () => {
       </Modal>
 
       {/* Brand Modal */}
-      <Modal visible={showBrandModal} transparent animationType="slide">
+      <Modal
+        visible={showBrandModal}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        navigationBarTranslucent
+      >
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[60%] p-5">
+          <View
+            className="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[60%] p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
             <View className="flex-row justify-between items-center mb-3">
               <Text className="text-white font-black text-base">Select Brand</Text>
               <TouchableOpacity onPress={() => setShowBrandModal(false)}>
@@ -1381,7 +1405,13 @@ const EditDeliveryPartner = () => {
       </Modal>
 
       {/* Upload Choice Modal */}
-      <Modal visible={uploadModalVisible} transparent animationType="fade">
+      <Modal
+        visible={uploadModalVisible}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
+      >
         <View className="flex-1 bg-black/80 justify-center items-center p-4">
           <View className="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-sm">
             <Text className="text-white font-black text-base mb-4 text-center">
@@ -1414,6 +1444,15 @@ const EditDeliveryPartner = () => {
           </View>
         </View>
       </Modal>
+      <CenteredDialog
+        visible={successVisible}
+        title="Partner updated"
+        message="The delivery partner details were updated successfully."
+        onClose={() => {
+          setSuccessVisible(false);
+          navigation.goBack();
+        }}
+      />
     </SafeAreaView>
   );
 };
