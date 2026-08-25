@@ -388,7 +388,7 @@ const StockDetails = () => {
                 >
                   <Plus size={13} color="#34d399" />
                   <Text className="text-emerald-300 font-bold text-[10px] uppercase ml-1.5">
-                    Replenish
+                    Add Stock
                   </Text>
                 </TouchableOpacity>
               </View>

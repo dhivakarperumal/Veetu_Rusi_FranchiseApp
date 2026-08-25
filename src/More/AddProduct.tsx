@@ -723,17 +723,18 @@ const AddProduct = () => {
                     <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                       Manufacture Date
                     </Text>
-                    <TouchableOpacity
-                      onPress={() =>
-                        openDatePicker(
-                          "mfg",
-                          true,
-                          "Select Manufacture Date"
-                        )
-                      }
-                      className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                    >
-                      <View className="flex-row items-center flex-1 mr-1">
+                    <View className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2.5 flex-row items-center justify-between">
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() =>
+                          openDatePicker(
+                            "mfg",
+                            true,
+                            "Select Manufacture Date"
+                          )
+                        }
+                        className="flex-row items-center flex-1 py-1"
+                      >
                         <CalendarIcon size={14} color="#34d399" />
                         <Text
                           className={`ml-2 text-xs font-mono font-bold ${
@@ -744,21 +745,23 @@ const AddProduct = () => {
                         >
                           {singleForm.manufactureDate || "YYYY-MM-DD"}
                         </Text>
-                      </View>
+                      </TouchableOpacity>
                       {singleForm.manufactureDate ? (
                         <TouchableOpacity
+                          activeOpacity={0.7}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                           onPress={() =>
                             setSingleForm((prev) => ({
                               ...prev,
                               manufactureDate: "",
                             }))
                           }
-                          className="p-1"
+                          className="p-1 rounded-lg bg-slate-900"
                         >
                           <X size={12} color="#94a3b8" />
                         </TouchableOpacity>
                       ) : null}
-                    </TouchableOpacity>
+                    </View>
                   </View>
 
                   {/* Expiry Date */}
@@ -766,17 +769,18 @@ const AddProduct = () => {
                     <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                       Expiry Date
                     </Text>
-                    <TouchableOpacity
-                      onPress={() =>
-                        openDatePicker(
-                          "exp",
-                          true,
-                          "Select Expiry Date"
-                        )
-                      }
-                      className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                    >
-                      <View className="flex-row items-center flex-1 mr-1">
+                    <View className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2.5 flex-row items-center justify-between">
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() =>
+                          openDatePicker(
+                            "exp",
+                            true,
+                            "Select Expiry Date"
+                          )
+                        }
+                        className="flex-row items-center flex-1 py-1"
+                      >
                         <CalendarIcon size={14} color="#f59e0b" />
                         <Text
                           className={`ml-2 text-xs font-mono font-bold ${
@@ -787,21 +791,23 @@ const AddProduct = () => {
                         >
                           {singleForm.expiryDate || "YYYY-MM-DD"}
                         </Text>
-                      </View>
+                      </TouchableOpacity>
                       {singleForm.expiryDate ? (
                         <TouchableOpacity
+                          activeOpacity={0.7}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                           onPress={() =>
                             setSingleForm((prev) => ({
                               ...prev,
                               expiryDate: "",
                             }))
                           }
-                          className="p-1"
+                          className="p-1 rounded-lg bg-slate-900"
                         >
                           <X size={12} color="#94a3b8" />
                         </TouchableOpacity>
                       ) : null}
-                    </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
 
@@ -1234,17 +1240,18 @@ const AddProduct = () => {
                     <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                       Manufacture Date
                     </Text>
-                    <TouchableOpacity
-                      onPress={() =>
-                        openDatePicker(
-                          "mfg",
-                          false,
-                          "Select Combo Manufacture Date"
-                        )
-                      }
-                      className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                    >
-                      <View className="flex-row items-center flex-1 mr-1">
+                    <View className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2.5 flex-row items-center justify-between">
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() =>
+                          openDatePicker(
+                            "mfg",
+                            false,
+                            "Select Combo Manufacture Date"
+                          )
+                        }
+                        className="flex-row items-center flex-1 py-1"
+                      >
                         <CalendarIcon size={14} color="#fbbf24" />
                         <Text
                           className={`ml-2 text-xs font-mono font-bold ${
@@ -1255,21 +1262,23 @@ const AddProduct = () => {
                         >
                           {comboForm.manufactureDate || "YYYY-MM-DD"}
                         </Text>
-                      </View>
+                      </TouchableOpacity>
                       {comboForm.manufactureDate ? (
                         <TouchableOpacity
+                          activeOpacity={0.7}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                           onPress={() =>
                             setComboForm((prev) => ({
                               ...prev,
                               manufactureDate: "",
                             }))
                           }
-                          className="p-1"
+                          className="p-1 rounded-lg bg-slate-900"
                         >
                           <X size={12} color="#94a3b8" />
                         </TouchableOpacity>
                       ) : null}
-                    </TouchableOpacity>
+                    </View>
                   </View>
 
                   {/* Expiry Date */}
@@ -1277,17 +1286,18 @@ const AddProduct = () => {
                     <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                       Expiry Date
                     </Text>
-                    <TouchableOpacity
-                      onPress={() =>
-                        openDatePicker(
-                          "exp",
-                          false,
-                          "Select Combo Expiry Date"
-                        )
-                      }
-                      className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-3 flex-row items-center justify-between"
-                    >
-                      <View className="flex-row items-center flex-1 mr-1">
+                    <View className="bg-slate-950 border border-slate-800 rounded-2xl px-3.5 py-2.5 flex-row items-center justify-between">
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() =>
+                          openDatePicker(
+                            "exp",
+                            false,
+                            "Select Combo Expiry Date"
+                          )
+                        }
+                        className="flex-row items-center flex-1 py-1"
+                      >
                         <CalendarIcon size={14} color="#f59e0b" />
                         <Text
                           className={`ml-2 text-xs font-mono font-bold ${
@@ -1298,21 +1308,23 @@ const AddProduct = () => {
                         >
                           {comboForm.expiryDate || "YYYY-MM-DD"}
                         </Text>
-                      </View>
+                      </TouchableOpacity>
                       {comboForm.expiryDate ? (
                         <TouchableOpacity
+                          activeOpacity={0.7}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                           onPress={() =>
                             setComboForm((prev) => ({
                               ...prev,
                               expiryDate: "",
                             }))
                           }
-                          className="p-1"
+                          className="p-1 rounded-lg bg-slate-900"
                         >
                           <X size={12} color="#94a3b8" />
                         </TouchableOpacity>
                       ) : null}
-                    </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
               </View>
