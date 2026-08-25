@@ -9,12 +9,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
   CheckCircle2,
   ChevronLeft,
+  ChevronRight,
   ChevronDown,
   Clock3,
   CreditCard,
@@ -27,10 +26,13 @@ import {
   UserRound,
   X,
   ArrowRight,
+  ShoppingBag,
 } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 
 import { get, post, put } from "../services/api";
+import InnerHeader from "../components/InnerHeader";
+import CenteredDialog from "../components/CenteredDialog";
 
 type Order = {
   id: number | string;
@@ -54,13 +56,40 @@ const statuses = [
   "Cancelled",
 ];
 
-const statusColors: Record<string, { background: string; text: string }> = {
-  "Order Placed": { background: "#dbeafe", text: "#1d4ed8" },
-  Packing: { background: "#ede9fe", text: "#6d28d9" },
-  Shipping: { background: "#fef3c7", text: "#b45309" },
-  "Out for Delivery": { background: "#cffafe", text: "#0e7490" },
-  Delivered: { background: "#d1fae5", text: "#047857" },
-  Cancelled: { background: "#ffe4e6", text: "#be123c" },
+const statusStyles: Record<
+  string,
+  { bg: string; border: string; text: string }
+> = {
+  "Order Placed": {
+    bg: "bg-blue-500/15",
+    border: "border-blue-500/30",
+    text: "text-blue-400",
+  },
+  Packing: {
+    bg: "bg-purple-500/15",
+    border: "border-purple-500/30",
+    text: "text-purple-400",
+  },
+  Shipping: {
+    bg: "bg-amber-500/15",
+    border: "border-amber-500/30",
+    text: "text-amber-400",
+  },
+  "Out for Delivery": {
+    bg: "bg-cyan-500/15",
+    border: "border-cyan-500/30",
+    text: "text-cyan-400",
+  },
+  Delivered: {
+    bg: "bg-emerald-500/15",
+    border: "border-emerald-500/30",
+    text: "text-emerald-400",
+  },
+  Cancelled: {
+    bg: "bg-red-500/15",
+    border: "border-red-500/30",
+    text: "text-red-400",
+  },
 };
 
 const orderFlow = [
@@ -78,14 +107,6 @@ type Product = {
   offer_price?: number | string;
   price?: number | string;
   category?: string;
-  variants?: ProductVariant[];
-};
-
-type ProductVariant = {
-  color?: string;
-  colorName?: string;
-  images?: string[];
-  sizesStock?: Record<string, number | string>;
 };
 
 type OrderItem = {
@@ -94,8 +115,6 @@ type OrderItem = {
   price: number;
   quantity: number;
   total: number;
-  variant_color: string;
-  variant_size: string;
 };
 
 type CreateOrderModalProps = {
@@ -104,15 +123,19 @@ type CreateOrderModalProps = {
   onCreated: () => Promise<void>;
 };
 
-const CreateOrderModal = ({ visible, onClose, onCreated }: CreateOrderModalProps) => {
+const CreateOrderModal = ({
+  visible,
+  onClose,
+  onCreated,
+}: CreateOrderModalProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]);
+  const [categories, setCategories] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
-  const [selectedSize, setSelectedSize] = useState("");
   const [productSearch, setProductSearch] = useState("");
   const [items, setItems] = useState<OrderItem[]>([]);
   const [customerName, setCustomerName] = useState("");
@@ -125,22 +148,27 @@ const CreateOrderModal = ({ visible, onClose, onCreated }: CreateOrderModalProps
   const [zipCode, setZipCode] = useState("");
   const [country, setCountry] = useState("India");
   const [paymentMethod, setPaymentMethod] = useState("Showroom");
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     if (!visible) return;
-    const loadProducts = async () => {
+    const loadData = async () => {
       try {
-        const [productResponse, categoryResponse] = await Promise.all([
-          get<Product[] | { data?: Product[] }>("/products"),
-          get<Array<{ id: number; name: string }> | { data?: Array<{ id: number; name: string }> }>("/categories"),
+        const [prodRes, catRes] = await Promise.allSettled([
+          get<any[]>("/franchise-products"),
+          get<any[]>("/categories"),
         ]);
-        setProducts(Array.isArray(productResponse) ? productResponse : productResponse.data || []);
-        setCategories(Array.isArray(categoryResponse) ? categoryResponse : categoryResponse.data || []);
+        if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value)) {
+          setProducts(prodRes.value);
+        }
+        if (catRes.status === "fulfilled" && Array.isArray(catRes.value)) {
+          setCategories(catRes.value);
+        }
       } catch (error) {
         console.log("Create Order Data Error:", error);
       }
     };
-    loadProducts();
+    loadData();
   }, [visible]);
 
   const reset = () => {
@@ -148,8 +176,6 @@ const CreateOrderModal = ({ visible, onClose, onCreated }: CreateOrderModalProps
     setItems([]);
     setSelectedCategory("");
     setSelectedProduct(null);
-    setSelectedVariant(null);
-    setSelectedSize("");
     setProductSearch("");
     setCustomerName("");
     setCustomerPhone("");
@@ -161,6 +187,7 @@ const CreateOrderModal = ({ visible, onClose, onCreated }: CreateOrderModalProps
     setZipCode("");
     setCountry("India");
     setPaymentMethod("Showroom");
+    setErrorMsg("");
   };
 
   const close = () => {
@@ -168,44 +195,57 @@ const CreateOrderModal = ({ visible, onClose, onCreated }: CreateOrderModalProps
     onClose();
   };
 
-  const filteredProducts = products.filter(product => {
-    const query = productSearch.toLowerCase();
-    const matchesSearch = product.name.toLowerCase().includes(query) || product.product_code?.toLowerCase().includes(query);
-    return matchesSearch && (!selectedCategory || product.category === selectedCategory);
+  const filteredProducts = products.filter((p) => {
+    const q = productSearch.toLowerCase();
+    const matchesSearch =
+      p.name.toLowerCase().includes(q) ||
+      (p.product_code || "").toLowerCase().includes(q);
+    return matchesSearch && (!selectedCategory || p.category === selectedCategory);
   });
 
   const total = items.reduce((sum, item) => sum + item.total, 0);
 
-  const addItem = () => {
-    if (!selectedProduct) return;
-    const color = selectedVariant?.colorName || selectedVariant?.color || "Standard";
-    if (selectedProduct.variants?.length && (!selectedVariant || !selectedSize)) {
-      Alert.alert("Choose variant", "Select a color and size before adding the product.");
-      return;
-    }
-    const price = Number(selectedProduct.offer_price || selectedProduct.price || 0);
-    const existing = items.findIndex(item => item.product_id === selectedProduct.id && item.variant_color === color && item.variant_size === selectedSize);
+  const addItem = (product: Product) => {
+    const price = Number(product.offer_price || product.price || 0);
+    const existing = items.findIndex((it) => it.product_id === product.id);
     if (existing >= 0) {
       const next = [...items];
-      next[existing] = { ...next[existing], quantity: next[existing].quantity + 1, total: price * (next[existing].quantity + 1) };
+      next[existing] = {
+        ...next[existing],
+        quantity: next[existing].quantity + 1,
+        total: price * (next[existing].quantity + 1),
+      };
       setItems(next);
     } else {
-      setItems([...items, { product_id: selectedProduct.id, name: selectedProduct.name, price, quantity: 1, total: price, variant_color: color, variant_size: selectedSize || "Standard" }]);
+      setItems([
+        ...items,
+        {
+          product_id: product.id,
+          name: product.name,
+          price,
+          quantity: 1,
+          total: price,
+        },
+      ]);
     }
-    setSelectedProduct(null);
-    setSelectedVariant(null);
-    setSelectedSize("");
   };
 
   const createOrder = async () => {
-    if (!customerName.trim() || !customerPhone.trim() || !streetAddress.trim() || !city.trim() || !state.trim() || !zipCode.trim()) {
-      Alert.alert("Required details", "Fill in name, phone, street, city, state, and zip code.");
+    setErrorMsg("");
+    if (
+      !customerName.trim() ||
+      !customerPhone.trim() ||
+      !streetAddress.trim() ||
+      !city.trim() ||
+      !state.trim() ||
+      !zipCode.trim()
+    ) {
+      setErrorMsg("Please fill in all required customer details.");
       return;
     }
     try {
       setLoading(true);
       await post("/orders", {
-        user_id: "",
         customer_name: customerName.trim(),
         customer_email: customerEmail.trim(),
         customer_phone: customerPhone.trim(),
@@ -221,11 +261,10 @@ const CreateOrderModal = ({ visible, onClose, onCreated }: CreateOrderModalProps
         total_amount: total,
         created_at: new Date().toISOString(),
       });
-      Alert.alert("Success", "Order created successfully.");
       await onCreated();
       close();
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to create order.");
+      setErrorMsg(error.message || "Failed to create order.");
     } finally {
       setLoading(false);
     }
@@ -233,50 +272,318 @@ const CreateOrderModal = ({ visible, onClose, onCreated }: CreateOrderModalProps
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={close}>
-      <SafeAreaView className="flex-1 bg-slate-100">
-        <View className="flex-row items-center justify-between border-b border-slate-200 bg-white px-4 py-4">
+      <View className="flex-1 bg-slate-950">
+        {/* Header */}
+        <View className="flex-row items-center justify-between border-b border-white/10 bg-slate-900 px-5 py-4">
           <View className="flex-row items-center">
-            {step === 2 && <TouchableOpacity onPress={() => setStep(1)} className="mr-3"><ChevronLeft size={24} color="#0f172a" /></TouchableOpacity>}
-            <View><Text className="text-xl font-bold text-slate-900">Create New Order</Text><Text className="text-xs text-slate-500">Step {step} of 2</Text></View>
+            {step === 2 && (
+              <TouchableOpacity onPress={() => setStep(1)} className="mr-3">
+                <ChevronLeft size={22} color="#ffffff" />
+              </TouchableOpacity>
+            )}
+            <View>
+              <Text className="text-xl font-black text-white">
+                Create New Order
+              </Text>
+              <Text className="text-xs text-slate-400">Step {step} of 2</Text>
+            </View>
           </View>
-          <TouchableOpacity onPress={close} className="rounded-xl bg-slate-100 p-2"><X size={20} color="#475569" /></TouchableOpacity>
+          <TouchableOpacity
+            onPress={close}
+            className="rounded-xl bg-slate-800 p-2 border border-white/10"
+          >
+            <X size={18} color="#cbd5e1" />
+          </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {errorMsg ? (
+            <View className="mb-4 bg-red-500/15 border border-red-500/30 rounded-2xl p-3.5">
+              <Text className="text-red-400 text-xs font-bold">{errorMsg}</Text>
+            </View>
+          ) : null}
+
           {step === 1 ? (
             <View>
-              <View className="mb-4 rounded-3xl bg-white p-4">
-                <Text className="mb-2 font-bold text-slate-800">Select category</Text>
+              {/* Category Filter */}
+              <View className="mb-4 rounded-3xl bg-slate-900 border border-white/10 p-4">
+                <Text className="mb-2 text-xs font-black uppercase text-slate-400">
+                  Select Category
+                </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <TouchableOpacity onPress={() => setSelectedCategory("")} className={`mr-2 rounded-xl px-3 py-2 ${!selectedCategory ? "bg-slate-900" : "bg-slate-100"}`}><Text className={!selectedCategory ? "text-white" : "text-slate-600"}>All</Text></TouchableOpacity>
-                  {categories.map(category => <TouchableOpacity key={category.id} onPress={() => setSelectedCategory(category.name)} className={`mr-2 rounded-xl px-3 py-2 ${selectedCategory === category.name ? "bg-slate-900" : "bg-slate-100"}`}><Text className={selectedCategory === category.name ? "text-white" : "text-slate-600"}>{category.name}</Text></TouchableOpacity>)}
+                  <TouchableOpacity
+                    onPress={() => setSelectedCategory("")}
+                    className={`mr-2 rounded-xl px-3.5 py-2 ${
+                      !selectedCategory
+                        ? "bg-emerald-600"
+                        : "bg-slate-950 border border-slate-800"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-bold ${
+                        !selectedCategory ? "text-white" : "text-slate-400"
+                      }`}
+                    >
+                      All
+                    </Text>
+                  </TouchableOpacity>
+                  {categories.map((c) => (
+                    <TouchableOpacity
+                      key={c.id}
+                      onPress={() => setSelectedCategory(c.name)}
+                      className={`mr-2 rounded-xl px-3.5 py-2 ${
+                        selectedCategory === c.name
+                          ? "bg-emerald-600"
+                          : "bg-slate-950 border border-slate-800"
+                      }`}
+                    >
+                      <Text
+                        className={`text-xs font-bold ${
+                          selectedCategory === c.name
+                            ? "text-white"
+                            : "text-slate-400"
+                        }`}
+                      >
+                        {c.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
               </View>
-              <View className="mb-4 flex-row items-center rounded-2xl bg-white px-4"><Search size={19} color="#94a3b8" /><TextInput value={productSearch} onChangeText={setProductSearch} placeholder="Search products" className="ml-3 flex-1 py-4" /></View>
-              {filteredProducts.map(product => <TouchableOpacity key={product.id} onPress={() => { setSelectedProduct(product); setSelectedVariant(null); setSelectedSize(""); }} className={`mb-3 rounded-2xl bg-white p-4 ${selectedProduct?.id === product.id ? "border-2 border-emerald-500" : ""}`}><View className="flex-row items-center justify-between"><View><Text className="font-bold text-slate-900">{product.name}</Text><Text className="mt-1 text-xs text-slate-500">{product.product_code || "Product"}  |  ₹{Number(product.offer_price || product.price || 0).toLocaleString("en-IN")}</Text></View><Plus size={20} color="#059669" /></View></TouchableOpacity>)}
-              {selectedProduct && <View className="mb-4 rounded-3xl border border-emerald-100 bg-emerald-50 p-4"><Text className="font-bold text-emerald-800">{selectedProduct.name}</Text>{selectedProduct.variants?.length ? <><Text className="mb-2 mt-4 text-xs font-bold uppercase text-slate-500">Color</Text><View className="flex-row flex-wrap gap-2">{selectedProduct.variants.map((variant, index) => <TouchableOpacity key={index} onPress={() => { setSelectedVariant(variant); setSelectedSize(""); }} className={`rounded-xl border px-3 py-2 ${selectedVariant === variant ? "border-emerald-600 bg-emerald-600" : "border-slate-200 bg-white"}`}><Text className={selectedVariant === variant ? "text-white" : "text-slate-700"}>{variant.colorName || variant.color || `Color ${index + 1}`}</Text></TouchableOpacity>)}</View>{selectedVariant && <><Text className="mb-2 mt-4 text-xs font-bold uppercase text-slate-500">Size</Text><View className="flex-row flex-wrap gap-2">{Object.entries(selectedVariant.sizesStock || {}).map(([size, stock]) => <TouchableOpacity key={size} disabled={Number(stock) <= 0} onPress={() => setSelectedSize(size)} className={`rounded-xl px-3 py-2 ${Number(stock) <= 0 ? "bg-slate-200" : selectedSize === size ? "bg-emerald-600" : "bg-white"}`}><Text className={selectedSize === size ? "text-white" : "text-slate-700"}>{size} ({stock})</Text></TouchableOpacity>)}</View></>}</> : null}<TouchableOpacity onPress={addItem} className="mt-4 rounded-xl bg-emerald-600 py-3"><Text className="text-center font-bold text-white">Add to order</Text></TouchableOpacity></View>}
-              <Text className="mb-2 mt-2 text-sm font-bold text-slate-700">Order items</Text>
-              {items.length === 0 ? <View className="rounded-2xl border-2 border-dashed border-slate-200 p-8"><Text className="text-center text-slate-400">Your cart is empty</Text></View> : items.map((item, index) => <View key={`${item.product_id}-${item.variant_size}`} className="mb-2 flex-row items-center rounded-2xl bg-white p-3"><View className="flex-1"><Text className="font-bold text-slate-800">{item.name}</Text><Text className="text-xs text-slate-500">{item.variant_color} / {item.variant_size}  |  ₹{item.price}</Text></View><TextInput keyboardType="number-pad" value={String(item.quantity)} onChangeText={value => { const quantity = Math.max(1, Number(value) || 1); setItems(items.map((current, itemIndex) => itemIndex === index ? { ...current, quantity, total: current.price * quantity } : current)); }} className="w-12 rounded-lg bg-slate-100 px-2 py-2 text-center" /><TouchableOpacity onPress={() => setItems(items.filter((_, itemIndex) => itemIndex !== index))} className="ml-3"><Trash2 size={19} color="#e11d48" /></TouchableOpacity></View>)}
+
+              {/* Product Search */}
+              <View className="mb-4 flex-row items-center rounded-2xl bg-slate-900 border border-white/10 px-4 py-3">
+                <Search size={18} color="#64748b" />
+                <TextInput
+                  value={productSearch}
+                  onChangeText={setProductSearch}
+                  placeholder="Search catalog products..."
+                  placeholderTextColor="#64748b"
+                  className="ml-3 flex-1 text-white text-xs font-semibold"
+                />
+              </View>
+
+              {/* Products List */}
+              <Text className="mb-2 text-xs font-black uppercase text-slate-400">
+                Tap to add products
+              </Text>
+              {filteredProducts.map((product) => (
+                <TouchableOpacity
+                  key={product.id}
+                  onPress={() => addItem(product)}
+                  className="mb-2.5 rounded-2xl bg-slate-900 border border-white/10 p-3.5 flex-row items-center justify-between"
+                >
+                  <View className="flex-1">
+                    <Text className="font-black text-white text-sm">
+                      {product.name}
+                    </Text>
+                    <Text className="mt-0.5 text-xs text-slate-400">
+                      ₹{Number(product.offer_price || product.price || 0)}
+                    </Text>
+                  </View>
+                  <View className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 items-center justify-center">
+                    <Plus size={16} color="#34d399" />
+                  </View>
+                </TouchableOpacity>
+              ))}
+
+              {/* Cart Items */}
+              <Text className="mb-2 mt-4 text-xs font-black uppercase text-slate-400">
+                Order Cart ({items.length} items)
+              </Text>
+              {items.length === 0 ? (
+                <View className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/50 p-6 items-center">
+                  <ShoppingBag size={28} color="#475569" />
+                  <Text className="mt-2 text-center text-xs text-slate-500">
+                    No items selected yet. Tap products above to add.
+                  </Text>
+                </View>
+              ) : (
+                items.map((item, index) => (
+                  <View
+                    key={item.product_id}
+                    className="mb-2 flex-row items-center rounded-2xl bg-slate-900 border border-white/10 p-3"
+                  >
+                    <View className="flex-1">
+                      <Text className="font-bold text-white text-xs">
+                        {item.name}
+                      </Text>
+                      <Text className="text-[10px] text-slate-400">
+                        ₹{item.price} each • Total: ₹{item.total}
+                      </Text>
+                    </View>
+                    <TextInput
+                      keyboardType="number-pad"
+                      value={String(item.quantity)}
+                      onChangeText={(value) => {
+                        const qty = Math.max(1, Number(value) || 1);
+                        setItems(
+                          items.map((curr, idx) =>
+                            idx === index
+                              ? { ...curr, quantity: qty, total: curr.price * qty }
+                              : curr
+                          )
+                        );
+                      }}
+                      className="w-12 rounded-xl bg-slate-950 border border-slate-800 py-1 text-center text-white font-bold text-xs"
+                    />
+                    <TouchableOpacity
+                      onPress={() =>
+                        setItems(items.filter((_, idx) => idx !== index))
+                      }
+                      className="ml-3 p-1.5 rounded-lg bg-red-500/10"
+                    >
+                      <Trash2 size={15} color="#f87171" />
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
             </View>
           ) : (
             <View>
-              <View className="mb-4 rounded-3xl bg-white p-4"><Text className="mb-4 text-lg font-bold text-slate-900">Customer details</Text><Field icon={<UserRound size={17} color="#64748b" />} placeholder="Customer name *" value={customerName} onChangeText={setCustomerName} /><Field placeholder="Phone number *" value={customerPhone} onChangeText={setCustomerPhone} keyboardType="phone-pad" /><Field placeholder="Email address" value={customerEmail} onChangeText={setCustomerEmail} keyboardType="email-address" /><View className="mt-1 flex-row items-center"><MapPin size={17} color="#64748b" /><Text className="ml-2 text-xs font-bold uppercase text-slate-500">Shipping address</Text></View><Field placeholder="Street address *" value={streetAddress} onChangeText={setStreetAddress} /><Field placeholder="City *" value={city} onChangeText={setCity} /><Field placeholder="District" value={district} onChangeText={setDistrict} /><View className="flex-row gap-2"><Field containerClass="flex-1" placeholder="State *" value={state} onChangeText={setState} /><Field containerClass="flex-1" placeholder="Zip code *" value={zipCode} onChangeText={setZipCode} keyboardType="number-pad" /></View><Field placeholder="Country" value={country} onChangeText={setCountry} /></View>
-              <View className="mb-4 rounded-3xl bg-white p-4"><Text className="mb-3 font-bold text-slate-900">Payment method</Text><View className="flex-row gap-2"><TouchableOpacity onPress={() => setPaymentMethod("Showroom")} className={`flex-1 items-center rounded-2xl border p-4 ${paymentMethod === "Showroom" ? "border-emerald-500 bg-emerald-50" : "border-slate-200"}`}><Truck size={22} color={paymentMethod === "Showroom" ? "#059669" : "#94a3b8"} /><Text className="mt-2 text-xs font-bold">Showroom / Local</Text></TouchableOpacity><TouchableOpacity onPress={() => setPaymentMethod("Online")} className={`flex-1 items-center rounded-2xl border p-4 ${paymentMethod === "Online" ? "border-emerald-500 bg-emerald-50" : "border-slate-200"}`}><CreditCard size={22} color={paymentMethod === "Online" ? "#059669" : "#94a3b8"} /><Text className="mt-2 text-xs font-bold">Online payment</Text></TouchableOpacity></View></View>
+              {/* Customer Details Form */}
+              <View className="mb-4 rounded-3xl bg-slate-900 border border-white/10 p-5">
+                <Text className="mb-4 text-base font-black text-white uppercase">
+                  Customer & Delivery Details
+                </Text>
+                <TextInput
+                  placeholder="Customer name *"
+                  placeholderTextColor="#64748b"
+                  value={customerName}
+                  onChangeText={setCustomerName}
+                  className="mb-3 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                />
+                <TextInput
+                  placeholder="Phone number *"
+                  placeholderTextColor="#64748b"
+                  value={customerPhone}
+                  onChangeText={setCustomerPhone}
+                  keyboardType="phone-pad"
+                  className="mb-3 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                />
+                <TextInput
+                  placeholder="Email address"
+                  placeholderTextColor="#64748b"
+                  value={customerEmail}
+                  onChangeText={setCustomerEmail}
+                  keyboardType="email-address"
+                  className="mb-3 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                />
+                <TextInput
+                  placeholder="Street address *"
+                  placeholderTextColor="#64748b"
+                  value={streetAddress}
+                  onChangeText={setStreetAddress}
+                  className="mb-3 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                />
+                <View className="flex-row gap-2 mb-3">
+                  <TextInput
+                    placeholder="City *"
+                    placeholderTextColor="#64748b"
+                    value={city}
+                    onChangeText={setCity}
+                    className="flex-1 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                  />
+                  <TextInput
+                    placeholder="State *"
+                    placeholderTextColor="#64748b"
+                    value={state}
+                    onChangeText={setState}
+                    className="flex-1 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                  />
+                </View>
+                <TextInput
+                  placeholder="Zip code *"
+                  placeholderTextColor="#64748b"
+                  value={zipCode}
+                  onChangeText={setZipCode}
+                  keyboardType="number-pad"
+                  className="rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                />
+              </View>
+
+              {/* Payment Method */}
+              <View className="mb-4 rounded-3xl bg-slate-900 border border-white/10 p-5">
+                <Text className="mb-3 text-base font-black text-white uppercase">
+                  Payment Method
+                </Text>
+                <View className="flex-row gap-2">
+                  <TouchableOpacity
+                    onPress={() => setPaymentMethod("Showroom")}
+                    className={`flex-1 items-center rounded-2xl border p-4 ${
+                      paymentMethod === "Showroom"
+                        ? "border-emerald-500 bg-emerald-500/15"
+                        : "border-slate-800 bg-slate-950"
+                    }`}
+                  >
+                    <Truck
+                      size={22}
+                      color={paymentMethod === "Showroom" ? "#34d399" : "#64748b"}
+                    />
+                    <Text className="mt-2 text-xs font-bold text-white">
+                      Showroom / Local
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setPaymentMethod("Online")}
+                    className={`flex-1 items-center rounded-2xl border p-4 ${
+                      paymentMethod === "Online"
+                        ? "border-emerald-500 bg-emerald-500/15"
+                        : "border-slate-800 bg-slate-950"
+                    }`}
+                  >
+                    <CreditCard
+                      size={22}
+                      color={paymentMethod === "Online" ? "#34d399" : "#64748b"}
+                    />
+                    <Text className="mt-2 text-xs font-bold text-white">
+                      Online Payment
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           )}
         </ScrollView>
-        <View className="border-t border-slate-200 bg-white p-4"><View className="mb-3 flex-row justify-between"><Text className="font-bold text-slate-500">{items.length} item(s)</Text><Text className="text-xl font-black text-slate-900">₹{total.toLocaleString("en-IN")}</Text></View><TouchableOpacity disabled={loading} onPress={() => step === 1 ? (items.length ? setStep(2) : Alert.alert("Add products", "Add at least one product to continue.")) : createOrder()} className="flex-row items-center justify-center rounded-2xl bg-emerald-600 py-4"><Text className="mr-2 font-bold text-white">{loading ? "Creating..." : step === 1 ? "Next: customer details" : "Create order"}</Text>{step === 1 && <ArrowRight size={18} color="white" />}</TouchableOpacity></View>
-      </SafeAreaView>
+
+        {/* Bottom CTA */}
+        <View className="border-t border-white/10 bg-slate-900 p-4">
+          <View className="mb-3 flex-row justify-between items-center">
+            <Text className="font-bold text-slate-400">
+              {items.length} Item(s)
+            </Text>
+            <Text className="text-xl font-black text-emerald-400">
+              ₹{total.toLocaleString("en-IN")}
+            </Text>
+          </View>
+          <TouchableOpacity
+            disabled={loading}
+            onPress={() =>
+              step === 1
+                ? items.length
+                  ? setStep(2)
+                  : setErrorMsg("Add at least one product to continue.")
+                : createOrder()
+            }
+            className="flex-row items-center justify-center rounded-2xl bg-emerald-600 py-4"
+          >
+            <Text className="mr-2 font-black text-white text-xs uppercase tracking-wider">
+              {loading
+                ? "Creating..."
+                : step === 1
+                ? "Next: Customer Details"
+                : "Confirm & Create Order"}
+            </Text>
+            {step === 1 && <ArrowRight size={16} color="white" />}
+          </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 };
-
-const Field = ({ placeholder, value, onChangeText, keyboardType, icon, containerClass = "" }: { placeholder: string; value: string; onChangeText: (value: string) => void; keyboardType?: "default" | "phone-pad" | "email-address" | "number-pad"; icon?: React.ReactNode; containerClass?: string }) => (
-  <View className={`mb-3 flex-row items-center rounded-xl border border-slate-200 px-3 ${containerClass}`}>
-    {icon}
-    <TextInput placeholder={placeholder} value={value} onChangeText={onChangeText} keyboardType={keyboardType} className="flex-1 px-2 py-3" />
-  </View>
-);
 
 const Orders = () => {
   const navigation: any = useNavigation();
@@ -286,6 +593,8 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [updating, setUpdating] = useState(false);
+
+  // Status Change Modal
   const [modalOrder, setModalOrder] = useState<Order | null>(null);
   const [modalStatus, setModalStatus] = useState("");
   const [tracking, setTracking] = useState("");
@@ -297,8 +606,8 @@ const Orders = () => {
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
-      const response = await get<Order[] | { data?: Order[] }>("/orders?status=All");
-      const data = Array.isArray(response) ? response : response.data || [];
+      const response = await get<any>("/orders?status=All");
+      const data = Array.isArray(response) ? response : response?.data || [];
       setOrders(data);
     } catch (error) {
       console.log("Orders Error:", error);
@@ -314,8 +623,9 @@ const Orders = () => {
 
   const filteredOrders = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return orders.filter(order => {
-      const matchesStatus = activeStatus === "All" || order.status === activeStatus;
+    return orders.filter((order) => {
+      const matchesStatus =
+        activeStatus === "All" || order.status === activeStatus;
       const searchable = [
         order.customer_name,
         order.customer_email,
@@ -330,7 +640,11 @@ const Orders = () => {
     });
   }, [activeStatus, orders, search]);
 
-  const updateStatus = async (orderId: Order["id"], status: string, details?: Record<string, string>) => {
+  const updateStatus = async (
+    orderId: Order["id"],
+    status: string,
+    details?: Record<string, string>
+  ) => {
     try {
       setUpdating(true);
       await put(`/orders/${orderId}/status`, { status, ...details });
@@ -372,152 +686,329 @@ const Orders = () => {
     }
   };
 
-  const renderOrder = ({ item }: { item: Order }) => {
-    const color = statusColors[item.status || ""] || { background: "#f1f5f9", text: "#475569" };
-    const currentIndex = orderFlow.indexOf(item.status || "");
-    const options = currentIndex < 0
-      ? [item.status || "New"]
-      : orderFlow.slice(currentIndex).concat(currentIndex < 2 ? ["Cancelled"] : []);
+  const pending = orders.filter((order) =>
+    ["Order Placed", "Processing", "New"].includes(order.status || "")
+  ).length;
+  const inTransit = orders.filter((order) =>
+    ["Shipping", "Out for Delivery", "Shipped", "Packing"].includes(
+      order.status || ""
+    )
+  ).length;
+  const delivered = orders.filter(
+    (order) => order.status === "Delivered"
+  ).length;
 
+  if (loading && !refreshing) {
     return (
-      <View className="mb-3 rounded-3xl bg-white p-4">
-        <View className="flex-row items-start justify-between">
-          <View className="flex-1">
-            <Text className="text-base font-bold text-slate-900">#ORD-0{item.id}</Text>
-            <Text className="mt-1 text-xs text-slate-400">
-              {item.created_at ? new Date(item.created_at).toLocaleDateString("en-IN") : "Unknown date"}
-            </Text>
-          </View>
-          <View style={{ backgroundColor: color.background }} className="rounded-lg px-3 py-2">
-            <Text style={{ color: color.text }} className="text-[10px] font-bold">{item.status || "New"}</Text>
-          </View>
-        </View>
-
-        <View className="mt-4 border-t border-slate-100 pt-3">
-          <Text className="font-bold text-slate-800">{item.customer_name || "Guest"}</Text>
-          <Text className="mt-1 text-xs text-slate-500">
-            {item.customer_email || item.customer_phone || "No contact information"}
+      <View className="flex-1 bg-slate-950">
+        <InnerHeader title="Orders Pipeline" navigation={navigation} />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#10b981" />
+          <Text className="text-white mt-3 font-semibold text-xs">
+            Loading Orders Pipeline...
           </Text>
-          <View className="mt-3 flex-row items-center justify-between">
-            <Text className="text-lg font-black text-slate-900">
-              ₹{Number(item.total_amount || 0).toLocaleString("en-IN")}
-            </Text>
-            <Text className="text-xs font-semibold uppercase text-slate-400">{item.payment_method || "N/A"}</Text>
-          </View>
         </View>
-
-        {options.length > 1 && (
-          <View className="mt-4 flex-row items-center border-t border-slate-100 pt-3">
-            <Text className="mr-2 text-xs font-semibold text-slate-500">Update status</Text>
-            <View className="flex-1 flex-row flex-wrap gap-2">
-              {options.map(status => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => handleStatusChange(item, status)}
-                  className="rounded-lg bg-slate-100 px-2.5 py-2"
-                >
-                  <Text className="text-[10px] font-bold text-slate-600">{status}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
       </View>
     );
-  };
-
-  const pending = orders.filter(order => ["Order Placed", "Processing", "New"].includes(order.status || "")).length;
-  const inTransit = orders.filter(order => ["Shipping", "Out for Delivery", "Shipped", "Packing"].includes(order.status || "")).length;
-  const delivered = orders.filter(order => order.status === "Delivered").length;
-
-  if (loading) {
-    return <SafeAreaView className="flex-1 items-center justify-center bg-slate-100"><ActivityIndicator size="large" color="#059669" /></SafeAreaView>;
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-100">
+    <View className="flex-1 bg-slate-950">
+      <InnerHeader title="Orders Pipeline" navigation={navigation} />
+
       <FlatList
         data={filteredOrders}
-        renderItem={renderOrder}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchOrders(true)} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => fetchOrders(true)}
+            tintColor="#10b981"
+            colors={["#10b981"]}
+          />
+        }
         ListHeaderComponent={
           <View>
+            {/* Header Title */}
             <View className="mb-5 flex-row items-center justify-between">
-              <View>
-                <Text className="text-3xl font-bold text-slate-900">Orders</Text>
-                <Text className="mt-1 text-sm text-slate-500">Manage the order pipeline</Text>
+              <View className="flex-1">
+                <Text className="text-3xl font-black text-white">Orders</Text>
+                <Text className="mt-1 text-xs text-slate-400">
+                  Track and fulfill customer delivery pipeline
+                </Text>
               </View>
-              <View className="flex-row items-center">
-                <TouchableOpacity onPress={() => setCreateModalVisible(true)} className="mr-2 flex-row items-center rounded-xl bg-emerald-600 px-3 py-3">
-                  <Plus size={18} color="#fff" />
-                  <Text className="ml-1 text-xs font-bold text-white">Add order</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.goBack()} className="rounded-xl bg-slate-200 p-3">
-                  <X size={20} color="#475569" />
-                </TouchableOpacity>
-              </View>
+
+              <TouchableOpacity
+                onPress={() => setCreateModalVisible(true)}
+                className="flex-row items-center rounded-2xl bg-emerald-600 px-4 py-3 shadow-lg"
+              >
+                <Plus size={16} color="#fff" />
+                <Text className="ml-1.5 text-xs font-black uppercase text-white">
+                  Add Order
+                </Text>
+              </TouchableOpacity>
             </View>
 
+            {/* Summary Stat Cards */}
             <View className="mb-4 flex-row gap-2">
-              <View className="flex-1 rounded-2xl bg-slate-900 p-4"><Package size={20} color="#a5b4fc" /><Text className="mt-2 text-2xl font-black text-white">{orders.length}</Text><Text className="text-xs text-slate-300">Total orders</Text></View>
-              <View className="flex-1 rounded-2xl bg-emerald-900 p-4"><Clock3 size={20} color="#6ee7b7" /><Text className="mt-2 text-2xl font-black text-white">{pending}</Text><Text className="text-xs text-emerald-200">Pending</Text></View>
-            </View>
-            <View className="mb-5 flex-row gap-2">
-              <View className="flex-1 rounded-2xl bg-amber-900 p-4"><Truck size={20} color="#fcd34d" /><Text className="mt-2 text-2xl font-black text-white">{inTransit}</Text><Text className="text-xs text-amber-200">In transit</Text></View>
-              <View className="flex-1 rounded-2xl bg-blue-900 p-4"><CheckCircle2 size={20} color="#93c5fd" /><Text className="mt-2 text-2xl font-black text-white">{delivered}</Text><Text className="text-xs text-blue-200">Delivered</Text></View>
+              <View className="flex-1 rounded-2xl bg-slate-900 border border-indigo-400/25 p-3.5">
+                <Package size={16} color="#a5b4fc" />
+                <Text className="mt-2 text-2xl font-black text-white">
+                  {orders.length}
+                </Text>
+                <Text className="text-[10px] uppercase font-bold text-indigo-200/70">
+                  Total Orders
+                </Text>
+              </View>
+
+              <View className="flex-1 rounded-2xl bg-slate-900 border border-emerald-400/25 p-3.5">
+                <Clock3 size={16} color="#6ee7b7" />
+                <Text className="mt-2 text-2xl font-black text-white">
+                  {pending}
+                </Text>
+                <Text className="text-[10px] uppercase font-bold text-emerald-200/70">
+                  Pending
+                </Text>
+              </View>
             </View>
 
-            <View className="mb-4 flex-row items-center rounded-2xl bg-white px-4">
-              <Search size={20} color="#94a3b8" />
-              <TextInput value={search} onChangeText={setSearch} placeholder="Search orders or customers" className="ml-3 flex-1 py-4" />
+            <View className="mb-5 flex-row gap-2">
+              <View className="flex-1 rounded-2xl bg-slate-900 border border-amber-400/25 p-3.5">
+                <Truck size={16} color="#fcd34d" />
+                <Text className="mt-2 text-2xl font-black text-white">
+                  {inTransit}
+                </Text>
+                <Text className="text-[10px] uppercase font-bold text-amber-200/70">
+                  In Transit
+                </Text>
+              </View>
+
+              <View className="flex-1 rounded-2xl bg-slate-900 border border-blue-400/25 p-3.5">
+                <CheckCircle2 size={16} color="#93c5fd" />
+                <Text className="mt-2 text-2xl font-black text-white">
+                  {delivered}
+                </Text>
+                <Text className="text-[10px] uppercase font-bold text-blue-200/70">
+                  Delivered
+                </Text>
+              </View>
             </View>
+
+            {/* Search Input */}
+            <View className="mb-4 flex-row items-center rounded-2xl bg-slate-900 border border-white/10 px-4 py-3">
+              <Search size={18} color="#64748b" />
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search orders by customer or ID..."
+                placeholderTextColor="#64748b"
+                className="ml-3 flex-1 text-white text-xs font-semibold"
+              />
+            </View>
+
+            {/* Horizontal Status Filter Chips */}
             <View className="mb-4 flex-row items-center">
-              <ChevronDown size={17} color="#64748b" />
               <FlatList
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 data={statuses}
-                keyExtractor={status => status}
-                renderItem={({ item: status }) => (
-                  <TouchableOpacity onPress={() => setActiveStatus(status)} className={`ml-2 rounded-xl px-3 py-2 ${activeStatus === status ? "bg-slate-900" : "bg-white"}`}>
-                    <Text className={`text-xs font-bold ${activeStatus === status ? "text-white" : "text-slate-600"}`}>{status}</Text>
-                  </TouchableOpacity>
-                )}
+                keyExtractor={(status) => status}
+                renderItem={({ item: status }) => {
+                  const isSel = activeStatus === status;
+                  return (
+                    <TouchableOpacity
+                      onPress={() => setActiveStatus(status)}
+                      className={`mr-2 rounded-xl px-3.5 py-2 border ${
+                        isSel
+                          ? "bg-emerald-500/20 border-emerald-500/40"
+                          : "bg-slate-900 border-white/10"
+                      }`}
+                    >
+                      <Text
+                        className={`text-xs font-bold ${
+                          isSel ? "text-emerald-300" : "text-slate-400"
+                        }`}
+                      >
+                        {status}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
               />
             </View>
           </View>
         }
-        ListEmptyComponent={<Text className="py-12 text-center text-sm text-slate-500">No orders found</Text>}
+        renderItem={({ item }: { item: Order }) => {
+          const style =
+            statusStyles[item.status || ""] || {
+              bg: "bg-slate-800",
+              border: "border-slate-700",
+              text: "text-slate-300",
+            };
+          const currentIndex = orderFlow.indexOf(item.status || "");
+          const options =
+            currentIndex < 0
+              ? [item.status || "New"]
+              : orderFlow
+                  .slice(currentIndex)
+                  .concat(currentIndex < 2 ? ["Cancelled"] : []);
+
+          return (
+            <View className="mb-3.5 rounded-3xl bg-slate-900 border border-white/10 p-4">
+              <View className="flex-row items-start justify-between">
+                <View className="flex-1">
+                  <Text className="text-base font-black text-white">
+                    #ORD-{item.id}
+                  </Text>
+                  <Text className="mt-0.5 text-xs text-slate-400 font-mono">
+                    {item.created_at
+                      ? new Date(item.created_at).toLocaleDateString("en-IN")
+                      : "Recent Order"}
+                  </Text>
+                </View>
+
+                {/* Status Pill */}
+                <View
+                  className={`rounded-xl px-3 py-1.5 border ${style.bg} ${style.border}`}
+                >
+                  <Text className={`text-[10px] font-black uppercase ${style.text}`}>
+                    {item.status || "New"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Customer and Total */}
+              <View className="mt-3.5 border-t border-white/10 pt-3">
+                <Text className="font-bold text-white text-sm">
+                  {item.customer_name || "Guest Customer"}
+                </Text>
+                <Text className="mt-0.5 text-xs text-slate-400">
+                  {item.customer_email || item.customer_phone || "Direct Delivery"}
+                </Text>
+
+                <View className="mt-3 flex-row items-center justify-between">
+                  <Text className="text-lg font-black text-emerald-400">
+                    ₹{Number(item.total_amount || 0).toLocaleString("en-IN")}
+                  </Text>
+                  <Text className="text-[10px] font-bold uppercase text-slate-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                    {item.payment_method || "Showroom"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Fast Status Transitions */}
+              {options.length > 1 && (
+                <View className="mt-3.5 flex-row items-center border-t border-white/10 pt-3">
+                  <Text className="mr-2 text-[10px] font-bold uppercase text-slate-500">
+                    Advance:
+                  </Text>
+                  <View className="flex-1 flex-row flex-wrap gap-1.5">
+                    {options.map((status) => (
+                      <TouchableOpacity
+                        key={status}
+                        onPress={() => handleStatusChange(item, status)}
+                        className="rounded-lg bg-slate-950 border border-slate-800 px-2.5 py-1"
+                      >
+                        <Text className="text-[10px] font-bold text-slate-300">
+                          {status}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </View>
+          );
+        }}
+        ListEmptyComponent={
+          <View className="items-center mt-16">
+            <Package size={45} color="#475569" />
+            <Text className="text-slate-400 mt-4 text-xs font-semibold">
+              No orders found matching the filter.
+            </Text>
+          </View>
+        }
       />
 
-      <Modal visible={!!modalOrder} transparent animationType="slide" onRequestClose={() => setModalOrder(null)}>
-        <View className="flex-1 justify-end bg-slate-900/50">
-          <View className="rounded-t-3xl bg-white p-6">
-            <Text className="text-xl font-bold text-slate-900">{modalStatus} details</Text>
-            <Text className="mt-1 text-sm text-slate-500">Order #ORD-0{modalOrder?.id}</Text>
+      {/* Advanced Transition Modal (Courier or Reason) */}
+      <Modal
+        visible={!!modalOrder}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setModalOrder(null)}
+      >
+        <View className="flex-1 justify-end bg-black/80">
+          <View className="rounded-t-3xl bg-slate-900 border-t border-white/10 p-6">
+            <Text className="text-xl font-black text-white">
+              {modalStatus} Details
+            </Text>
+            <Text className="mt-1 text-xs text-slate-400">
+              Order #ORD-{modalOrder?.id}
+            </Text>
+
             {modalStatus === "Shipping" ? (
               <>
-                <TextInput value={tracking} onChangeText={setTracking} placeholder="Tracking / AWB number" className="mt-5 rounded-xl border border-slate-200 px-4 py-3" />
-                <TextInput value={courier} onChangeText={setCourier} placeholder="Courier partner" className="mt-3 rounded-xl border border-slate-200 px-4 py-3" />
+                <TextInput
+                  value={tracking}
+                  onChangeText={setTracking}
+                  placeholder="Tracking / AWB number *"
+                  placeholderTextColor="#64748b"
+                  className="mt-4 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                />
+                <TextInput
+                  value={courier}
+                  onChangeText={setCourier}
+                  placeholder="Courier partner name *"
+                  placeholderTextColor="#64748b"
+                  className="mt-3 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                />
               </>
             ) : (
-              <TextInput value={reason} onChangeText={setReason} placeholder="Cancellation reason" multiline className="mt-5 rounded-xl border border-slate-200 px-4 py-3" />
+              <TextInput
+                value={reason}
+                onChangeText={setReason}
+                placeholder="Cancellation reason *"
+                placeholderTextColor="#64748b"
+                multiline
+                numberOfLines={3}
+                className="mt-4 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+              />
             )}
+
             <View className="mt-5 flex-row gap-3">
-              <TouchableOpacity onPress={() => setModalOrder(null)} className="flex-1 rounded-xl bg-slate-100 py-4"><Text className="text-center font-bold text-slate-600">Cancel</Text></TouchableOpacity>
-              <TouchableOpacity disabled={updating} onPress={submitModal} className="flex-1 rounded-xl bg-emerald-600 py-4"><Text className="text-center font-bold text-white">{updating ? "Updating..." : "Confirm"}</Text></TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setModalOrder(null)}
+                className="flex-1 rounded-2xl bg-slate-800 border border-white/10 py-3.5 items-center"
+              >
+                <Text className="font-bold text-xs uppercase text-slate-300">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                disabled={updating}
+                onPress={submitModal}
+                className="flex-1 rounded-2xl bg-emerald-600 py-3.5 items-center"
+              >
+                {updating ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className="font-black text-xs uppercase tracking-wider text-white">
+                    Confirm
+                  </Text>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
+
       <CreateOrderModal
         visible={createModalVisible}
         onClose={() => setCreateModalVisible(false)}
-        onCreated={fetchOrders}
+        onCreated={() => fetchOrders(true)}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

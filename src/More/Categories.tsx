@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -8,56 +8,91 @@ import {
   RefreshControl,
   TextInput,
   Image,
+  Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Search,
   Plus,
   LayoutGrid,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  ImageIcon,
+  Sparkles,
+  CheckCircle,
 } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { get } from "../services/api";
+import { get, del } from "../services/api";
+import InnerHeader from "../components/InnerHeader";
+import FloatingActionButton from "../components/FloatingActionButton";
+import CenteredDialog from "../components/CenteredDialog";
 
 interface Category {
   id: number;
   catId: string;
   name: string;
   description: string;
-  images?: string[];
+  images?: string[] | string;
+  created_at?: string;
 }
+
+const parseImages = (val: any): string[] => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    try {
+      return JSON.parse(val);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
 
 const Categories = () => {
   const navigation: any = useNavigation();
+  const isFocused = useIsFocused();
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [filteredData, setFilteredData] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  // Delete Confirmation Modal
+  const [deleteConfirmation, setDeleteConfirmation] = useState<Category | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // Feedback Dialog
+  const [feedbackDialog, setFeedbackDialog] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+  });
 
   const fetchCategories = async () => {
     try {
+      setLoading(true);
       const userData = await AsyncStorage.getItem("user");
-
-      if (!userData) return;
-
-      const user = JSON.parse(userData);
-
-      const franchiseUserId =
-        user?.user_id ||
-        user?.id ||
-        user?.franchise_user_id;
+      let franchiseUserId = "";
+      if (userData) {
+        const user = JSON.parse(userData);
+        franchiseUserId = user?.user_id || user?.id || user?.franchise_user_id || "";
+      }
 
       const response = await get<any[]>(
-        `/categories?franchise_user_id=${franchiseUserId}`
+        franchiseUserId ? `/categories?franchise_user_id=${franchiseUserId}` : "/categories"
       );
 
-      const data = response || [];
-
+      const data = Array.isArray(response) ? response : [];
       setCategories(data);
-      setFilteredData(data);
     } catch (error) {
       console.log("Category Error:", error);
     } finally {
@@ -67,154 +102,347 @@ const Categories = () => {
   };
 
   useEffect(() => {
+    if (isFocused) {
+      fetchCategories();
+    }
+  }, [isFocused]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
     fetchCategories();
-  }, []);
-
-  const handleSearch = (text: string) => {
-    setSearch(text);
-
-    const filtered = categories.filter(
-      (item) =>
-        item?.name
-          ?.toLowerCase()
-          .includes(text.toLowerCase()) ||
-        item?.catId
-          ?.toLowerCase()
-          .includes(text.toLowerCase())
-    );
-
-    setFilteredData(filtered);
   };
 
-  const renderItem = ({ item }: any) => (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      className="bg-white rounded-3xl mb-4 overflow-hidden"
-    >
-      {item?.images?.length > 0 ? (
-        <Image
-          source={{
-            uri: item.images[0],
-          }}
-          className="w-full h-40"
-          resizeMode="cover"
-        />
-      ) : (
-        <View className="h-40 bg-slate-200 items-center justify-center">
-          <LayoutGrid
-            size={50}
-            color="#64748b"
-          />
-        </View>
-      )}
+  // --------------------------------------------------
+  // SEARCH & FILTER
+  // --------------------------------------------------
+  const filteredCategories = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return categories;
 
-      <View className="p-4">
-        <Text className="text-lg font-bold text-slate-900">
-          {item.name}
-        </Text>
+    return categories.filter(
+      (item) =>
+        (item?.name || "").toLowerCase().includes(query) ||
+        (item?.catId || "").toLowerCase().includes(query) ||
+        (item?.description || "").toLowerCase().includes(query)
+    );
+  }, [categories, search]);
 
-        <Text className="text-slate-500 mt-1">
-          {item.catId}
-        </Text>
-
-        <Text
-          numberOfLines={2}
-          className="text-slate-500 mt-2"
-        >
-          {item.description}
-        </Text>
-      </View>
-    </TouchableOpacity>
+  // --------------------------------------------------
+  // PAGINATION
+  // --------------------------------------------------
+  const totalPages = Math.max(1, Math.ceil(filteredCategories.length / itemsPerPage));
+  const currentPageIndex = Math.min(currentPage, totalPages);
+  const paginatedCategories = filteredCategories.slice(
+    (currentPageIndex - 1) * itemsPerPage,
+    currentPageIndex * itemsPerPage
   );
 
-  if (loading) {
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  // --------------------------------------------------
+  // DELETE CATEGORY ACTION
+  // --------------------------------------------------
+  const confirmDelete = async () => {
+    if (!deleteConfirmation) return;
+    setActionLoading(true);
+    try {
+      await del(`/categories/${deleteConfirmation.id}`);
+      setDeleteConfirmation(null);
+      setFeedbackDialog({
+        visible: true,
+        title: "Category Deleted",
+        message: `${deleteConfirmation.name || "Category"} was removed.`,
+      });
+      fetchCategories();
+    } catch (error: any) {
+      setDeleteConfirmation(null);
+      setFeedbackDialog({
+        visible: true,
+        title: "Delete Failed",
+        message: error.message || "Failed to delete category.",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // --------------------------------------------------
+  // LOADING STATE
+  // --------------------------------------------------
+  if (loading && !refreshing) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center">
-        <ActivityIndicator
-          size="large"
-          color="#059669"
-        />
-      </SafeAreaView>
+      <View className="flex-1 bg-slate-950">
+        <InnerHeader title="Categories" navigation={navigation} />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#10b981" />
+          <Text className="text-white mt-3 font-semibold text-xs">
+            Loading Categories...
+          </Text>
+        </View>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-100">
-      {/* Header */}
-
-      <View className="px-4 pt-2 pb-4 flex-row justify-between items-center">
-        <Text className="text-3xl font-bold text-slate-900">
-          Categories
-        </Text>
-
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate(
-              "AddCategory"
-            )
-          }
-          className="bg-emerald-600 w-12 h-12 rounded-full items-center justify-center"
-        >
-          <Plus
-            size={24}
-            color="white"
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Search */}
-
-      <View className="px-4 mb-4">
-        <View className="bg-white rounded-2xl px-4 flex-row items-center">
-          <Search
-            size={20}
-            color="#64748b"
-          />
-
-          <TextInput
-            placeholder="Search Category"
-            value={search}
-            onChangeText={handleSearch}
-            className="flex-1 py-4 ml-3"
-          />
-        </View>
-      </View>
-
-      {/* Category List */}
+    <View className="flex-1 bg-slate-950">
+      <InnerHeader title="Categories" navigation={navigation} />
 
       <FlatList
-        data={filteredData}
-        keyExtractor={(item) =>
-          item.id.toString()
-        }
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: 100,
-        }}
+        data={paginatedCategories}
+        keyExtractor={(item) => String(item.id)}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              fetchCategories();
-            }}
+            onRefresh={onRefresh}
+            tintColor="#10b981"
+            colors={["#10b981"]}
           />
         }
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <View className="items-center mt-20">
-            <LayoutGrid
-              size={60}
-              color="#94a3b8"
-            />
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
+        ListHeaderComponent={
+          <View className="px-4 pt-6">
+            {/* ================= HEADER ================= */}
+            <View className="flex-row items-center justify-between mb-5">
+              <View className="flex-1">
+                <Text className="text-white text-3xl font-black">
+                  Categories
+                </Text>
+                <Text className="text-slate-400 mt-1 text-xs">
+                  Organize food and product catalog classifications
+                </Text>
+              </View>
 
-            <Text className="text-slate-500 mt-3">
-              No Categories Found
+              <View className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 items-center justify-center">
+                <LayoutGrid size={20} color="#818cf8" />
+              </View>
+            </View>
+
+            {/* ================= SUMMARY STAT METRICS ================= */}
+            <View className="flex-row gap-2 mb-5">
+              {/* TOTAL */}
+              <View className="flex-1 bg-slate-900 border border-indigo-400/25 rounded-2xl p-3">
+                <View className="w-8 h-8 rounded-lg bg-indigo-500/15 items-center justify-center mb-2">
+                  <LayoutGrid size={16} color="#a5b4fc" />
+                </View>
+                <Text className="text-indigo-200/70 text-[9px] font-bold uppercase">
+                  Total Categories
+                </Text>
+                <Text className="text-white text-2xl font-black mt-0.5">
+                  {categories.length}
+                </Text>
+              </View>
+
+              {/* WITH PHOTOS */}
+              <View className="flex-1 bg-slate-900 border border-emerald-400/25 rounded-2xl p-3">
+                <View className="w-8 h-8 rounded-lg bg-emerald-500/15 items-center justify-center mb-2">
+                  <ImageIcon size={16} color="#6ee7b7" />
+                </View>
+                <Text className="text-emerald-200/70 text-[9px] font-bold uppercase">
+                  With Photos
+                </Text>
+                <Text className="text-white text-2xl font-black mt-0.5">
+                  {categories.filter((c) => parseImages(c.images).length > 0).length}
+                </Text>
+              </View>
+            </View>
+
+            {/* ================= SEARCH INPUT ================= */}
+            <View className="bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 flex-row items-center mb-4">
+              <Search size={18} color="#64748b" />
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search category by name or ID..."
+                placeholderTextColor="#64748b"
+                className="flex-1 text-white ml-3 text-xs font-semibold"
+              />
+            </View>
+
+            {/* RESULT COUNT */}
+            <Text className="text-slate-500 text-[11px] mb-3">
+              Showing {paginatedCategories.length} of {filteredCategories.length} categories
             </Text>
           </View>
         }
+        renderItem={({ item }: { item: Category }) => {
+          const images = parseImages(item.images);
+          const hasImage = images.length > 0;
+
+          return (
+            <View className="mx-4 mb-3 bg-slate-900 border border-white/10 rounded-2xl overflow-hidden">
+              {hasImage ? (
+                <Image
+                  source={{ uri: images[0] }}
+                  className="w-full h-36 border-b border-white/5"
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="w-full h-24 bg-slate-950 items-center justify-center border-b border-white/5">
+                  <LayoutGrid size={32} color="#475569" />
+                </View>
+              )}
+
+              <View className="p-4">
+                <View className="flex-row items-start justify-between">
+                  <View className="flex-1 mr-2">
+                    <Text className="text-white text-base font-black">
+                      {item.name}
+                    </Text>
+                    <Text className="text-indigo-400 text-xs font-mono font-bold mt-0.5">
+                      {item.catId || `#CAT-${item.id}`}
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={() => setDeleteConfirmation(item)}
+                    className="w-9 h-9 bg-red-500/10 border border-red-500/20 rounded-xl items-center justify-center"
+                  >
+                    <Trash2 size={16} color="#f87171" />
+                  </TouchableOpacity>
+                </View>
+
+                {item.description ? (
+                  <Text
+                    numberOfLines={2}
+                    className="text-slate-400 text-xs mt-2.5 leading-5"
+                  >
+                    {item.description}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+          );
+        }}
+        ListEmptyComponent={
+          <View className="items-center mt-16 px-5">
+            <LayoutGrid size={45} color="#475569" />
+            <Text className="text-slate-400 mt-4 text-xs font-semibold">
+              No categories found.
+            </Text>
+            <Text className="text-slate-600 mt-1 text-[11px]">
+              Tap the button below to add a new category.
+            </Text>
+          </View>
+        }
+        ListFooterComponent={
+          filteredCategories.length > 0 ? (
+            <View className="flex-row justify-center items-center mt-2 px-4">
+              <TouchableOpacity
+                disabled={currentPage === 1}
+                onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="w-10 h-10 bg-slate-900 border border-white/10 rounded-xl items-center justify-center"
+                style={{ opacity: currentPage === 1 ? 0.4 : 1 }}
+              >
+                <ChevronLeft size={18} color="#ffffff" />
+              </TouchableOpacity>
+
+              <Text className="text-slate-300 text-xs font-bold mx-5">
+                Page {currentPage} of {totalPages}
+              </Text>
+
+              <TouchableOpacity
+                disabled={currentPage === totalPages}
+                onPress={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className="w-10 h-10 bg-slate-900 border border-white/10 rounded-xl items-center justify-center"
+                style={{ opacity: currentPage === totalPages ? 0.4 : 1 }}
+              >
+                <ChevronRight size={18} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+          ) : null
+        }
       />
-    </SafeAreaView>
+
+      {/* Floating Action Button */}
+      <View
+        style={{
+          position: "absolute",
+          right: 20,
+          bottom: 25,
+          zIndex: 9999,
+          elevation: 20,
+        }}
+      >
+        <FloatingActionButton
+          onPress={() => navigation.navigate("AddCategory")}
+          label="Add category"
+        />
+      </View>
+
+      {/* ================================================= */}
+      {/* DELETE CONFIRMATION POPUP */}
+      {/* ================================================= */}
+      <Modal
+        visible={!!deleteConfirmation}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setDeleteConfirmation(null)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+            style={{ paddingBottom: 24 }}
+          >
+            <View className="w-14 h-14 rounded-2xl items-center justify-center mb-4 border bg-red-500/15 border-red-500/30">
+              <Trash2 size={26} color="#f87171" />
+            </View>
+
+            <Text className="text-white text-xl font-black">
+              Delete Category?
+            </Text>
+
+            <Text className="text-slate-400 text-sm mt-2 leading-5">
+              Are you sure you want to permanently delete category{" "}
+              <Text className="text-white font-bold">{deleteConfirmation?.name}</Text>?
+            </Text>
+
+            <View className="flex-row gap-3 mt-6">
+              <TouchableOpacity
+                onPress={() => setDeleteConfirmation(null)}
+                disabled={actionLoading}
+                className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"
+              >
+                <Text className="text-slate-300 font-bold text-xs uppercase">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={confirmDelete}
+                disabled={actionLoading}
+                className="flex-1 rounded-2xl py-3.5 items-center bg-red-600"
+              >
+                {actionLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className="text-white font-black text-xs uppercase tracking-wider">
+                    Delete
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ================================================= */}
+      {/* FEEDBACK DIALOG */}
+      {/* ================================================= */}
+      <CenteredDialog
+        visible={feedbackDialog.visible}
+        title={feedbackDialog.title}
+        message={feedbackDialog.message}
+        onClose={() => setFeedbackDialog({ ...feedbackDialog, visible: false })}
+        actionLabel="Done"
+      />
+    </View>
   );
 };
 
