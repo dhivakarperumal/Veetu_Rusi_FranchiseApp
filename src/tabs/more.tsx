@@ -57,7 +57,7 @@ const More = () => {
       icon: BarChart3,
       color: "#10b981",
       bgColor: "#d1fae5",
-      onPress: () => {},
+      onPress: () => { },
     },
     {
       id: "financials",
@@ -66,7 +66,7 @@ const More = () => {
       icon: Wallet,
       color: "#f59e0b",
       bgColor: "#fef3c7",
-      onPress: () => {},
+      onPress: () => { },
     },
     {
       id: "documentation",
@@ -75,7 +75,7 @@ const More = () => {
       icon: FileText,
       color: "#ef4444",
       bgColor: "#fee2e2",
-      onPress: () => {},
+      onPress: () => { },
     },
   ];
 
@@ -121,25 +121,84 @@ const More = () => {
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-slate-950">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: 20,
+          paddingTop: 24,
           paddingBottom: 80,
         }}
       >
-        <View className="mb-6 px-4">
-          <Text className="mb-2 text-3xl font-bold text-slate-900">
-            More Options
-          </Text>
+        {/* HEADER */}
+        <View className="px-4 mb-6">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <Text className="text-white text-3xl font-black">
+                More Options
+              </Text>
 
-          <Text className="text-sm text-slate-500">
-            Manage your application
-          </Text>
+              <Text className="text-slate-400 mt-1 text-xs">
+                Manage your application
+              </Text>
+            </View>
+
+            <View className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center">
+              <Settings size={20} color="#34d399" />
+            </View>
+          </View>
         </View>
 
-        {menuItems.map(renderMenuItem)}
+        {/* MENU ITEMS */}
+        {menuItems.map((item) => {
+          const IconComponent = item.icon;
+
+          return (
+            <TouchableOpacity
+              key={item.id}
+              activeOpacity={0.8}
+              onPress={item.onPress}
+              className="mx-4 mb-3 bg-slate-900 border border-white/10 rounded-2xl p-4"
+            >
+              <View className="flex-row items-center">
+                {/* ICON */}
+                <View
+                  className="w-12 h-12 rounded-xl items-center justify-center border"
+                  style={{
+                    backgroundColor: `${item.color}15`,
+                    borderColor: `${item.color}30`,
+                  }}
+                >
+                  <IconComponent
+                    color={item.color}
+                    size={22}
+                  />
+                </View>
+
+                {/* TEXT */}
+                <View className="flex-1 ml-3">
+                  <Text className="text-white text-base font-black">
+                    {item.label}
+                  </Text>
+
+                  <Text
+                    className="text-slate-400 text-xs mt-1"
+                    numberOfLines={1}
+                  >
+                    {item.description}
+                  </Text>
+                </View>
+
+                {/* ARROW */}
+                <View className="w-9 h-9 rounded-xl bg-slate-800 border border-white/10 items-center justify-center">
+                  <ArrowRight
+                    size={16}
+                    color="#64748b"
+                  />
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
     </View>
   );
