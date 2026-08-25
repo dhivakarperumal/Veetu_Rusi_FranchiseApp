@@ -12,7 +12,7 @@ import {
     Image,
     Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
     MapPin,
     ChevronLeft,
@@ -210,6 +210,7 @@ const emptyForm = {
 
 const AddHomeChef = () => {
     const navigation = useNavigation<any>();
+    const insets = useSafeAreaInsets();
 
     const [form, setForm] = useState(emptyForm);
     const [currentStep, setCurrentStep] = useState(1);
@@ -2433,9 +2434,14 @@ const AddHomeChef = () => {
                 visible={pickerModalVisible}
                 transparent
                 animationType="fade"
+                statusBarTranslucent
+                navigationBarTranslucent
                 onRequestClose={() => setPickerModalVisible(false)}
             >
-                <View className="flex-1 bg-black/80 justify-end p-5">
+                <View
+                    className="flex-1 bg-black/80 justify-end p-5"
+                    style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+                >
                     <View className="bg-slate-900 border border-slate-800 rounded-3xl p-5 mb-3">
                         <Text className="text-white text-base font-black mb-4 text-center">
                             Select Attachment
