@@ -121,7 +121,9 @@ const HomeChef = () => {
       });
     }
 
-    if (statusFilter !== "All") {
+    if (statusFilter === "Needs Review") {
+      result = result.filter((chef) => ["Pending", "Suspended", "Rejected"].includes(chef.status));
+    } else if (statusFilter !== "All") {
       result = result.filter((chef) => chef.status === statusFilter);
     }
 
@@ -297,11 +299,18 @@ const HomeChef = () => {
 
             {/* ================= SUMMARY CARDS ================= */}
             <View className="flex-row gap-2 mb-5">
-
               {/* TOTAL */}
-              <View
-                className="flex-1 bg-slate-900 border border-indigo-400/25 rounded-2xl p-3"
-                style={{ height: 100 }}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("All");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "All"
+                    ? "border-indigo-400"
+                    : "border-indigo-400/25"
+                }`}
               >
                 <View className="w-8 h-8 rounded-lg bg-indigo-500/15 items-center justify-center mb-2">
                   <Users size={16} color="#a5b4fc" />
@@ -314,12 +323,20 @@ const HomeChef = () => {
                 <Text className="text-white text-2xl font-black mt-0.5">
                   {chefs.length}
                 </Text>
-              </View>
+              </TouchableOpacity>
 
               {/* APPROVED */}
-              <View
-                className="flex-1 bg-slate-900 border border-emerald-400/25 rounded-2xl p-3"
-                style={{ height: 100 }}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("Approved");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "Approved"
+                    ? "border-emerald-400"
+                    : "border-emerald-400/25"
+                }`}
               >
                 <View className="w-8 h-8 rounded-lg bg-emerald-500/15 items-center justify-center mb-2">
                   <CheckCircle size={16} color="#6ee7b7" />
@@ -332,12 +349,20 @@ const HomeChef = () => {
                 <Text className="text-white text-2xl font-black mt-0.5">
                   {approvedCount}
                 </Text>
-              </View>
+              </TouchableOpacity>
 
               {/* NEEDS REVIEW */}
-              <View
-                className="flex-1 bg-slate-900 border border-amber-400/25 rounded-2xl p-3"
-                style={{ height: 100 }}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("Needs Review");
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "Needs Review"
+                    ? "border-amber-400"
+                    : "border-amber-400/25"
+                }`}
               >
                 <View className="w-8 h-8 rounded-lg bg-amber-500/15 items-center justify-center mb-2">
                   <Clock size={16} color="#fcd34d" />
@@ -350,8 +375,7 @@ const HomeChef = () => {
                 <Text className="text-white text-2xl font-black mt-0.5">
                   {pendingCount + suspendedCount}
                 </Text>
-              </View>
-
+              </TouchableOpacity>
             </View>
 
             {/* ================= SEARCH ================= */}
@@ -572,7 +596,7 @@ const HomeChef = () => {
         <View className="flex-1 bg-black/80 justify-end">
           <View className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5" style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
             <View className="flex-row items-center justify-between mb-4"><Text className="text-white text-base font-black">Filter chefs</Text><TouchableOpacity onPress={() => setIsFilterOpen(false)}><X size={18} color="#cbd5e1" /></TouchableOpacity></View>
-            {["All", "Pending", "Approved", "Suspended", "Rejected"].map((status) => <TouchableOpacity key={status} onPress={() => { setStatusFilter(status); setIsFilterOpen(false); }} className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${statusFilter === status ? "bg-emerald-500/15 border-emerald-500/40" : "bg-slate-950 border-white/5"}`}><Text className={`text-sm font-bold ${statusFilter === status ? "text-emerald-300" : "text-slate-300"}`}>{status === "All" ? "All chefs" : status}</Text>{statusFilter === status ? <CheckCircle size={17} color="#34d399" /> : null}</TouchableOpacity>)}
+            {["All", "Approved", "Needs Review", "Pending", "Suspended", "Rejected"].map((status) => <TouchableOpacity key={status} onPress={() => { setStatusFilter(status); setIsFilterOpen(false); }} className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${statusFilter === status ? "bg-emerald-500/15 border-emerald-500/40" : "bg-slate-950 border-white/5"}`}><Text className={`text-sm font-bold ${statusFilter === status ? "text-emerald-300" : "text-slate-300"}`}>{status === "All" ? "All chefs" : status}</Text>{statusFilter === status ? <CheckCircle size={17} color="#34d399" /> : null}</TouchableOpacity>)}
           </View>
         </View>
       </Modal>
