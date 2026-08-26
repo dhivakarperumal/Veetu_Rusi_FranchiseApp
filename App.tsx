@@ -24,6 +24,8 @@ import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
 import EditDeliveryPartner from "./src/pages/EditDeliveryPartner";
 import UserManagement from "./src/More/UserManagement";
 
+import SubscriptionPlansScreen from "./src/components/SubscriptionPlansScreen";
+
 import { AuthProvider, AuthContext } from "./src/context/AuthContext";
 
 const Stack = createNativeStackNavigator();
@@ -244,6 +246,11 @@ const AppNavigator = () => {
               <Stack.Screen
                 name="Wallet"
                 component={WalletAndEarnings}
+              />
+
+              <Stack.Screen
+                name="SubscriptionPlans"
+                component={SubscriptionPlansScreen}
               />
             </Stack.Group>
           </>

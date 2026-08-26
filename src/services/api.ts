@@ -112,3 +112,7 @@ export async function patch<T = any>(
     body: isFormData ? payload : JSON.stringify(payload),
   });
 }
+
+export const getSubscriptionPlans = async () => {
+  return get<any[]>("/subscriptions/plans");
+};

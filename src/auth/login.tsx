@@ -13,6 +13,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "../services/api";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import SubscriptionAlert from "../components/SubscriptionAlert";
 
 import { AuthContext } from "../context/AuthContext";
 
@@ -22,6 +23,13 @@ const LoginScreen = ({ navigation }: any) => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const auth = React.useContext(AuthContext);
+    const [showSubscriptionAlert, setShowSubscriptionAlert] = useState(false);
+
+    const [subscriptionInfo, setSubscriptionInfo] = useState({
+        isExpired: false,
+        daysRemaining: null,
+        status: "Inactive",
+    });
 
     const handleLogin = async () => {
         if (!identifier.trim()) {
@@ -46,10 +54,26 @@ const LoginScreen = ({ navigation }: any) => {
                 await auth?.signIn(res.token, res.user);
             }
         } catch (error: any) {
-            Alert.alert(
-                "Login Failed",
-                error?.message || "Invalid Credentials"
-            );
+
+            const status = error?.response?.status;
+            const message =
+                error?.response?.data?.message ||
+                error?.message ||
+                "Login failed";
+
+            const subscription =
+                error?.response?.data?.subscriptionInfo;
+
+            if (
+                status === 403 &&
+                subscription
+            ) {
+                setSubscriptionInfo(subscription);
+                setShowSubscriptionAlert(true);
+                return;
+            }
+
+            Alert.alert("Login Failed", message);
         } finally {
             setLoading(false);
         }
@@ -166,6 +190,17 @@ const LoginScreen = ({ navigation }: any) => {
                     </SafeAreaView>
                 </View>
             </ImageBackground>
+
+            <SubscriptionAlert
+                visible={showSubscriptionAlert}
+                subscriptionInfo={subscriptionInfo}
+                onClose={() => setShowSubscriptionAlert(false)}
+                onBuyClick={() => {
+                    setShowSubscriptionAlert(false);
+
+                    navigation.navigate("SubscriptionPlans");
+                }}
+            />
         </>
     );
 };
