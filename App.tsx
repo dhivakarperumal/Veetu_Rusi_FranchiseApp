@@ -39,6 +39,8 @@ import AddCategory from "./src/More/AddCategory";
 import AddStock from "./src/More/AddStock";
 import Orders from "./src/More/Orders";
 import Reviews from "./src/More/Reviews";
+import CustomerReviews from "./src/More/CustomerReviews";
+import DeliveryPartnerReviews from "./src/More/DeliveryPartnerReviews";
 import Coupons from "./src/More/Coupons";
 import ReferralManagement from "./src/More/ReferralManagement";
 import WalletAndEarnings from "./src/More/WalletAndEarnings";
@@ -184,22 +186,22 @@ const AppNavigator = () => {
               />
 
               <Stack.Screen
+                name="CustomerReviews"
+                component={CustomerReviews}
+              />
+
+              <Stack.Screen
+                name="DeliveryPartnerReviews"
+                component={DeliveryPartnerReviews}
+              />
+
+              <Stack.Screen
                 name="PartnerReviews"
                 component={Reviews}
               />
 
               <Stack.Screen
-                name="DeliveryPartnerReviews"
-                component={Reviews}
-              />
-
-              <Stack.Screen
                 name="DeliveryReviews"
-                component={Reviews}
-              />
-
-              <Stack.Screen
-                name="CustomerReviews"
                 component={Reviews}
               />
 
