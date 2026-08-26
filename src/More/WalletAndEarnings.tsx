@@ -548,12 +548,12 @@ const WalletAndEarnings = () => {
             {/* ══ RECENT WITHDRAWALS ══ */}
             <View className="rounded-3xl border border-white/10 bg-slate-900 p-5 mb-5 shadow-lg">
               <View className="flex-row items-center justify-between pb-3 border-b border-white/5 mb-3">
-                <div>
+                <View>
                   <Text className="text-lg font-black text-white">Recent Withdrawals</Text>
                   <Text className="text-slate-400 text-xs mt-0.5">
                     Latest payout activity and settlement status
                   </Text>
-                </div>
+                </View>
               </View>
 
               {withdrawals.length === 0 ? (
