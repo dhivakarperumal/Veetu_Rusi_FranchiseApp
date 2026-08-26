@@ -17,6 +17,7 @@ import {
   ArrowRight,
   Star,
   Tag,
+  Share2,
 } from "lucide-react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -69,6 +70,15 @@ const More = () => {
       color: "#10b981",
       bgColor: "#d1fae5",
       onPress: () => navigation.navigate("Coupons"),
+    },
+    {
+      id: "referrals",
+      label: "Referral Management",
+      description: "Manage customer, chef & DP referrals",
+      icon: Share2,
+      color: "#6366f1",
+      bgColor: "#e0e7ff",
+      onPress: () => navigation.navigate("ReferralManagement"),
     },
   ];
 

@@ -39,6 +39,8 @@ import AddCategory from "./src/More/AddCategory";
 import AddStock from "./src/More/AddStock";
 import Orders from "./src/More/Orders";
 import Reviews from "./src/More/Reviews";
+import Coupons from "./src/More/Coupons";
+import ReferralManagement from "./src/More/ReferralManagement";
 
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
@@ -178,6 +180,21 @@ const AppNavigator = () => {
               <Stack.Screen
                 name="Reviews"
                 component={Reviews}
+              />
+
+              <Stack.Screen
+                name="Coupons"
+                component={Coupons}
+              />
+
+              <Stack.Screen
+                name="ReferralManagement"
+                component={ReferralManagement}
+              />
+
+              <Stack.Screen
+                name="Referrals"
+                component={ReferralManagement}
               />
             </Stack.Group>
           </>
