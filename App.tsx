@@ -41,6 +41,7 @@ import Orders from "./src/More/Orders";
 import Reviews from "./src/More/Reviews";
 import Coupons from "./src/More/Coupons";
 import ReferralManagement from "./src/More/ReferralManagement";
+import WalletAndEarnings from "./src/More/WalletAndEarnings";
 
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
@@ -195,6 +196,21 @@ const AppNavigator = () => {
               <Stack.Screen
                 name="Referrals"
                 component={ReferralManagement}
+              />
+
+              <Stack.Screen
+                name="WalletAndEarnings"
+                component={WalletAndEarnings}
+              />
+
+              <Stack.Screen
+                name="AdminWalletAndEarnings"
+                component={WalletAndEarnings}
+              />
+
+              <Stack.Screen
+                name="Wallet"
+                component={WalletAndEarnings}
               />
             </Stack.Group>
           </>

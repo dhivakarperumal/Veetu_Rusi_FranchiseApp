@@ -80,6 +80,15 @@ const More = () => {
       bgColor: "#e0e7ff",
       onPress: () => navigation.navigate("ReferralManagement"),
     },
+    {
+      id: "wallet-earnings",
+      label: "Wallet & Earnings",
+      description: "Track balance, cashflow & payouts",
+      icon: Wallet,
+      color: "#f59e0b",
+      bgColor: "#fef3c7",
+      onPress: () => navigation.navigate("WalletAndEarnings"),
+    },
   ];
 
   const renderMenuItem = (item: any) => {
