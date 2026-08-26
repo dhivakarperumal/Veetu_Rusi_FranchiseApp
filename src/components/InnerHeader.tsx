@@ -12,6 +12,16 @@ type InnerHeaderProps = {
 const InnerHeader = ({ title, navigation, onBack }: InnerHeaderProps) => {
   const insets = useSafeAreaInsets();
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else if (navigation?.canGoBack && typeof navigation.canGoBack === 'function' && navigation.canGoBack()) {
+      navigation.goBack();
+    } else if (navigation?.navigate) {
+      navigation.navigate('Main');
+    }
+  };
+
   return (
     <View
       style={{
@@ -26,7 +36,7 @@ const InnerHeader = ({ title, navigation, onBack }: InnerHeaderProps) => {
       }}
     >
       <TouchableOpacity
-        onPress={onBack ?? (() => navigation.goBack())}
+        onPress={handleBack}
         style={{ padding: 8 }}
       >
         <ArrowLeft color="#fff" size={24} />

@@ -184,6 +184,26 @@ const AppNavigator = () => {
               />
 
               <Stack.Screen
+                name="PartnerReviews"
+                component={Reviews}
+              />
+
+              <Stack.Screen
+                name="DeliveryPartnerReviews"
+                component={Reviews}
+              />
+
+              <Stack.Screen
+                name="DeliveryReviews"
+                component={Reviews}
+              />
+
+              <Stack.Screen
+                name="CustomerReviews"
+                component={Reviews}
+              />
+
+              <Stack.Screen
                 name="Coupons"
                 component={Coupons}
               />
