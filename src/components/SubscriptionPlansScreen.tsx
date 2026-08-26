@@ -9,20 +9,25 @@ import {
     Alert,
 } from "react-native";
 import { AlertCircle, ArrowLeft, CreditCard, Sparkles } from "lucide-react-native";
-import { getSubscriptionPlans, post } from "../services/api";
+import { get, getSubscriptionPlans, post } from "../services/api";
 import RazorpayCheckout from "react-native-razorpay";
+import { useRoute } from "@react-navigation/native";
 
 const SubscriptionPlansScreen = ({ navigation }: any) => {
+    const route = useRoute<any>();
     const [plans, setPlans] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedPlan, setSelectedPlan] = useState<any>(null);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
-    const franchiseId = navigation.getState()?.routes?.find(
-        (route: any) => route.name === "SubscriptionPlans"
-    )?.params?.franchiseId;
+    const [franchiseId, setFranchiseId] = useState<any>(route.params?.franchiseId || null);
 
     useEffect(() => {
         fetchPlans();
+        if (!franchiseId) {
+            get<any>("/subscriptions/status")
+                .then((response: any) => setFranchiseId(response?.subscription?.id || null))
+                .catch(() => undefined);
+        }
     }, []);
 
     const fetchPlans = async () => {
@@ -62,24 +67,23 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                 planId: selectedPlan.id,
             });
 
-            if (!checkout.key_id) {
-                Alert.alert("Subscription activated", "Demo mode is enabled for this account.", [
-                    { text: "Done", onPress: () => navigation.goBack() },
-                ]);
-                return;
-            }
-
-            const payment = await RazorpayCheckout.open({
-                key: checkout.key_id,
-                amount: checkout.order.amount,
-                currency: checkout.plan.currency,
-                name: "Veetu Rusi",
-                description: `${checkout.plan.name} Subscription`,
-                order_id: checkout.order.id,
-                prefill: { name: "Franchise Owner" },
-                notes: { franchiseId: String(franchiseId), planId: String(selectedPlan.id) },
-                theme: { color: "#14B8A6" },
-            });
+            const payment = checkout.key_id
+                ? await RazorpayCheckout.open({
+                    key: checkout.key_id,
+                    amount: checkout.order.amount,
+                    currency: checkout.plan.currency,
+                    name: "Veetu Rusi",
+                    description: `${checkout.plan.name} Subscription`,
+                    order_id: checkout.order.id,
+                    prefill: { name: "Franchise Owner" },
+                    notes: { franchiseId: String(franchiseId), planId: String(selectedPlan.id) },
+                    theme: { color: "#14B8A6" },
+                })
+                : {
+                    razorpay_payment_id: `TEST_PAYMENT_${Date.now()}`,
+                    razorpay_order_id: checkout.order.id,
+                    razorpay_signature: "",
+                };
 
             await post("/subscriptions/confirm", {
                 franchiseId,
@@ -89,7 +93,7 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                 razorpay_signature: payment.razorpay_signature,
             });
 
-            Alert.alert("Payment successful", "Your subscription has been activated.", [
+            Alert.alert("Subscription activated", checkout.key_id ? "Your payment was successful." : "Demo mode activation was recorded.", [
                 { text: "Done", onPress: () => navigation.goBack() },
             ]);
         } catch (error: any) {

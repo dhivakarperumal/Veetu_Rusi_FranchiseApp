@@ -198,6 +198,23 @@ const Dashboard = ({ navigation }: any) => {
     fetchDashboard();
   }, []);
 
+  const applySubscriptionStatus = (subscription: any) => {
+    if (!subscription) {
+      setSubscriptionInfo(null);
+      setShowSubscriptionAlert(false);
+      return;
+    }
+
+    setSubscriptionInfo(subscription);
+    const status = String(subscription.status || "").trim().toLowerCase();
+    const isActive = status === "active" && subscription.isExpired !== true;
+    const isExpiring =
+      isActive &&
+      subscription.daysRemaining != null &&
+      Number(subscription.daysRemaining) <= 7;
+    setShowSubscriptionAlert(!isActive || isExpiring);
+  };
+
   const fetchDashboard = async () => {
     try {
       const data = await get<any>("/dashboard");
@@ -206,19 +223,15 @@ const Dashboard = ({ navigation }: any) => {
 
       setDashboard(data);
 
-      const subscription = data?.subscriptionInfo;
-      if (subscription) {
-        setSubscriptionInfo(subscription);
-        const status = String(subscription.status || "").toLowerCase();
-        const isActive = status === "active" && !subscription.isExpired;
-        const isExpiring =
-          isActive &&
-          subscription.daysRemaining != null &&
-          Number(subscription.daysRemaining) <= 7;
-        setShowSubscriptionAlert(!isActive || isExpiring);
-      } else {
-        setSubscriptionInfo(null);
-        setShowSubscriptionAlert(false);
+      applySubscriptionStatus(data?.subscriptionInfo);
+
+      const statusResponse = await get<any>("/subscriptions/status");
+      if (statusResponse?.subscription) {
+        applySubscriptionStatus({
+          ...statusResponse,
+          ...statusResponse.subscription,
+          franchiseId: statusResponse.subscription.id,
+        });
       }
     } catch (err) {
       console.log("Dashboard Error:", err);
