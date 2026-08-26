@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Star,
   Search,
+  Filter,
   MessageSquare,
   CheckCircle,
   AlertCircle,
@@ -25,6 +26,7 @@ import {
   Send,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   ShieldAlert,
   Package,
   Reply,
@@ -34,6 +36,8 @@ import {
   Truck,
   Eye,
   Award,
+  Clock,
+  Users,
 } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { launchImageLibrary } from "react-native-image-picker";
@@ -93,6 +97,10 @@ const Reviews = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+
+  // Filter Modals
+  const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
+  const [isRatingFilterOpen, setIsRatingFilterOpen] = useState(false);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -163,7 +171,7 @@ const Reviews = () => {
   }, [route?.params]);
 
   // --------------------------------------------------
-  // DATA FETCHING WITH FALLBACK ENDPOINTS
+  // DATA FETCHING WITH ROBUST FALLBACK ENDPOINTS
   // --------------------------------------------------
   const fetchReviews = useCallback(async () => {
     try {
@@ -596,7 +604,7 @@ const Reviews = () => {
     } catch (err: any) {
       setFeedbackDialog({
         visible: true,
-        title: "Reply Published",
+        title: "Reply Saved",
         message: "Your response has been saved.",
       });
       setReplyModalItem(null);
@@ -835,23 +843,46 @@ const Reviews = () => {
               </View>
             </View>
 
-            {/* ================= SUMMARY STAT METRICS ================= */}
+            {/* ================= TOP 3 CLICKABLE SUMMARY METRIC CARDS ================= */}
             <View className="flex-row gap-2 mb-5">
-              {/* TOTAL */}
-              <View className="flex-1 bg-slate-900 border border-blue-400/25 rounded-2xl p-3">
+              {/* TOTAL (CLICKABLE) */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setStatusFilter("All");
+                  setSelectedRating(null);
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  statusFilter === "All" && selectedRating === null
+                    ? "border-blue-400"
+                    : "border-blue-400/25"
+                }`}
+              >
                 <View className="w-8 h-8 rounded-lg bg-blue-500/15 items-center justify-center mb-2">
                   <MessageSquare size={16} color="#60a5fa" />
                 </View>
                 <Text className="text-blue-200/70 text-[9px] font-bold uppercase">
-                  {activeTab === "products" ? "Total Reviews" : "Partner Reviews"}
+                  {activeTab === "products" ? "Total" : "Total Partner"}
                 </Text>
                 <Text className="text-white text-2xl font-black mt-0.5">
                   {totalCount}
                 </Text>
-              </View>
+              </TouchableOpacity>
 
-              {/* AVG RATING */}
-              <View className="flex-1 bg-slate-900 border border-amber-400/25 rounded-2xl p-3">
+              {/* AVG RATING / 5-STARS (CLICKABLE) */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setSelectedRating((prev) => (prev === 5 ? null : 5));
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  selectedRating === 5
+                    ? "border-amber-400"
+                    : "border-amber-400/25"
+                }`}
+              >
                 <View className="w-8 h-8 rounded-lg bg-amber-500/15 items-center justify-center mb-2">
                   <Star size={16} color="#fbbf24" fill="#fbbf24" />
                 </View>
@@ -861,10 +892,26 @@ const Reviews = () => {
                 <Text className="text-white text-2xl font-black mt-0.5">
                   {avgRating}
                 </Text>
-              </View>
+              </TouchableOpacity>
 
-              {/* PENDING / TOP RATED */}
-              <View className="flex-1 bg-slate-900 border border-rose-400/25 rounded-2xl p-3">
+              {/* PENDING / TOP RATED (CLICKABLE) */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  if (activeTab === "products") {
+                    setStatusFilter((prev) => (prev === "Pending" ? "All" : "Pending"));
+                  } else {
+                    setSelectedRating((prev) => (prev === 5 ? null : 5));
+                  }
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 bg-slate-900 border rounded-2xl p-3 ${
+                  (activeTab === "products" && statusFilter === "Pending") ||
+                  (activeTab === "delivery" && selectedRating === 5)
+                    ? "border-rose-400"
+                    : "border-rose-400/25"
+                }`}
+              >
                 <View className="w-8 h-8 rounded-lg bg-rose-500/15 items-center justify-center mb-2">
                   {activeTab === "products" ? (
                     <ShieldAlert size={16} color="#fda4af" />
@@ -873,12 +920,12 @@ const Reviews = () => {
                   )}
                 </View>
                 <Text className="text-rose-200/70 text-[9px] font-bold uppercase">
-                  {activeTab === "products" ? "Pending" : "5-Star Ratings"}
+                  {activeTab === "products" ? "Pending" : "5-Stars"}
                 </Text>
                 <Text className="text-white text-2xl font-black mt-0.5">
                   {pendingCount}
                 </Text>
-              </View>
+              </TouchableOpacity>
             </View>
 
             {/* ================= TAB SWITCHER ================= */}
@@ -934,7 +981,7 @@ const Reviews = () => {
                     : "Search delivery partner, customer or comment..."
                 }
                 placeholderTextColor="#64748b"
-                className="flex-1 text-white ml-3 text-xs font-semibold"
+                className="flex-1 text-white ml-3 text-xs"
               />
               {searchQuery ? (
                 <TouchableOpacity onPress={() => setSearchQuery("")}>
@@ -943,40 +990,43 @@ const Reviews = () => {
               ) : null}
             </View>
 
-            {/* ================= STATUS & RATING FILTERS ================= */}
-            <View className="mb-4">
-              {activeTab === "products" && (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  className="mb-2"
-                >
-                  {["All", "Published", "Pending", "Flagged"].map((s) => {
-                    const isSelected = statusFilter === s;
-                    return (
-                      <TouchableOpacity
-                        key={s}
-                        onPress={() => setStatusFilter(s)}
-                        className={`mr-2 px-4 py-2 rounded-xl border ${
-                          isSelected
-                            ? "bg-white border-white"
-                            : "bg-slate-900 border-white/10"
-                        }`}
-                      >
-                        <Text
-                          className={`text-xs font-black uppercase ${
-                            isSelected ? "text-slate-950" : "text-slate-400"
-                          }`}
-                        >
-                          {s}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-              )}
+            {/* ================= STATUS & RATING FILTER BAR (MATCHING DELIVERY PARTNER PAGE) ================= */}
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center">
+                <Filter size={15} color="#94a3b8" />
+                <Text className="text-slate-400 ml-1.5 text-[10px] font-bold uppercase">
+                  Filter reviews
+                </Text>
+              </View>
 
-              {/* Star Rating Pills */}
+              <View className="flex-row gap-2">
+                {/* Status Dropdown Button (Products Tab) */}
+                {activeTab === "products" && (
+                  <TouchableOpacity
+                    onPress={() => setIsStatusFilterOpen(true)}
+                    className="flex-row items-center bg-slate-900 border border-white/10 rounded-xl px-3 py-2"
+                  >
+                    <Text className="text-white text-xs font-bold mr-1.5">{statusFilter}</Text>
+                    <ChevronDown size={14} color="#94a3b8" />
+                  </TouchableOpacity>
+                )}
+
+                {/* Star Rating Dropdown Button */}
+                <TouchableOpacity
+                  onPress={() => setIsRatingFilterOpen(true)}
+                  className="flex-row items-center bg-slate-900 border border-white/10 rounded-xl px-3 py-2"
+                >
+                  <Star size={12} color="#fbbf24" fill="#fbbf24" style={{ marginRight: 4 }} />
+                  <Text className="text-white text-xs font-bold mr-1.5">
+                    {selectedRating ? `${selectedRating} Stars` : "All Stars"}
+                  </Text>
+                  <ChevronDown size={14} color="#94a3b8" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Star Rating Quick Filter Pills */}
+            <View className="mb-4">
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <TouchableOpacity
                   onPress={() => setSelectedRating(null)}
@@ -1168,7 +1218,7 @@ const Reviews = () => {
                       </TouchableOpacity>
                     )}
 
-                    {/* Reply */}
+                    {/* Reply (Opens Centralized Modal) */}
                     <TouchableOpacity
                       onPress={() => {
                         setReplyModalItem(r);
@@ -1359,7 +1409,125 @@ const Reviews = () => {
       </View>
 
       {/* ================================================= */}
-      {/* OFFICIAL REPLY MODAL */}
+      {/* STATUS FILTER MODAL (LIKE DELIVERY PARTNER PAGE) */}
+      {/* ================================================= */}
+      <Modal
+        visible={isStatusFilterOpen}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setIsStatusFilterOpen(false)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
+            <View className="flex-row items-center justify-between mb-4">
+              <View>
+                <Text className="text-white text-base font-black">Filter by Status</Text>
+                <Text className="text-slate-400 text-xs mt-0.5">Choose a review publication status</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setIsStatusFilterOpen(false)}
+                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+              >
+                <X size={17} color="#cbd5e1" />
+              </TouchableOpacity>
+            </View>
+
+            {["All", "Published", "Pending", "Flagged"].map((status) => {
+              const active = statusFilter === status;
+              return (
+                <TouchableOpacity
+                  key={status}
+                  onPress={() => {
+                    setStatusFilter(status);
+                    setIsStatusFilterOpen(false);
+                  }}
+                  className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${
+                    active
+                      ? "bg-emerald-500/15 border-emerald-500/40"
+                      : "bg-slate-950 border-white/5"
+                  }`}
+                >
+                  <Text className={`text-sm font-bold ${active ? "text-emerald-300" : "text-slate-300"}`}>
+                    {status === "All" ? "All statuses" : status}
+                  </Text>
+                  {active ? <CheckCircle size={17} color="#34d399" /> : null}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </Modal>
+
+      {/* ================================================= */}
+      {/* STAR RATING FILTER MODAL (LIKE DELIVERY PARTNER PAGE) */}
+      {/* ================================================= */}
+      <Modal
+        visible={isRatingFilterOpen}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setIsRatingFilterOpen(false)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View
+            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
+            style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+          >
+            <View className="flex-row items-center justify-between mb-4">
+              <View>
+                <Text className="text-white text-base font-black">Filter by Star Rating</Text>
+                <Text className="text-slate-400 text-xs mt-0.5">Filter feedback by rating level</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setIsRatingFilterOpen(false)}
+                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+              >
+                <X size={17} color="#cbd5e1" />
+              </TouchableOpacity>
+            </View>
+
+            {[
+              { label: "All Stars", val: null },
+              { label: "5 Stars Only", val: 5 },
+              { label: "4 Stars Only", val: 4 },
+              { label: "3 Stars Only", val: 3 },
+              { label: "2 Stars Only", val: 2 },
+              { label: "1 Star Only", val: 1 },
+            ].map((r) => {
+              const active = selectedRating === r.val;
+              return (
+                <TouchableOpacity
+                  key={String(r.val)}
+                  onPress={() => {
+                    setSelectedRating(r.val);
+                    setIsRatingFilterOpen(false);
+                  }}
+                  className={`flex-row items-center justify-between px-4 py-3.5 rounded-2xl mb-2 border ${
+                    active
+                      ? "bg-amber-500/15 border-amber-500/40"
+                      : "bg-slate-950 border-white/5"
+                  }`}
+                >
+                  <View className="flex-row items-center gap-2">
+                    <Star size={16} color={active ? "#fbbf24" : "#94a3b8"} fill={active ? "#fbbf24" : "transparent"} />
+                    <Text className={`text-sm font-bold ${active ? "text-amber-300" : "text-slate-300"}`}>
+                      {r.label}
+                    </Text>
+                  </View>
+                  {active ? <CheckCircle size={17} color="#fbbf24" /> : null}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </Modal>
+
+      {/* ================================================= */}
+      {/* CENTRALIZED OFFICIAL REPLY MODAL */}
       {/* ================================================= */}
       <Modal
         visible={!!replyModalItem}
@@ -1368,34 +1536,39 @@ const Reviews = () => {
         statusBarTranslucent
         onRequestClose={() => setReplyModalItem(null)}
       >
-        <View className="flex-1 bg-black/80 justify-end">
-          <View
-            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
-          >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1 bg-black/80 items-center justify-center px-5"
+        >
+          <View className="w-full max-w-sm bg-slate-900 border border-white/10 rounded-3xl p-6 shadow-2xl">
+            {/* Modal Header */}
             <View className="flex-row items-center justify-between mb-4">
-              <View>
-                <Text className="text-white text-base font-black">
+              <View className="flex-1 mr-2">
+                <Text className="text-white text-lg font-black" numberOfLines={1}>
                   Official Response
                 </Text>
-                <Text className="text-slate-400 text-xs mt-0.5">
-                  Replying to {replyModalItem?.user_name}'s feedback
+                <Text className="text-slate-400 text-xs mt-0.5" numberOfLines={1}>
+                  Replying to {replyModalItem?.user_name}
                 </Text>
               </View>
               <TouchableOpacity
                 onPress={() => setReplyModalItem(null)}
-                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+                className="w-8 h-8 rounded-full bg-slate-800 items-center justify-center"
               >
-                <X size={17} color="#cbd5e1" />
+                <X size={15} color="#cbd5e1" />
               </TouchableOpacity>
             </View>
 
-            <View className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 mb-4">
-              <Text className="text-slate-400 text-xs italic">
-                "{replyModalItem?.comment}"
-              </Text>
+            {/* Original Comment Quote Box */}
+            <View className="bg-slate-950 border border-slate-800 rounded-2xl p-3 mb-4 max-h-24">
+              <ScrollView nestedScrollEnabled>
+                <Text className="text-slate-400 text-xs italic leading-4">
+                  "{replyModalItem?.comment}"
+                </Text>
+              </ScrollView>
             </View>
 
+            {/* Reply TextInput */}
             <TextInput
               value={replyText}
               onChangeText={setReplyText}
@@ -1403,15 +1576,17 @@ const Reviews = () => {
               placeholderTextColor="#64748b"
               multiline
               numberOfLines={4}
-              className="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white text-xs leading-5 mb-4"
+              textAlignVertical="top"
+              className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 text-white text-xs leading-5 min-h-[90px] max-h-[140px] mb-4"
             />
 
-            <View className="flex-row gap-3">
+            {/* Action Buttons */}
+            <View className="flex-row gap-2.5">
               <TouchableOpacity
                 onPress={() => setReplyModalItem(null)}
-                className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3.5 items-center"
+                className="flex-1 bg-slate-800 border border-white/10 rounded-2xl py-3 items-center justify-center"
               >
-                <Text className="text-slate-300 font-bold text-xs uppercase">
+                <Text className="text-slate-300 font-bold text-xs">
                   Cancel
                 </Text>
               </TouchableOpacity>
@@ -1419,14 +1594,15 @@ const Reviews = () => {
               <TouchableOpacity
                 disabled={replyLoading || !replyText.trim()}
                 onPress={submitReply}
-                className="flex-1 bg-blue-600 rounded-2xl py-3.5 items-center flex-row justify-center"
+                className="flex-1 bg-blue-600 rounded-2xl py-3 items-center justify-center flex-row gap-1.5"
+                style={{ opacity: replyLoading || !replyText.trim() ? 0.6 : 1 }}
               >
                 {replyLoading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
                   <>
-                    <Send size={15} color="#ffffff" />
-                    <Text className="text-white font-black text-xs uppercase tracking-wider ml-1.5">
+                    <Send size={13} color="#ffffff" />
+                    <Text className="text-white font-black text-xs uppercase tracking-wider">
                       Send Reply
                     </Text>
                   </>
@@ -1434,7 +1610,7 @@ const Reviews = () => {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* ================================================= */}
