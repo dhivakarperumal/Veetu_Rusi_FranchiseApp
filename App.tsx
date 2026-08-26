@@ -192,18 +192,23 @@ const AppNavigator = () => {
               />
 
               <Stack.Screen
+                name="ProductReviews"
+                component={CustomerReviews}
+              />
+
+              <Stack.Screen
                 name="DeliveryPartnerReviews"
                 component={DeliveryPartnerReviews}
               />
 
               <Stack.Screen
                 name="PartnerReviews"
-                component={Reviews}
+                component={DeliveryPartnerReviews}
               />
 
               <Stack.Screen
                 name="DeliveryReviews"
-                component={Reviews}
+                component={DeliveryPartnerReviews}
               />
 
               <Stack.Screen
