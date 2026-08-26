@@ -31,6 +31,7 @@ import {
   Asset,
 } from "react-native-image-picker";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { get, put } from "../services/api";
 import CenteredDialog from "../components/CenteredDialog";
 
@@ -292,32 +293,44 @@ const EditDeliveryPartner = () => {
     }
   };
 
+  const [datePickerValue, setDatePickerValue] = useState<Date>(new Date(1995, 0, 15));
+
   const openDatePickerModal = (field: string) => {
     setDatePickerField(field);
     const curVal = form[field];
-    if (curVal && curVal.includes("-")) {
-      const parts = curVal.split("-");
-      setTempYear(parseInt(parts[0], 10) || 1995);
-      setTempMonth(parseInt(parts[1], 10) || 1);
-      setTempDay(parseInt(parts[2], 10) || 15);
+    let d = new Date();
+    if (field === "date_of_birth") {
+      d = new Date(1995, 0, 15);
     }
+    if (curVal && typeof curVal === "string") {
+      const cleanStr = curVal.split("T")[0].split(" ")[0].trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(cleanStr)) {
+        const parts = cleanStr.split("-").map(Number);
+        const parsed = new Date(parts[0], parts[1] - 1, parts[2]);
+        if (!isNaN(parsed.getTime())) d = parsed;
+      }
+    }
+    setDatePickerValue(d);
     setShowDatePicker(true);
   };
 
-  const confirmDate = () => {
-    const formatted = `${tempYear}-${String(tempMonth).padStart(2, "0")}-${String(
-      tempDay
-    ).padStart(2, "0")}`;
-    updateField(datePickerField, formatted);
-    if (datePickerField === "date_of_birth") {
-      const b = new Date(formatted);
-      const t = new Date();
-      let a = t.getFullYear() - b.getFullYear();
-      const m = t.getMonth() - b.getMonth();
-      if (m < 0 || (m === 0 && t.getDate() < b.getDate())) a--;
-      updateField("age", a >= 0 ? String(a) : "");
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (event.type === "set" && selectedDate) {
+      const y = selectedDate.getFullYear();
+      const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const d = String(selectedDate.getDate()).padStart(2, "0");
+      const formatted = `${y}-${m}-${d}`;
+      updateField(datePickerField, formatted);
+      if (datePickerField === "date_of_birth") {
+        const b = selectedDate;
+        const t = new Date();
+        let a = t.getFullYear() - b.getFullYear();
+        const mon = t.getMonth() - b.getMonth();
+        if (mon < 0 || (mon === 0 && t.getDate() < b.getDate())) a--;
+        updateField("age", a >= 0 ? String(a) : "");
+      }
     }
-    setShowDatePicker(false);
   };
 
   const openMediaPicker = (key: string) => {
@@ -1253,71 +1266,15 @@ const EditDeliveryPartner = () => {
         </View>
       </KeyboardAvoidingView>
 
-      {/* Date Picker Modal */}
-      <Modal
-        visible={showDatePicker}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        navigationBarTranslucent
-      >
-        <View className="flex-1 bg-black/80 justify-center items-center p-4">
-          <View className="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-sm">
-            <Text className="text-white font-black text-base mb-4 text-center">
-              Select Date
-            </Text>
-            <View className="flex-row gap-2 mb-5">
-              <View className="flex-1">
-                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1 text-center">
-                  Day
-                </Text>
-                <TextInput
-                  value={String(tempDay)}
-                  onChangeText={(t) => setTempDay(parseInt(t, 10) || 1)}
-                  keyboardType="number-pad"
-                  className="bg-slate-950 border border-white/10 rounded-xl p-3 text-white text-center font-bold"
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1 text-center">
-                  Month
-                </Text>
-                <TextInput
-                  value={String(tempMonth)}
-                  onChangeText={(t) => setTempMonth(parseInt(t, 10) || 1)}
-                  keyboardType="number-pad"
-                  className="bg-slate-950 border border-white/10 rounded-xl p-3 text-white text-center font-bold"
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-slate-400 text-[10px] font-bold uppercase mb-1 text-center">
-                  Year
-                </Text>
-                <TextInput
-                  value={String(tempYear)}
-                  onChangeText={(t) => setTempYear(parseInt(t, 10) || 1995)}
-                  keyboardType="number-pad"
-                  className="bg-slate-950 border border-white/10 rounded-xl p-3 text-white text-center font-bold"
-                />
-              </View>
-            </View>
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                onPress={() => setShowDatePicker(false)}
-                className="flex-1 bg-slate-800 py-3 rounded-xl items-center"
-              >
-                <Text className="text-slate-300 font-bold text-xs">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={confirmDate}
-                className="flex-1 bg-emerald-600 py-3 rounded-xl items-center"
-              >
-                <Text className="text-white font-bold text-xs">Confirm</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {/* Native DateTimePicker */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={datePickerValue}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleDateChange}
+        />
+      )}
 
       {/* State Modal */}
       <Modal
