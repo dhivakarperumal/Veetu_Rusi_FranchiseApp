@@ -318,16 +318,14 @@ const CreateOrderModal = ({
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <TouchableOpacity
                     onPress={() => setSelectedCategory("")}
-                    className={`mr-2 rounded-xl px-3.5 py-2 ${
-                      !selectedCategory
+                    className={`mr-2 rounded-xl px-3.5 py-2 ${!selectedCategory
                         ? "bg-emerald-600"
                         : "bg-slate-950 border border-slate-800"
-                    }`}
+                      }`}
                   >
                     <Text
-                      className={`text-xs font-bold ${
-                        !selectedCategory ? "text-white" : "text-slate-400"
-                      }`}
+                      className={`text-xs font-bold ${!selectedCategory ? "text-white" : "text-slate-400"
+                        }`}
                     >
                       All
                     </Text>
@@ -336,18 +334,16 @@ const CreateOrderModal = ({
                     <TouchableOpacity
                       key={c.id}
                       onPress={() => setSelectedCategory(c.name)}
-                      className={`mr-2 rounded-xl px-3.5 py-2 ${
-                        selectedCategory === c.name
+                      className={`mr-2 rounded-xl px-3.5 py-2 ${selectedCategory === c.name
                           ? "bg-emerald-600"
                           : "bg-slate-950 border border-slate-800"
-                      }`}
+                        }`}
                     >
                       <Text
-                        className={`text-xs font-bold ${
-                          selectedCategory === c.name
+                        className={`text-xs font-bold ${selectedCategory === c.name
                             ? "text-white"
                             : "text-slate-400"
-                        }`}
+                          }`}
                       >
                         {c.name}
                       </Text>
@@ -515,11 +511,10 @@ const CreateOrderModal = ({
                 <View className="flex-row gap-2">
                   <TouchableOpacity
                     onPress={() => setPaymentMethod("Showroom")}
-                    className={`flex-1 items-center rounded-2xl border p-4 ${
-                      paymentMethod === "Showroom"
+                    className={`flex-1 items-center rounded-2xl border p-4 ${paymentMethod === "Showroom"
                         ? "border-emerald-500 bg-emerald-500/15"
                         : "border-slate-800 bg-slate-950"
-                    }`}
+                      }`}
                   >
                     <Truck
                       size={22}
@@ -531,11 +526,10 @@ const CreateOrderModal = ({
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => setPaymentMethod("Online")}
-                    className={`flex-1 items-center rounded-2xl border p-4 ${
-                      paymentMethod === "Online"
+                    className={`flex-1 items-center rounded-2xl border p-4 ${paymentMethod === "Online"
                         ? "border-emerald-500 bg-emerald-500/15"
                         : "border-slate-800 bg-slate-950"
-                    }`}
+                      }`}
                   >
                     <CreditCard
                       size={22}
@@ -579,8 +573,8 @@ const CreateOrderModal = ({
               {loading
                 ? "Creating..."
                 : step === 1
-                ? "Next: Customer Details"
-                : "Confirm & Create Order"}
+                  ? "Next: Customer Details"
+                  : "Confirm & Create Order"}
             </Text>
             {step === 1 && <ArrowRight size={16} color="white" />}
           </TouchableOpacity>
@@ -603,6 +597,7 @@ const Orders = () => {
   // Status Change Modal
   const [modalOrder, setModalOrder] = useState<Order | null>(null);
   const [modalStatus, setModalStatus] = useState("");
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState<string | number | null>(null);
   const [tracking, setTracking] = useState("");
   const [courier, setCourier] = useState("");
   const [reason, setReason] = useState("");
@@ -745,15 +740,6 @@ const Orders = () => {
                 </Text>
               </View>
 
-              {/* <TouchableOpacity
-                onPress={() => setCreateModalVisible(true)}
-                className="flex-row items-center rounded-2xl bg-emerald-600 px-4 py-3 shadow-lg"
-              >
-                <Plus size={16} color="#fff" />
-                <Text className="ml-1.5 text-xs font-black uppercase text-white">
-                  Add Order
-                </Text>
-              </TouchableOpacity> */}
             </View>
 
             {/* Summary Stat Cards */}
@@ -825,16 +811,14 @@ const Orders = () => {
                   return (
                     <TouchableOpacity
                       onPress={() => setActiveStatus(status)}
-                      className={`mr-2 rounded-xl px-3.5 py-2 border ${
-                        isSel
+                      className={`mr-2 rounded-xl px-3.5 py-2 border ${isSel
                           ? "bg-emerald-500/20 border-emerald-500/40"
                           : "bg-slate-900 border-white/10"
-                      }`}
+                        }`}
                     >
                       <Text
-                        className={`text-xs font-bold ${
-                          isSel ? "text-emerald-300" : "text-slate-400"
-                        }`}
+                        className={`text-xs font-bold ${isSel ? "text-emerald-300" : "text-slate-400"
+                          }`}
                       >
                         {status}
                       </Text>
@@ -857,8 +841,8 @@ const Orders = () => {
             currentIndex < 0
               ? [item.status || "New"]
               : orderFlow
-                  .slice(currentIndex)
-                  .concat(currentIndex < 2 ? ["Cancelled"] : []);
+                .slice(currentIndex)
+                .concat(currentIndex < 2 ? ["Cancelled"] : []);
 
           return (
             <View className="mb-3.5 rounded-3xl bg-slate-900 border border-white/10 p-4">
@@ -903,27 +887,128 @@ const Orders = () => {
                 </View>
               </View>
 
-              {/* Fast Status Transitions */}
-              {options.length > 1 && (
-                <View className="mt-3.5 flex-row items-center border-t border-white/10 pt-3">
-                  <Text className="mr-2 text-[10px] font-bold uppercase text-slate-500">
-                    Advance:
-                  </Text>
-                  <View className="flex-1 flex-row flex-wrap gap-1.5">
-                    {options.map((status) => (
-                      <TouchableOpacity
-                        key={status}
-                        onPress={() => handleStatusChange(item, status)}
-                        className="rounded-lg bg-slate-950 border border-slate-800 px-2.5 py-1"
+              {/* STATUS DROPDOWN */}
+              <View className="mt-3.5 border-t border-white/10 pt-3">
+
+                <Text className="mb-2 text-[10px] font-bold uppercase text-slate-500">
+                  Change Status
+                </Text>
+
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    setStatusDropdownOpen(
+                      statusDropdownOpen === item.id ? null : item.id
+                    )
+                  }
+                  className="flex-row items-center justify-between rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-3"
+                >
+                  <View className="flex-row items-center flex-1">
+
+                    <View
+                      className={`rounded-lg px-2.5 py-1 border ${style.bg} ${style.border}`}
+                    >
+                      <Text
+                        className={`text-[10px] font-black uppercase ${style.text}`}
                       >
-                        <Text className="text-[10px] font-bold text-slate-300">
-                          {status}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                        {item.status || "New"}
+                      </Text>
+                    </View>
+
+                    <Text className="text-slate-500 text-[10px] ml-2">
+                      Select new status
+                    </Text>
+
                   </View>
-                </View>
-              )}
+
+                  <ChevronDown
+                    size={16}
+                    color="#94a3b8"
+                    style={{
+                      transform: [
+                        {
+                          rotate:
+                            statusDropdownOpen === item.id
+                              ? "180deg"
+                              : "0deg",
+                        },
+                      ],
+                    }}
+                  />
+                </TouchableOpacity>
+
+                {statusDropdownOpen === item.id && (
+                  <View className="mt-2 rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden">
+
+                    {options.map((status) => {
+
+                      const optionStyle =
+                        statusStyles[status] || {
+                          bg: "bg-slate-800",
+                          border: "border-slate-700",
+                          text: "text-slate-300",
+                        };
+
+                      const isCurrent =
+                        status === item.status;
+
+                      return (
+                        <TouchableOpacity
+                          key={status}
+                          activeOpacity={0.8}
+                          onPress={() => {
+                            setStatusDropdownOpen(null);
+                            handleStatusChange(item, status);
+                          }}
+                          className={`flex-row items-center justify-between px-4 py-3.5 border-b border-slate-800 ${isCurrent ? "bg-slate-900" : ""
+                            }`}
+                        >
+
+                          <View className="flex-row items-center">
+
+                            <View
+                              className={`w-2 h-2 rounded-full mr-3 ${status === "Order Placed"
+                                  ? "bg-blue-400"
+                                  : status === "Packing"
+                                    ? "bg-purple-400"
+                                    : status === "Shipping"
+                                      ? "bg-amber-400"
+                                      : status === "Out for Delivery"
+                                        ? "bg-cyan-400"
+                                        : status === "Delivered"
+                                          ? "bg-emerald-400"
+                                          : status === "Cancelled"
+                                            ? "bg-red-400"
+                                            : "bg-slate-400"
+                                }`}
+                            />
+
+                            <Text
+                              className={`text-xs font-bold ${isCurrent
+                                  ? "text-white"
+                                  : "text-slate-300"
+                                }`}
+                            >
+                              {status}
+                            </Text>
+
+                          </View>
+
+                          {isCurrent && (
+                            <CheckCircle2
+                              size={16}
+                              color="#34d399"
+                            />
+                          )}
+
+                        </TouchableOpacity>
+                      );
+                    })}
+
+                  </View>
+                )}
+
+              </View>
             </View>
           );
         }}
