@@ -16,6 +16,7 @@ import {
   ClipboardList,
   ArrowRight,
   Star,
+  Tag,
 } from "lucide-react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -59,6 +60,15 @@ const More = () => {
       color: "#f59e0b",
       bgColor: "#fef3c7",
       onPress: () => navigation.navigate("Reviews"),
+    },
+    {
+      id: "coupons",
+      label: "Coupons & Discounts",
+      description: "Manage promo codes and offers",
+      icon: Tag,
+      color: "#10b981",
+      bgColor: "#d1fae5",
+      onPress: () => navigation.navigate("Coupons"),
     },
   ];
 
