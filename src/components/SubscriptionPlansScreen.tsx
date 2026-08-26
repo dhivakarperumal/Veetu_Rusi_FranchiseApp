@@ -8,7 +8,7 @@ import {
     SafeAreaView,
     Alert,
 } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import { AlertCircle, ArrowLeft, CreditCard, Sparkles } from "lucide-react-native";
 import { getSubscriptionPlans, post } from "../services/api";
 import RazorpayCheckout from "react-native-razorpay";
 
@@ -103,14 +103,14 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
 
     if (loading) {
         return (
-            <SafeAreaView className="flex-1 bg-gray-50 items-center justify-center">
+            <SafeAreaView className="flex-1 bg-slate-950 items-center justify-center">
 
                 <ActivityIndicator
                     size="large"
                     color="#14B8A6"
                 />
 
-                <Text className="text-gray-500 mt-4 font-medium">
+                <Text className="text-slate-400 mt-4 font-medium">
                     Loading subscription plans...
                 </Text>
 
@@ -119,28 +119,24 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-50">
+        <SafeAreaView className="flex-1 bg-slate-950">
 
             {/* Header */}
-            <View className="bg-[#0E2A14] px-6 pt-5 pb-7 rounded-b-[30px]">
+            <View className="bg-slate-900 px-6 pt-5 pb-7 border-b border-slate-800">
 
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    className="w-10 h-10 rounded-full bg-white/10 items-center justify-center mb-5"
+                    className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 items-center justify-center mb-5"
                 >
-                    <Ionicons
-                        name="arrow-back"
-                        size={23}
-                        color="#fff"
-                    />
+                    <ArrowLeft size={21} color="#5eead4" />
                 </TouchableOpacity>
 
-                <Text className="text-white text-3xl font-bold">
+                <Text className="text-white text-3xl font-black">
                     Choose Your Plan
                 </Text>
 
-                <Text className="text-teal-100 mt-2 leading-6">
-                    Renew your subscription and continue using Veetu Rusi.
+                <Text className="text-slate-400 mt-2 leading-6">
+                    Keep your franchise tools active with a plan that fits your rhythm.
                 </Text>
 
             </View>
@@ -157,19 +153,15 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
 
                 {plans.length === 0 ? (
 
-                    <View className="bg-white rounded-3xl p-8 items-center mt-5">
+                    <View className="bg-slate-900 border border-slate-800 rounded-3xl p-8 items-center mt-5">
 
-                        <Ionicons
-                            name="alert-circle-outline"
-                            size={50}
-                            color="#F59E0B"
-                        />
+                        <AlertCircle size={50} color="#fbbf24" />
 
-                        <Text className="text-xl font-bold text-gray-800 mt-4">
+                        <Text className="text-xl font-bold text-white mt-4">
                             No Plans Available
                         </Text>
 
-                        <Text className="text-gray-500 text-center mt-2">
+                        <Text className="text-slate-400 text-center mt-2">
                             Please check back later or contact support.
                         </Text>
 
@@ -189,10 +181,10 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                                 onPress={() =>
                                     setSelectedPlan(plan)
                                 }
-                                className={`bg-white rounded-3xl p-5 mb-4 border-2 ${
+                                className={`bg-slate-900 rounded-3xl p-5 mb-4 border-2 ${
                                     selected
-                                        ? "border-teal-500"
-                                        : "border-gray-100"
+                                        ? "border-teal-400"
+                                        : "border-slate-800"
                                 }`}
                             >
 
@@ -200,19 +192,19 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
 
                                     <View className="flex-1">
 
-                                        <Text className="text-xl font-bold text-gray-900">
+                                        <Text className="text-xl font-black text-white">
                                             {plan.name}
                                         </Text>
 
                                         <View className="flex-row items-baseline mt-2">
 
-                                            <Text className="text-3xl font-extrabold text-indigo-600">
+                                            <Text className="text-3xl font-black text-teal-400">
                                                 ₹{plan.amount}
                                             </Text>
 
                                         </View>
 
-                                        <Text className="text-gray-500 mt-2">
+                                        <Text className="text-slate-400 mt-2">
                                             {plan.durationDays === 30
                                                 ? "Billed Monthly"
                                                 : plan.durationDays === 90
@@ -228,14 +220,14 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                                     {/* Radio */}
                                     <View
                                         className={`w-7 h-7 rounded-full border-2 items-center justify-center ${
-                                            selected
-                                                ? "border-teal-500"
-                                                : "border-gray-300"
+                                                selected
+                                                ? "border-teal-400"
+                                                : "border-slate-600"
                                         }`}
                                     >
 
                                         {selected && (
-                                            <View className="w-3.5 h-3.5 rounded-full bg-teal-500" />
+                                            <View className="w-3.5 h-3.5 rounded-full bg-teal-400" />
                                         )}
 
                                     </View>
@@ -245,9 +237,10 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
 
                                 {/* Best Value */}
                                 {plan.durationDays >= 90 && (
-                                    <View className="self-start bg-indigo-100 px-3 py-1 rounded-full mt-4">
+                                    <View className="self-start bg-teal-500/10 border border-teal-500/20 px-3 py-1 rounded-full mt-4 flex-row items-center">
 
-                                        <Text className="text-indigo-700 text-xs font-bold">
+                                        <Sparkles size={13} color="#5eead4" />
+                                        <Text className="text-teal-300 text-xs font-bold ml-1">
                                             BEST VALUE
                                         </Text>
 
@@ -267,7 +260,7 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                         disabled={!selectedPlan || paymentProcessing}
                         activeOpacity={0.85}
                         onPress={handlePayment}
-                        className="bg-blue-600 rounded-2xl py-4 items-center mt-4"
+                        className="bg-teal-500 rounded-2xl py-4 items-center mt-4"
                     >
 
                         <View className="flex-row items-center">
@@ -275,7 +268,7 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                             {paymentProcessing ? (
                                 <ActivityIndicator color="#fff" />
                             ) : (
-                                <Ionicons name="card-outline" size={22} color="#fff" />
+                                <CreditCard size={21} color="#0f172a" />
                             )}
 
                             <Text className="text-white font-bold text-lg ml-2">

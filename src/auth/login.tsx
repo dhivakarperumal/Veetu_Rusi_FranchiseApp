@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "../services/api";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import { ArrowRight, Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react-native";
 import SubscriptionAlert from "../components/SubscriptionAlert";
 
 import { AuthContext } from "../context/AuthContext";
@@ -81,70 +81,77 @@ const LoginScreen = ({ navigation }: any) => {
 
     return (
         <>
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
 
             <ImageBackground
                 source={{
                     uri: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=80",
                 }}
                 resizeMode="cover"
-                className="flex-1"
+                className="flex-1 bg-slate-950"
             >
-                <View className="flex-1 bg-black/40">
+                <View className="flex-1 bg-slate-950/80">
                     <SafeAreaView className="flex-1 justify-center px-6">
-                        <View className="bg-white rounded-3xl p-8 shadow-xl">
+                        <View className="bg-slate-900 border border-slate-700 rounded-3xl p-7 shadow-xl">
                             {/* Logo / Title */}
 
-                            <Text className="text-4xl font-bold text-gray-800">
+                            <View className="w-14 h-14 rounded-2xl bg-teal-500 items-center justify-center mb-5">
+                                <Text className="text-slate-950 text-3xl font-black">V</Text>
+                            </View>
+                            <Text className="text-teal-400 text-xs font-black tracking-[3px]">
                                 Veetu Rusi
                             </Text>
 
-                            <Text className="text-gray-500 mt-2 mb-8">
-                                Welcome Back
+                            <Text className="text-white text-3xl font-black mt-3 mb-2">
+                                Welcome back
+                            </Text>
+                            <Text className="text-slate-400 mb-8">
+                                Sign in to manage your franchise
                             </Text>
 
                             {/* Email */}
 
                             <View className="mb-5">
-                                <Text className="text-gray-700 font-semibold mb-2">
+                                <Text className="text-slate-300 font-semibold mb-2">
                                     Email / Username
                                 </Text>
 
-                                <TextInput
-                                    value={identifier}
-                                    onChangeText={setIdentifier}
-                                    placeholder="Enter Email or Username"
-                                    placeholderTextColor="#999"
-                                    className="border border-gray-300 rounded-2xl px-4 py-4 text-black bg-gray-50"
-                                />
+                                <View className="flex-row items-center border border-slate-700 rounded-2xl px-4 bg-slate-800">
+                                    <UserRound size={19} color="#5eead4" />
+                                    <TextInput
+                                        value={identifier}
+                                        onChangeText={setIdentifier}
+                                        placeholder="Enter Email or Username"
+                                        placeholderTextColor="#64748b"
+                                        autoCapitalize="none"
+                                        className="flex-1 text-white px-3 py-4"
+                                    />
+                                </View>
                             </View>
 
                             {/* Password */}
 
                             <View className="mb-3">
-                                <Text className="text-gray-700 font-semibold mb-2">
+                                <Text className="text-slate-300 font-semibold mb-2">
                                     Password
                                 </Text>
 
-                                <View className="relative">
+                                <View className="relative flex-row items-center border border-slate-700 rounded-2xl px-4 bg-slate-800">
+                                    <LockKeyhole size={19} color="#5eead4" />
                                     <TextInput
                                         value={password}
                                         onChangeText={setPassword}
                                         secureTextEntry={!showPassword}
                                         placeholder="Enter Password"
                                         placeholderTextColor="#999"
-                                        className="border border-gray-300 rounded-2xl px-4 py-4 pr-14 text-black bg-gray-50"
+                                        className="flex-1 text-white px-3 py-4 pr-10"
                                     />
 
                                     <TouchableOpacity
                                         onPress={() => setShowPassword(!showPassword)}
                                         className="absolute right-4 top-4"
                                     >
-                                        <Ionicons
-                                            name={showPassword ? "eye-off-outline" : "eye-outline"}
-                                            size={24}
-                                            color="#14b8a6"
-                                        />
+                                        {showPassword ? <EyeOff size={21} color="#5eead4" /> : <Eye size={21} color="#5eead4" />}
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -152,7 +159,7 @@ const LoginScreen = ({ navigation }: any) => {
                             {/* Forgot Password */}
 
                             <TouchableOpacity className="mb-6">
-                                <Text className="text-right text-teal-600 font-semibold">
+                                <Text className="text-right text-teal-400 font-semibold">
                                     Forgot Password?
                                 </Text>
                             </TouchableOpacity>
@@ -162,26 +169,29 @@ const LoginScreen = ({ navigation }: any) => {
                             <TouchableOpacity
                                 disabled={loading}
                                 onPress={handleLogin}
-                                className="bg-teal-500 py-4 rounded-2xl items-center"
+                                className="bg-teal-500 py-4 rounded-2xl items-center flex-row justify-center"
                             >
                                 {loading ? (
                                     <ActivityIndicator color="#fff" />
                                 ) : (
-                                    <Text className="text-white font-bold text-lg">
-                                        Login
+                                    <>
+                                    <Text className="text-slate-950 font-black text-lg mr-2">
+                                        Sign in
                                     </Text>
+                                    <ArrowRight size={20} color="#0f172a" />
+                                    </>
                                 )}
                             </TouchableOpacity>
 
                             {/* Register */}
 
                             <View className="flex-row justify-center mt-8">
-                                <Text className="text-gray-500">
+                                <Text className="text-slate-400">
                                     Don't have an account?
                                 </Text>
 
-                                <TouchableOpacity>
-                                    <Text className="text-teal-600 font-bold ml-1">
+                                <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+                                    <Text className="text-teal-400 font-bold ml-1">
                                         Sign Up
                                     </Text>
                                 </TouchableOpacity>
