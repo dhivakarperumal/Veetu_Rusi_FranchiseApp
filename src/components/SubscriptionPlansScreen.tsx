@@ -9,12 +9,17 @@ import {
     Alert,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { getSubscriptionPlans } from "../services/api";
+import { getSubscriptionPlans, post } from "../services/api";
+import RazorpayCheckout from "react-native-razorpay";
 
 const SubscriptionPlansScreen = ({ navigation }: any) => {
     const [plans, setPlans] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedPlan, setSelectedPlan] = useState<any>(null);
+    const [paymentProcessing, setPaymentProcessing] = useState(false);
+    const franchiseId = navigation.getState()?.routes?.find(
+        (route: any) => route.name === "SubscriptionPlans"
+    )?.params?.franchiseId;
 
     useEffect(() => {
         fetchPlans();
@@ -41,6 +46,58 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
             );
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handlePayment = async () => {
+        if (!selectedPlan || !franchiseId) {
+            Alert.alert("Unable to continue", "Your franchise could not be identified.");
+            return;
+        }
+
+        try {
+            setPaymentProcessing(true);
+            const checkout = await post<any>("/subscriptions/checkout", {
+                franchiseId,
+                planId: selectedPlan.id,
+            });
+
+            if (!checkout.key_id) {
+                Alert.alert("Subscription activated", "Demo mode is enabled for this account.", [
+                    { text: "Done", onPress: () => navigation.goBack() },
+                ]);
+                return;
+            }
+
+            const payment = await RazorpayCheckout.open({
+                key: checkout.key_id,
+                amount: checkout.order.amount,
+                currency: checkout.plan.currency,
+                name: "Veetu Rusi",
+                description: `${checkout.plan.name} Subscription`,
+                order_id: checkout.order.id,
+                prefill: { name: "Franchise Owner" },
+                notes: { franchiseId: String(franchiseId), planId: String(selectedPlan.id) },
+                theme: { color: "#14B8A6" },
+            });
+
+            await post("/subscriptions/confirm", {
+                franchiseId,
+                planId: selectedPlan.id,
+                razorpay_payment_id: payment.razorpay_payment_id,
+                razorpay_order_id: payment.razorpay_order_id,
+                razorpay_signature: payment.razorpay_signature,
+            });
+
+            Alert.alert("Payment successful", "Your subscription has been activated.", [
+                { text: "Done", onPress: () => navigation.goBack() },
+            ]);
+        } catch (error: any) {
+            if (error?.code !== 2) {
+                Alert.alert("Payment failed", error?.message || "Please try again.");
+            }
+        } finally {
+            setPaymentProcessing(false);
         }
     };
 
@@ -207,28 +264,22 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                 {plans.length > 0 && (
 
                     <TouchableOpacity
-                        disabled={!selectedPlan}
+                        disabled={!selectedPlan || paymentProcessing}
                         activeOpacity={0.85}
-                        onPress={() => {
-                            // Razorpay will be connected in next step
-                            Alert.alert(
-                                "Selected Plan",
-                                `${selectedPlan.name} selected`
-                            );
-                        }}
+                        onPress={handlePayment}
                         className="bg-blue-600 rounded-2xl py-4 items-center mt-4"
                     >
 
                         <View className="flex-row items-center">
 
-                            <Ionicons
-                                name="card-outline"
-                                size={22}
-                                color="#fff"
-                            />
+                            {paymentProcessing ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <Ionicons name="card-outline" size={22} color="#fff" />
+                            )}
 
                             <Text className="text-white font-bold text-lg ml-2">
-                                Proceed to Checkout
+                                {paymentProcessing ? "Processing..." : "Proceed to Checkout"}
                             </Text>
 
                         </View>

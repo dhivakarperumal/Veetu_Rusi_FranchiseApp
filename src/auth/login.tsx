@@ -25,7 +25,7 @@ const LoginScreen = ({ navigation }: any) => {
     const auth = React.useContext(AuthContext);
     const [showSubscriptionAlert, setShowSubscriptionAlert] = useState(false);
 
-    const [subscriptionInfo, setSubscriptionInfo] = useState({
+    const [subscriptionInfo, setSubscriptionInfo] = useState<any>({
         isExpired: false,
         daysRemaining: null,
         status: "Inactive",
@@ -198,7 +198,9 @@ const LoginScreen = ({ navigation }: any) => {
                 onBuyClick={() => {
                     setShowSubscriptionAlert(false);
 
-                    navigation.navigate("SubscriptionPlans");
+                    navigation.navigate("SubscriptionPlans", {
+                        franchiseId: subscriptionInfo.franchiseId,
+                    });
                 }}
             />
         </>

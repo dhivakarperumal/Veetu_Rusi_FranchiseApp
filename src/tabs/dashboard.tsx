@@ -24,6 +24,7 @@ import {
 import { LineChart, BarChart, PieChart } from "react-native-chart-kit";
 
 import { get } from "../services/api";
+import SubscriptionAlert from "../components/SubscriptionAlert";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CHART_WIDTH = SCREEN_WIDTH - 64;
@@ -186,10 +187,12 @@ const ChartCard = ({
   );
 };
 
-const Dashboard = () => {
+const Dashboard = ({ navigation }: any) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dashboard, setDashboard] = useState<any>(null);
+  const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
+  const [showSubscriptionAlert, setShowSubscriptionAlert] = useState(false);
 
   useEffect(() => {
     fetchDashboard();
@@ -197,11 +200,31 @@ const Dashboard = () => {
 
   const fetchDashboard = async () => {
     try {
-      const data = await get("/dashboard");
+      const data = await get<any>("/dashboard");
 
       console.log("Dashboard Data:", data);
 
       setDashboard(data);
+
+      const subscription = data?.subscriptionInfo;
+      if (subscription) {
+        setSubscriptionInfo(subscription);
+        setShowSubscriptionAlert(
+          Boolean(
+            subscription.isExpired ||
+              subscription.status !== "Active" ||
+              subscription.daysRemaining == null ||
+              subscription.daysRemaining <= 7
+          )
+        );
+      } else {
+        setSubscriptionInfo({
+          isExpired: true,
+          daysRemaining: null,
+          status: "Inactive",
+        });
+        setShowSubscriptionAlert(true);
+      }
     } catch (err) {
       console.log("Dashboard Error:", err);
 
@@ -659,6 +682,18 @@ const Dashboard = () => {
           <View className="h-10" />
         </View>
       </ScrollView>
+
+      <SubscriptionAlert
+        visible={showSubscriptionAlert}
+        subscriptionInfo={subscriptionInfo}
+        onClose={() => setShowSubscriptionAlert(false)}
+        onBuyClick={() => {
+          setShowSubscriptionAlert(false);
+          navigation.navigate("SubscriptionPlans", {
+            franchiseId: subscriptionInfo?.franchiseId,
+          });
+        }}
+      />
     </View>
   );
 };
