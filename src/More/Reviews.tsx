@@ -49,7 +49,7 @@ const Reviews = () => {
         try {
           const user = JSON.parse(userData);
           franchiseUserId = user?.user_id || user?.id || user?.franchise_user_id || "";
-        } catch {}
+        } catch { }
       }
 
       // 1. Fetch Product Reviews with fallback chain
@@ -71,14 +71,14 @@ const Reviews = () => {
           const rawList = Array.isArray(res)
             ? res
             : Array.isArray(res?.reviews)
-            ? res.reviews
-            : Array.isArray(res?.data)
-            ? res.data
-            : Array.isArray(res?.data?.reviews)
-            ? res.data.reviews
-            : Array.isArray(res?.result)
-            ? res.result
-            : [];
+              ? res.reviews
+              : Array.isArray(res?.data)
+                ? res.data
+                : Array.isArray(res?.data?.reviews)
+                  ? res.data.reviews
+                  : Array.isArray(res?.result)
+                    ? res.result
+                    : [];
 
           if (res?.stats) {
             productStats = res.stats;
@@ -90,7 +90,7 @@ const Reviews = () => {
           } else if (res && (Array.isArray(res) || res?.reviews || res?.data)) {
             productReviews = rawList;
           }
-        } catch {}
+        } catch { }
       }
 
       // 2. Fetch Delivery Partner Reviews with fallback chain
@@ -108,12 +108,12 @@ const Reviews = () => {
           const rawDelList = Array.isArray(delRes)
             ? delRes
             : Array.isArray(delRes?.data)
-            ? delRes.data
-            : Array.isArray(delRes?.reviews)
-            ? delRes.reviews
-            : Array.isArray(delRes?.data?.reviews)
-            ? delRes.data.reviews
-            : [];
+              ? delRes.data
+              : Array.isArray(delRes?.reviews)
+                ? delRes.reviews
+                : Array.isArray(delRes?.data?.reviews)
+                  ? delRes.data.reviews
+                  : [];
 
           if (rawDelList && rawDelList.length > 0) {
             deliveryReviews = rawDelList;
@@ -121,7 +121,7 @@ const Reviews = () => {
           } else if (delRes && (Array.isArray(delRes) || delRes?.data)) {
             deliveryReviews = rawDelList;
           }
-        } catch {}
+        } catch { }
       }
 
       // Calculations
@@ -144,8 +144,8 @@ const Reviews = () => {
         productStats?.pending_count !== undefined
           ? Number(productStats.pending_count)
           : productReviews.filter(
-              (r) => String(r.status || "").toLowerCase() === "pending"
-            ).length;
+            (r) => String(r.status || "").toLowerCase() === "pending"
+          ).length;
 
       const combinedRatingSum =
         productReviews.reduce((acc, cur) => acc + (Number(cur.rating) || 5), 0) +
@@ -187,7 +187,7 @@ const Reviews = () => {
       title: "Customer Reviews",
       subtitle: "Food & product reviews, ratings, flags & official replies",
       icon: Package,
-      screen: "CustomerReviews",
+      route: "CustomerReviews",
       color: "#f59e0b",
       badge: `${stats.productReviewsCount} Reviews`,
       avgBadge: `${stats.avgProductRating} ★`,
@@ -196,7 +196,7 @@ const Reviews = () => {
       title: "Delivery Partner Reviews",
       subtitle: "Delivery partner fleet ratings, punctuality & feedback",
       icon: Truck,
-      screen: "DeliveryPartnerReviews",
+      route: "DeliveryPartnerReviews",
       color: "#10b981",
       badge: `${stats.deliveryReviewsCount} Reviews`,
       avgBadge: `${stats.avgDeliveryRating} ★`,
@@ -298,7 +298,7 @@ const Reviews = () => {
               <TouchableOpacity
                 key={index}
                 activeOpacity={0.8}
-                onPress={() => navigation.navigate(item.screen)}
+                onPress={() => navigation.navigate(item.route)}
                 className="bg-slate-900 border border-white/10 rounded-2xl p-4 flex-row items-center mb-3"
               >
                 {/* ICON */}
