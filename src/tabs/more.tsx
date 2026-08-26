@@ -18,6 +18,7 @@ import {
   Star,
   Tag,
   Share2,
+  Store,
 } from "lucide-react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -88,6 +89,15 @@ const More = () => {
       color: "#f59e0b",
       bgColor: "#fef3c7",
       onPress: () => navigation.navigate("WalletAndEarnings"),
+    },
+    {
+      id: "dealers",
+      label: "Dealers",
+      description: "Manage dealers and partnerships",
+      icon: Store,
+      color: "#06b6d4",
+      bgColor: "#cffafe",
+      onPress: () => navigation.navigate("Dealers"),
     },
   ];
 
