@@ -745,7 +745,7 @@ const Orders = () => {
                 </Text>
               </View>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => setCreateModalVisible(true)}
                 className="flex-row items-center rounded-2xl bg-emerald-600 px-4 py-3 shadow-lg"
               >
@@ -753,7 +753,7 @@ const Orders = () => {
                 <Text className="ml-1.5 text-xs font-black uppercase text-white">
                   Add Order
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             {/* Summary Stat Cards */}
