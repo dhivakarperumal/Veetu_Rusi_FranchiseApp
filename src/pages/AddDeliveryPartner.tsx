@@ -43,6 +43,7 @@ import {
     Asset,
 } from "react-native-image-picker";
 import { useNavigation } from "@react-navigation/native";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 
 import { post } from "../services/api";
 import CenteredDialog from "../components/CenteredDialog";
@@ -253,12 +254,10 @@ const AddDeliveryPartner = () => {
     const [pickerModalVisible, setPickerModalVisible] = useState(false);
     const [activePickerField, setActivePickerField] = useState<string | null>(null);
 
-    // Date Picker Modal
-    const [dateModalVisible, setDateModalVisible] = useState(false);
+    // Date Picker State
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [activeDateField, setActiveDateField] = useState<string>("date_of_birth");
-    const [tempYear, setTempYear] = useState("1998");
-    const [tempMonth, setTempMonth] = useState("06");
-    const [tempDay, setTempDay] = useState("15");
+    const [datePickerValue, setDatePickerValue] = useState<Date>(new Date(1998, 0, 1));
 
     // State Selector Modal
     const [stateModalVisible, setStateModalVisible] = useState(false);
@@ -772,7 +771,36 @@ const AddDeliveryPartner = () => {
 
     const openDatePickerFor = (field: string) => {
         setActiveDateField(field);
-        setDateModalVisible(true);
+        const currentVal = (form as any)[field];
+        let d = new Date();
+        if (field === "date_of_birth") {
+            d = new Date(1998, 0, 1);
+        }
+        if (currentVal && typeof currentVal === "string") {
+            const cleanStr = currentVal.split("T")[0].split(" ")[0].trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(cleanStr)) {
+                const parts = cleanStr.split("-").map(Number);
+                const parsed = new Date(parts[0], parts[1] - 1, parts[2]);
+                if (!isNaN(parsed.getTime())) d = parsed;
+            }
+        }
+        setDatePickerValue(d);
+        setShowDatePicker(true);
+    };
+
+    const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        setShowDatePicker(Platform.OS === "ios");
+        if (event.type === "set" && selectedDate) {
+            const y = selectedDate.getFullYear();
+            const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+            const d = String(selectedDate.getDate()).padStart(2, "0");
+            const formatted = `${y}-${m}-${d}`;
+            if (activeDateField === "date_of_birth") {
+                handleDobChange(formatted);
+            } else {
+                updateField(activeDateField, formatted);
+            }
+        }
     };
 
     // ============================================================
@@ -2190,161 +2218,16 @@ const AddDeliveryPartner = () => {
             </Modal>
 
             {/* ================================================= */}
-            {/* DATE PICKER MODAL */}
+            {/* NATIVE DATE TIME PICKER */}
             {/* ================================================= */}
-            <Modal
-                visible={dateModalVisible}
-                transparent
-                animationType="fade"
-                statusBarTranslucent
-                navigationBarTranslucent
-                onRequestClose={() => setDateModalVisible(false)}
-            >
-                <View className="flex-1 bg-black/80 justify-center p-5">
-                    <View className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                        <Text className="text-white text-lg font-black mb-2 text-center">
-                            Select Date
-                        </Text>
-                        <Text className="text-slate-400 text-xs text-center mb-6">
-                            Pick Year, Month and Day
-                        </Text>
-
-                        {/* Year */}
-                        <Text className={labelClass}>Year</Text>
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            className="mb-4"
-                        >
-                            {Array.from({ length: 65 }, (_, i) => String(2035 - i)).map(
-                                (year) => (
-                                    <TouchableOpacity
-                                        key={year}
-                                        onPress={() => setTempYear(year)}
-                                        className={`px-3.5 py-2 rounded-xl mr-2 border ${
-                                            tempYear === year
-                                                ? "bg-emerald-600 border-emerald-500"
-                                                : "bg-slate-800 border-slate-700"
-                                        }`}
-                                    >
-                                        <Text
-                                            className={`text-xs font-bold ${
-                                                tempYear === year
-                                                    ? "text-white"
-                                                    : "text-slate-300"
-                                            }`}
-                                        >
-                                            {year}
-                                        </Text>
-                                    </TouchableOpacity>
-                                )
-                            )}
-                        </ScrollView>
-
-                        {/* Month */}
-                        <Text className={labelClass}>Month</Text>
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            className="mb-4"
-                        >
-                            {[
-                                { name: "Jan", val: "01" },
-                                { name: "Feb", val: "02" },
-                                { name: "Mar", val: "03" },
-                                { name: "Apr", val: "04" },
-                                { name: "May", val: "05" },
-                                { name: "Jun", val: "06" },
-                                { name: "Jul", val: "07" },
-                                { name: "Aug", val: "08" },
-                                { name: "Sep", val: "09" },
-                                { name: "Oct", val: "10" },
-                                { name: "Nov", val: "11" },
-                                { name: "Dec", val: "12" },
-                            ].map((m) => (
-                                <TouchableOpacity
-                                    key={m.val}
-                                    onPress={() => setTempMonth(m.val)}
-                                    className={`px-3.5 py-2 rounded-xl mr-2 border ${
-                                        tempMonth === m.val
-                                            ? "bg-emerald-600 border-emerald-500"
-                                            : "bg-slate-800 border-slate-700"
-                                    }`}
-                                >
-                                    <Text
-                                        className={`text-xs font-bold ${
-                                            tempMonth === m.val
-                                                ? "text-white"
-                                                : "text-slate-300"
-                                        }`}
-                                    >
-                                        {m.name}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-
-                        {/* Day */}
-                        <Text className={labelClass}>Day</Text>
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            className="mb-6"
-                        >
-                            {Array.from({ length: 31 }, (_, i) =>
-                                String(i + 1).padStart(2, "0")
-                            ).map((d) => (
-                                <TouchableOpacity
-                                    key={d}
-                                    onPress={() => setTempDay(d)}
-                                    className={`w-9 h-9 rounded-xl mr-2 border items-center justify-center ${
-                                        tempDay === d
-                                            ? "bg-emerald-600 border-emerald-500"
-                                            : "bg-slate-800 border-slate-700"
-                                    }`}
-                                >
-                                    <Text
-                                        className={`text-xs font-bold ${
-                                            tempDay === d
-                                                ? "text-white"
-                                                : "text-slate-300"
-                                        }`}
-                                    >
-                                        {d}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-
-                        <View className="flex-row gap-3">
-                            <TouchableOpacity
-                                onPress={() => setDateModalVisible(false)}
-                                className="flex-1 bg-slate-800 py-3.5 rounded-2xl items-center"
-                            >
-                                <Text className="text-slate-300 font-bold text-xs uppercase">
-                                    Cancel
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    const formatted = `${tempYear}-${tempMonth}-${tempDay}`;
-                                    if (activeDateField === "date_of_birth") {
-                                        handleDobChange(formatted);
-                                    } else {
-                                        updateField(activeDateField, formatted);
-                                    }
-                                    setDateModalVisible(false);
-                                }}
-                                className="flex-1 bg-emerald-600 py-3.5 rounded-2xl items-center"
-                            >
-                                <Text className="text-white font-black text-xs uppercase">
-                                    Confirm Date
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+            {showDatePicker && (
+                <DateTimePicker
+                    value={datePickerValue}
+                    mode="date"
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={handleDateChange}
+                />
+            )}
 
             {/* ================================================= */}
             {/* STATE SELECTION MODAL */}
