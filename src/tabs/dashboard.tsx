@@ -209,21 +209,16 @@ const Dashboard = ({ navigation }: any) => {
       const subscription = data?.subscriptionInfo;
       if (subscription) {
         setSubscriptionInfo(subscription);
-        setShowSubscriptionAlert(
-          Boolean(
-            subscription.isExpired ||
-              subscription.status !== "Active" ||
-              subscription.daysRemaining == null ||
-              subscription.daysRemaining <= 7
-          )
-        );
+        const status = String(subscription.status || "").toLowerCase();
+        const isActive = status === "active" && !subscription.isExpired;
+        const isExpiring =
+          isActive &&
+          subscription.daysRemaining != null &&
+          Number(subscription.daysRemaining) <= 7;
+        setShowSubscriptionAlert(!isActive || isExpiring);
       } else {
-        setSubscriptionInfo({
-          isExpired: true,
-          daysRemaining: null,
-          status: "Inactive",
-        });
-        setShowSubscriptionAlert(true);
+        setSubscriptionInfo(null);
+        setShowSubscriptionAlert(false);
       }
     } catch (err) {
       console.log("Dashboard Error:", err);

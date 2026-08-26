@@ -16,12 +16,13 @@ const SubscriptionAlert = ({
   if (!subscriptionInfo) return null;
 
   const { isExpired, daysRemaining, status } = subscriptionInfo;
+  const normalizedStatus = String(status || "").toLowerCase();
 
   const isExpiredOrInactive =
     isExpired ||
-    status !== "Active" ||
+    normalizedStatus !== "active" ||
     daysRemaining === 0 ||
-    daysRemaining == null;
+    (daysRemaining == null && normalizedStatus !== "active");
 
   return (
     <Modal
