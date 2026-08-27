@@ -387,7 +387,11 @@ const ReferralManagement = () => {
   const stats = reports.stats || {};
   const totalReferrals = Number(stats.total_referrals || referrals.length || 0);
   const successful = Number(
-    stats.successful || referrals.filter((r) => r.status === "rewarded").length || 0
+    stats.successful ||
+    referrals.filter(
+      (r) => r.status === "approved" || r.status === "rewarded"
+    ).length ||
+    0
   );
   const pending = Number(
     stats.pending || referrals.filter((r) => r.status === "pending").length || 0
@@ -569,13 +573,13 @@ const ReferralManagement = () => {
                 <Text className="text-[10px] font-bold text-rose-300">Reject</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => changeStatus(item.id, "resend")}
               className="flex-row items-center gap-1 rounded-xl border border-sky-500/25 bg-sky-500/10 px-2.5 py-1.5"
             >
               <Send size={12} color="#38bdf8" />
               <Text className="text-[10px] font-bold text-sky-300">Resend</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       );
@@ -646,7 +650,7 @@ const ReferralManagement = () => {
         </View>
 
         <View className="flex-row gap-2 pt-3 mt-2 border-t border-white/5">
-          {!isRewarded && (
+          {!isApproved && (
             <TouchableOpacity
               onPress={() => changeStatus(item.id, "approve")}
               className="flex-1 rounded-xl border border-emerald-500/25 bg-emerald-500/10 py-2 items-center justify-center flex-row gap-1"
