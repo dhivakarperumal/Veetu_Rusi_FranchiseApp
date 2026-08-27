@@ -71,6 +71,11 @@ const LoginScreen = ({ navigation }: any) => {
             ) {
                 setSubscriptionInfo({
                     ...(subscription || {}),
+                    franchiseId:
+                        subscription?.franchiseId ||
+                        subscription?.franchise_id ||
+                        subscription?.franchise?.id ||
+                        subscription?.franchise?.franchise_id,
                     isExpired: false,
                     daysRemaining: null,
                     status: "Inactive",
@@ -82,7 +87,14 @@ const LoginScreen = ({ navigation }: any) => {
 
             // Existing subscription expired/inactive response
             if (status === 403 && subscription) {
-                setSubscriptionInfo(subscription);
+                setSubscriptionInfo({
+                    ...subscription,
+                    franchiseId:
+                        subscription.franchiseId ||
+                        subscription.franchise_id ||
+                        subscription.franchise?.id ||
+                        subscription.franchise?.franchise_id,
+                });
                 setShowSubscriptionAlert(true);
                 return;
             }

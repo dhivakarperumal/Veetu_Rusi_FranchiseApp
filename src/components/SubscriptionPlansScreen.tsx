@@ -5,13 +5,24 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     ScrollView,
-    SafeAreaView,
     Alert,
 } from "react-native";
 import { AlertCircle, ArrowLeft, CreditCard, Sparkles } from "lucide-react-native";
 import { get, getSubscriptionPlans, post } from "../services/api";
 import RazorpayCheckout from "react-native-razorpay";
 import { useRoute } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const getFranchiseId = (data: any) =>
+    data?.franchiseId ||
+    data?.franchise_id ||
+    data?.franchise?.id ||
+    data?.franchise?.franchise_id ||
+    data?.subscription?.franchiseId ||
+    data?.subscription?.franchise_id ||
+    data?.user?.franchise_id ||
+    null;
 
 const SubscriptionPlansScreen = ({ navigation }: any) => {
     const route = useRoute<any>();
@@ -19,16 +30,33 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
     const [loading, setLoading] = useState(true);
     const [selectedPlan, setSelectedPlan] = useState<any>(null);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
-    const [franchiseId, setFranchiseId] = useState<any>(route.params?.franchiseId || null);
+    const [franchiseId, setFranchiseId] = useState<any>(
+        route.params?.franchiseId || route.params?.franchise_id || null
+    );
 
     useEffect(() => {
         fetchPlans();
         if (!franchiseId) {
-            get<any>("/subscriptions/status")
-                .then((response: any) => setFranchiseId(response?.subscription?.id || null))
-                .catch(() => undefined);
+            const resolveFranchiseId = async () => {
+                try {
+                    const user = JSON.parse((await AsyncStorage.getItem("user")) || "null");
+                    const storedFranchiseId = getFranchiseId(user);
+
+                    if (storedFranchiseId) {
+                        setFranchiseId(storedFranchiseId);
+                        return;
+                    }
+
+                    const response = await get<any>("/subscriptions/status");
+                    setFranchiseId(getFranchiseId(response));
+                } catch {
+                    // Payment validation below will show a clear error if no ID is available.
+                }
+            };
+
+            resolveFranchiseId();
         }
-    }, []);
+    }, [franchiseId]);
 
     const fetchPlans = async () => {
         try {
@@ -56,7 +84,7 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
 
     const handlePayment = async () => {
         if (!selectedPlan || !franchiseId) {
-            Alert.alert("Unable to continue", "Your franchise could not be identified.");
+            Alert.alert("Unable to continue", "We could not identify your franchise. Please sign in again.");
             return;
         }
 
@@ -123,7 +151,7 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-slate-950">
+        <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-slate-950">
 
             {/* Header */}
             <View className="bg-slate-900 px-6 pt-5 pb-7 border-b border-slate-800">

@@ -227,10 +227,16 @@ const Dashboard = ({ navigation }: any) => {
 
       const statusResponse = await get<any>("/subscriptions/status");
       if (statusResponse?.subscription) {
+        const franchiseId =
+          statusResponse.franchiseId ||
+          statusResponse.franchise_id ||
+          statusResponse.subscription.franchiseId ||
+          statusResponse.subscription.franchise_id;
+
         applySubscriptionStatus({
           ...statusResponse,
           ...statusResponse.subscription,
-          franchiseId: statusResponse.subscription.id,
+          franchiseId,
         });
       }
     } catch (err) {
