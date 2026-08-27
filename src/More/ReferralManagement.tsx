@@ -60,6 +60,12 @@ const genCode = (prefix: string) => {
 const STATUS_MAP: Record<string, { label: string; textCls: string; bgCls: string; borderCls: string }> = {
   rewarded: { label: "Rewarded", textCls: "text-emerald-400", bgCls: "bg-emerald-500/15", borderCls: "border-emerald-500/30" },
   pending: { label: "Pending", textCls: "text-amber-400", bgCls: "bg-amber-500/15", borderCls: "border-amber-500/30" },
+  approved: {
+    label: "Approved",
+    textCls: "text-emerald-400",
+    bgCls: "bg-emerald-500/15",
+    borderCls: "border-emerald-500/30",
+  },
   verified: { label: "Verified", textCls: "text-sky-400", bgCls: "bg-sky-500/15", borderCls: "border-sky-400/30" },
   rejected: { label: "Rejected", textCls: "text-rose-400", bgCls: "bg-rose-500/15", borderCls: "border-rose-500/30" },
   cancelled: { label: "Cancelled", textCls: "text-slate-400", bgCls: "bg-slate-500/15", borderCls: "border-slate-500/30" },
@@ -391,10 +397,10 @@ const ReferralManagement = () => {
   );
   const totalRewardPaid = Number(
     stats.total_rewards_paid ||
-      referrals
-        .filter((r) => r.status === "rewarded")
-        .reduce((sum, r) => sum + Number(r.reward_amount || 0), 0) ||
-      0
+    referrals
+      .filter((r) => r.status === "rewarded")
+      .reduce((sum, r) => sum + Number(r.reward_amount || 0), 0) ||
+    0
   );
   const conversionRate = totalReferrals
     ? ((successful / totalReferrals) * 100).toFixed(1)
@@ -494,8 +500,13 @@ const ReferralManagement = () => {
 
   /* ── LEDGER ROW / CARD RENDERER ── */
   const renderLedgerItem = (item: any) => {
-    const isRewarded = item.status === "rewarded";
-    const isRejected = item.status === "rejected";
+    const currentStatus = String(item.status || "").toLowerCase();
+
+    const isApproved =
+      currentStatus === "approved" ||
+      currentStatus === "rewarded";
+
+    const isRejected = currentStatus === "rejected";
 
     if (viewMode === "table") {
       return (
@@ -540,7 +551,7 @@ const ReferralManagement = () => {
 
           {/* Action Row */}
           <View className="flex-row items-center justify-end gap-2 mt-3 pt-2.5 border-t border-white/5">
-            {!isRewarded && (
+            {!isApproved && (
               <TouchableOpacity
                 onPress={() => changeStatus(item.id, "approve")}
                 className="flex-row items-center gap-1 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1.5"
@@ -626,10 +637,10 @@ const ReferralManagement = () => {
             Date:{" "}
             {item.created_at
               ? new Date(item.created_at).toLocaleDateString("en-IN", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
               : "—"}
           </Text>
         </View>
@@ -758,17 +769,15 @@ const ReferralManagement = () => {
                   <TouchableOpacity
                     key={tab.id}
                     onPress={() => setActiveTab(tab.id)}
-                    className={`flex-row items-center gap-2 rounded-2xl px-4 py-3 mr-2 border ${
-                      active
-                        ? "bg-emerald-600 border-emerald-500"
-                        : "bg-slate-900 border-white/10"
-                    }`}
+                    className={`flex-row items-center gap-2 rounded-2xl px-4 py-3 mr-2 border ${active
+                      ? "bg-emerald-600 border-emerald-500"
+                      : "bg-slate-900 border-white/10"
+                      }`}
                   >
                     <Icon size={15} color={active ? "#ffffff" : "#94a3b8"} />
                     <Text
-                      className={`text-xs font-bold ${
-                        active ? "text-white" : "text-slate-300"
-                      }`}
+                      className={`text-xs font-bold ${active ? "text-white" : "text-slate-300"
+                        }`}
                     >
                       {tab.label}
                     </Text>
@@ -881,13 +890,13 @@ const ReferralManagement = () => {
                 {/* Section Header */}
                 <View className="flex-row items-center justify-between mb-3">
                   <Text className="text-white text-base font-black">Recent Referrals</Text>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={openCreateModal}
                     className="flex-row items-center gap-1 bg-emerald-600 px-3 py-1.5 rounded-xl"
                   >
                     <Plus size={14} color="#ffffff" />
                     <Text className="text-white text-xs font-bold">Add Code</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               </View>
             )}
@@ -966,26 +975,24 @@ const ReferralManagement = () => {
                         >
                           <View className="flex-row items-center gap-2.5 flex-1 mr-2">
                             <View
-                              className={`w-7 h-7 rounded-xl items-center justify-center font-black ${
-                                i === 0
-                                  ? "bg-yellow-500/20 border border-yellow-500/40"
-                                  : i === 1
+                              className={`w-7 h-7 rounded-xl items-center justify-center font-black ${i === 0
+                                ? "bg-yellow-500/20 border border-yellow-500/40"
+                                : i === 1
                                   ? "bg-slate-400/20 border border-slate-400/40"
                                   : i === 2
-                                  ? "bg-amber-600/20 border border-amber-600/40"
-                                  : "bg-slate-800"
-                              }`}
+                                    ? "bg-amber-600/20 border border-amber-600/40"
+                                    : "bg-slate-800"
+                                }`}
                             >
                               <Text
-                                className={`text-xs font-black ${
-                                  i === 0
-                                    ? "text-yellow-400"
-                                    : i === 1
+                                className={`text-xs font-black ${i === 0
+                                  ? "text-yellow-400"
+                                  : i === 1
                                     ? "text-slate-300"
                                     : i === 2
-                                    ? "text-amber-500"
-                                    : "text-slate-500"
-                                }`}
+                                      ? "text-amber-500"
+                                      : "text-slate-500"
+                                  }`}
                               >
                                 #{i + 1}
                               </Text>
@@ -1096,21 +1103,20 @@ const ReferralManagement = () => {
                     { id: "pending", label: "Pending" },
                     { id: "verified", label: "Verified" },
                     { id: "rewarded", label: "Rewarded" },
+                    { id: "approved", label: "Approved" },
                     { id: "rejected", label: "Rejected" },
                   ].map((s) => (
                     <TouchableOpacity
                       key={s.id}
                       onPress={() => setFilterStatus(s.id)}
-                      className={`px-3 py-1.5 rounded-xl border mr-1.5 ${
-                        filterStatus === s.id
-                          ? "bg-emerald-500/15 border-emerald-500/40"
-                          : "bg-slate-900 border-white/10"
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl border mr-1.5 ${filterStatus === s.id
+                        ? "bg-emerald-500/15 border-emerald-500/40"
+                        : "bg-slate-900 border-white/10"
+                        }`}
                     >
                       <Text
-                        className={`text-[11px] font-bold ${
-                          filterStatus === s.id ? "text-emerald-300" : "text-slate-400"
-                        }`}
+                        className={`text-[11px] font-bold ${filterStatus === s.id ? "text-emerald-300" : "text-slate-400"
+                          }`}
                       >
                         {s.label}
                       </Text>
@@ -1118,25 +1124,6 @@ const ReferralManagement = () => {
                   ))}
                 </ScrollView>
 
-                {/* View Mode Toggle */}
-                <View className="flex-row items-center rounded-xl bg-slate-900 border border-white/10 p-0.5 ml-2">
-                  <TouchableOpacity
-                    onPress={() => setViewMode("card")}
-                    className={`p-1.5 rounded-lg ${
-                      viewMode === "card" ? "bg-emerald-600" : ""
-                    }`}
-                  >
-                    <LayoutGrid size={15} color={viewMode === "card" ? "#ffffff" : "#94a3b8"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setViewMode("table")}
-                    className={`p-1.5 rounded-lg ${
-                      viewMode === "table" ? "bg-emerald-600" : ""
-                    }`}
-                  >
-                    <List size={15} color={viewMode === "table" ? "#ffffff" : "#94a3b8"} />
-                  </TouchableOpacity>
-                </View>
               </View>
 
               <Text className="text-slate-500 text-[10px] font-semibold mt-2.5">
@@ -1248,16 +1235,14 @@ const ReferralManagement = () => {
                         referral_code: genCode(t.prefix),
                       }))
                     }
-                    className={`flex-1 py-2.5 rounded-xl border items-center justify-center ${
-                      createForm.type === t.id
-                        ? "bg-emerald-500/20 border-emerald-500"
-                        : "bg-slate-950 border-white/10"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl border items-center justify-center ${createForm.type === t.id
+                      ? "bg-emerald-500/20 border-emerald-500"
+                      : "bg-slate-950 border-white/10"
+                      }`}
                   >
                     <Text
-                      className={`text-xs font-bold ${
-                        createForm.type === t.id ? "text-emerald-300" : "text-slate-400"
-                      }`}
+                      className={`text-xs font-bold ${createForm.type === t.id ? "text-emerald-300" : "text-slate-400"
+                        }`}
                     >
                       {t.label}
                     </Text>
@@ -1283,15 +1268,13 @@ const ReferralManagement = () => {
                           onPress={() =>
                             setCreateForm((p) => ({ ...p, user_id: String(uid) }))
                           }
-                          className={`py-2 px-2.5 rounded-xl flex-row items-center justify-between mb-1 ${
-                            isSelected ? "bg-emerald-600/20" : ""
-                          }`}
+                          className={`py-2 px-2.5 rounded-xl flex-row items-center justify-between mb-1 ${isSelected ? "bg-emerald-600/20" : ""
+                            }`}
                         >
                           <View className="flex-1 mr-2">
                             <Text
-                              className={`text-xs font-bold ${
-                                isSelected ? "text-emerald-400" : "text-white"
-                              }`}
+                              className={`text-xs font-bold ${isSelected ? "text-emerald-400" : "text-white"
+                                }`}
                               numberOfLines={1}
                             >
                               {u.name || u.email || `User #${uid}`}
@@ -1326,8 +1309,8 @@ const ReferralManagement = () => {
                       createForm.type === "home_chef"
                         ? "HC"
                         : createForm.type === "delivery_partner"
-                        ? "DP"
-                        : "CUS";
+                          ? "DP"
+                          : "CUS";
                     setCreateForm((p) => ({ ...p, referral_code: genCode(prefix) }));
                   }}
                   className="w-12 bg-slate-800 border border-white/10 rounded-2xl items-center justify-center"
@@ -1418,17 +1401,15 @@ const ReferralManagement = () => {
                   <TouchableOpacity
                     key={t.id}
                     onPress={() => setSettingsTab(t.id as any)}
-                    className={`flex-1 py-2.5 rounded-xl border flex-row items-center justify-center gap-1.5 ${
-                      active
-                        ? "bg-emerald-600 border-emerald-500"
-                        : "bg-slate-950 border-white/10"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl border flex-row items-center justify-center gap-1.5 ${active
+                      ? "bg-emerald-600 border-emerald-500"
+                      : "bg-slate-950 border-white/10"
+                      }`}
                   >
                     <Icon size={14} color={active ? "#ffffff" : "#94a3b8"} />
                     <Text
-                      className={`text-xs font-bold ${
-                        active ? "text-white" : "text-slate-400"
-                      }`}
+                      className={`text-xs font-bold ${active ? "text-white" : "text-slate-400"
+                        }`}
                     >
                       {t.label}
                     </Text>
@@ -1447,14 +1428,12 @@ const ReferralManagement = () => {
                   >
                     <Text className="text-white font-bold text-xs">Enable Customer Referral</Text>
                     <View
-                      className={`w-10 h-6 rounded-full p-1 ${
-                        settings.is_enabled ? "bg-emerald-600" : "bg-slate-700"
-                      }`}
+                      className={`w-10 h-6 rounded-full p-1 ${settings.is_enabled ? "bg-emerald-600" : "bg-slate-700"
+                        }`}
                     >
                       <View
-                        className={`w-4 h-4 rounded-full bg-white transition ${
-                          settings.is_enabled ? "self-end" : "self-start"
-                        }`}
+                        className={`w-4 h-4 rounded-full bg-white transition ${settings.is_enabled ? "self-end" : "self-start"
+                          }`}
                       />
                     </View>
                   </TouchableOpacity>
@@ -1533,14 +1512,12 @@ const ReferralManagement = () => {
                   >
                     <Text className="text-white font-bold text-xs">Enable Home Chef Referral</Text>
                     <View
-                      className={`w-10 h-6 rounded-full p-1 ${
-                        settings.chef_referral_enabled ? "bg-emerald-600" : "bg-slate-700"
-                      }`}
+                      className={`w-10 h-6 rounded-full p-1 ${settings.chef_referral_enabled ? "bg-emerald-600" : "bg-slate-700"
+                        }`}
                     >
                       <View
-                        className={`w-4 h-4 rounded-full bg-white transition ${
-                          settings.chef_referral_enabled ? "self-end" : "self-start"
-                        }`}
+                        className={`w-4 h-4 rounded-full bg-white transition ${settings.chef_referral_enabled ? "self-end" : "self-start"
+                          }`}
                       />
                     </View>
                   </TouchableOpacity>
@@ -1585,14 +1562,12 @@ const ReferralManagement = () => {
                   >
                     <Text className="text-white font-bold text-xs">Enable Delivery Partner Referral</Text>
                     <View
-                      className={`w-10 h-6 rounded-full p-1 ${
-                        settings.dp_referral_enabled ? "bg-emerald-600" : "bg-slate-700"
-                      }`}
+                      className={`w-10 h-6 rounded-full p-1 ${settings.dp_referral_enabled ? "bg-emerald-600" : "bg-slate-700"
+                        }`}
                     >
                       <View
-                        className={`w-4 h-4 rounded-full bg-white transition ${
-                          settings.dp_referral_enabled ? "self-end" : "self-start"
-                        }`}
+                        className={`w-4 h-4 rounded-full bg-white transition ${settings.dp_referral_enabled ? "self-end" : "self-start"
+                          }`}
                       />
                     </View>
                   </TouchableOpacity>
