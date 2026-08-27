@@ -385,20 +385,19 @@ const ReferralManagement = () => {
 
   /* ── derived stats ── */
   const stats = reports.stats || {};
-  const totalReferrals = Number(stats.total_referrals || referrals.length || 0);
-  const successful = Number(
-    stats.successful ||
-    referrals.filter(
-      (r) => r.status === "approved" || r.status === "rewarded"
-    ).length ||
-    0
-  );
-  const pending = Number(
-    stats.pending || referrals.filter((r) => r.status === "pending").length || 0
-  );
-  const rejected = Number(
-    stats.rejected || referrals.filter((r) => r.status === "rejected").length || 0
-  );
+  const totalReferrals = referrals.length;
+
+  const successful = referrals.filter(
+    (r) => r.status === "approved" || r.status === "rewarded"
+  ).length;
+
+  const pending = referrals.filter(
+    (r) => r.status === "pending"
+  ).length;
+
+  const rejected = referrals.filter(
+    (r) => r.status === "rejected"
+  ).length;
   const totalRewardPaid = Number(
     stats.total_rewards_paid ||
     referrals
@@ -668,13 +667,13 @@ const ReferralManagement = () => {
               <Text className="text-xs font-bold text-rose-300">Reject</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => changeStatus(item.id, "resend")}
             className="flex-1 rounded-xl border border-sky-500/25 bg-sky-500/10 py-2 items-center justify-center flex-row gap-1"
           >
             <Send size={13} color="#38bdf8" />
             <Text className="text-xs font-bold text-sky-300">Resend</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     );
