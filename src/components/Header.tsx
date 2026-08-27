@@ -5,9 +5,12 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, LogOut, MoreHorizontal } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LogoutConfirmModal from './LogoutConfirmModal';
 
 const Header = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [user, setUser] = useState<any>(null);
   const auth = useContext(AuthContext);
   const navigation = useNavigation<any>();
@@ -31,9 +34,19 @@ const Header = () => {
     return 'U';
   };
 
-  const handleLogout = async () => {
+  const handleLogoutPress = () => {
     setDropdownVisible(false);
-    await auth?.signOut();
+    setLogoutModalVisible(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    try {
+      setLoggingOut(true);
+      await auth?.signOut();
+    } finally {
+      setLoggingOut(false);
+      setLogoutModalVisible(false);
+    }
   };
 
   const navigateTo = (screen: string) => {
@@ -111,13 +124,21 @@ const Header = () => {
           
           <TouchableOpacity 
             className="flex-row items-center px-4 py-4"
-            onPress={handleLogout}
+            onPress={handleLogoutPress}
           >
             <LogOut color="#EF4444" size={20} />
             <Text className="text-red-500 ml-3 font-bold">Logout</Text>
           </TouchableOpacity>
         </View>
       </Modal>
+
+      {/* Customized Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        visible={logoutModalVisible}
+        onCancel={() => setLogoutModalVisible(false)}
+        onConfirm={handleConfirmLogout}
+        loading={loggingOut}
+      />
     </View>
   );
 };

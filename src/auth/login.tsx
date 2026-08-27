@@ -6,15 +6,25 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Alert,
-    ImageBackground,
     SafeAreaView,
     StatusBar,
+    ScrollView,
+    KeyboardAvoidingView,
+    Platform,
+    Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login, post } from "../services/api";
-import { ArrowRight, Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react-native";
+import {
+    ArrowRight,
+    Eye,
+    EyeOff,
+    LockKeyhole,
+    UserRound,
+    Shield,
+    Sparkles,
+} from "lucide-react-native";
 import SubscriptionAlert from "../components/SubscriptionAlert";
-
 import { AuthContext } from "../context/AuthContext";
 
 const LoginScreen = ({ navigation }: any) => {
@@ -22,6 +32,8 @@ const LoginScreen = ({ navigation }: any) => {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [isIdentifierFocused, setIsIdentifierFocused] = useState(false);
+    const [isPasswordFocused, setIsPasswordFocused] = useState(false);
     const auth = React.useContext(AuthContext);
     const [showSubscriptionAlert, setShowSubscriptionAlert] = useState(false);
 
@@ -33,12 +45,12 @@ const LoginScreen = ({ navigation }: any) => {
 
     const handleLogin = async () => {
         if (!identifier.trim()) {
-            Alert.alert("Error", "Please enter email or username");
+            Alert.alert("Required", "Please enter your email or username");
             return;
         }
 
         if (!password.trim()) {
-            Alert.alert("Error", "Please enter password");
+            Alert.alert("Required", "Please enter your password");
             return;
         }
 
@@ -46,7 +58,7 @@ const LoginScreen = ({ navigation }: any) => {
             setLoading(true);
 
             const res = await login({
-                identifier,
+                identifier: identifier.trim(),
                 password,
             });
 
@@ -127,127 +139,164 @@ const LoginScreen = ({ navigation }: any) => {
     };
 
     return (
-        <>
-            <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+        <SafeAreaView className="flex-1 bg-slate-950">
+            <StatusBar barStyle="light-content" backgroundColor="#020617" />
 
-            <ImageBackground
-                source={{
-                    uri: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=80",
-                }}
-                resizeMode="cover"
-                className="flex-1 bg-slate-950"
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                className="flex-1"
             >
-                <View className="flex-1 bg-slate-950/80">
-                    <SafeAreaView className="flex-1 justify-center px-6">
-                        <View className="bg-slate-900 border border-slate-700 rounded-3xl p-7 shadow-xl">
-                            {/* Logo / Title */}
+                <ScrollView
+                    contentContainerStyle={{
+                        flexGrow: 1,
+                        justifyContent: "center",
+                        paddingHorizontal: 24,
+                        paddingVertical: 32,
+                    }}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Brand Header */}
+                    <View className="items-center mb-8">
+                        <View className="w-20 h-20 bg-slate-900 border-2 border-teal-500/30 rounded-3xl p-2 items-center justify-center mb-4 shadow-xl shadow-teal-500/10">
+                            <Image
+                                source={require("../images/logo2.png")}
+                                style={{ width: 60, height: 60 }}
+                                resizeMode="contain"
+                            />
+                        </View>
 
-                            <View className="w-14 h-14 rounded-2xl bg-teal-500 items-center justify-center mb-5">
-                                <Text className="text-slate-950 text-3xl font-black">V</Text>
-                            </View>
-                            <Text className="text-teal-400 text-xs font-black tracking-[3px]">
+                        <View className="flex-row items-center mb-1">
+                            <Text className="text-white text-3xl font-black tracking-tight">
                                 Veetu Rusi
                             </Text>
+                        </View>
 
-                            <Text className="text-white text-3xl font-black mt-3 mb-2">
-                                Welcome back
+                        <View className="bg-teal-500/15 border border-teal-500/25 px-3.5 py-1 rounded-full flex-row items-center mt-1 mb-2">
+                            <Shield size={12} color="#5eead4" />
+                            <Text className="text-teal-300 text-xs font-black tracking-widest ml-1.5 uppercase">
+                                Franchise Portal
                             </Text>
-                            <Text className="text-slate-400 mb-8">
-                                Sign in to manage your franchise
+                        </View>
+
+                        <Text className="text-slate-400 text-sm text-center max-w-[280px] leading-5">
+                            Sign in to manage orders, chefs, deliveries & daily revenue
+                        </Text>
+                    </View>
+
+                    {/* Main Form Card */}
+                    <View className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl shadow-black">
+                        {/* Identifier Field */}
+                        <View className="mb-5">
+                            <Text className="text-slate-300 font-semibold text-xs tracking-wider uppercase mb-2">
+                                Email / Username
                             </Text>
 
-                            {/* Email */}
-
-                            <View className="mb-5">
-                                <Text className="text-slate-300 font-semibold mb-2">
-                                    Email / Username
-                                </Text>
-
-                                <View className="flex-row items-center border border-slate-700 rounded-2xl px-4 bg-slate-800">
-                                    <UserRound size={19} color="#5eead4" />
-                                    <TextInput
-                                        value={identifier}
-                                        onChangeText={setIdentifier}
-                                        placeholder="Enter Email or Username"
-                                        placeholderTextColor="#64748b"
-                                        autoCapitalize="none"
-                                        className="flex-1 text-white px-3 py-4"
-                                    />
-                                </View>
-                            </View>
-
-                            {/* Password */}
-
-                            <View className="mb-3">
-                                <Text className="text-slate-300 font-semibold mb-2">
-                                    Password
-                                </Text>
-
-                                <View className="relative flex-row items-center border border-slate-700 rounded-2xl px-4 bg-slate-800">
-                                    <LockKeyhole size={19} color="#5eead4" />
-                                    <TextInput
-                                        value={password}
-                                        onChangeText={setPassword}
-                                        secureTextEntry={!showPassword}
-                                        placeholder="Enter Password"
-                                        placeholderTextColor="#999"
-                                        className="flex-1 text-white px-3 py-4 pr-10"
-                                    />
-
-                                    <TouchableOpacity
-                                        onPress={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-4"
-                                    >
-                                        {showPassword ? <EyeOff size={21} color="#5eead4" /> : <Eye size={21} color="#5eead4" />}
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
-                            {/* Forgot Password */}
-
-                            <TouchableOpacity className="mb-6">
-                                <Text className="text-right text-teal-400 font-semibold">
-                                    Forgot Password?
-                                </Text>
-                            </TouchableOpacity>
-
-                            {/* Login Button */}
-
-                            <TouchableOpacity
-                                disabled={loading}
-                                onPress={handleLogin}
-                                className="bg-teal-500 py-4 rounded-2xl items-center flex-row justify-center"
+                            <View
+                                className={`flex-row items-center border rounded-2xl px-4 bg-slate-950/90 ${
+                                    isIdentifierFocused
+                                        ? "border-teal-400 shadow-md shadow-teal-500/10"
+                                        : "border-slate-800"
+                                }`}
                             >
-                                {loading ? (
-                                    <ActivityIndicator color="#fff" />
-                                ) : (
-                                    <>
-                                        <Text className="text-slate-950 font-black text-lg mr-2">
-                                            Sign in
-                                        </Text>
-                                        <ArrowRight size={20} color="#0f172a" />
-                                    </>
-                                )}
-                            </TouchableOpacity>
+                                <UserRound size={18} color={isIdentifierFocused ? "#5eead4" : "#64748b"} />
+                                <TextInput
+                                    value={identifier}
+                                    onChangeText={setIdentifier}
+                                    onFocus={() => setIsIdentifierFocused(true)}
+                                    onBlur={() => setIsIdentifierFocused(false)}
+                                    placeholder="Enter your email or username"
+                                    placeholderTextColor="#475569"
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    className="flex-1 text-white px-3 py-4 text-sm"
+                                />
+                            </View>
+                        </View>
 
-                            {/* Register */}
+                        {/* Password Field */}
+                        <View className="mb-3">
+                            <Text className="text-slate-300 font-semibold text-xs tracking-wider uppercase mb-2">
+                                Password
+                            </Text>
 
-                            <View className="flex-row justify-center mt-8">
-                                <Text className="text-slate-400">
-                                    Don't have an account?
-                                </Text>
+                            <View
+                                className={`relative flex-row items-center border rounded-2xl px-4 bg-slate-950/90 ${
+                                    isPasswordFocused
+                                        ? "border-teal-400 shadow-md shadow-teal-500/10"
+                                        : "border-slate-800"
+                                }`}
+                            >
+                                <LockKeyhole size={18} color={isPasswordFocused ? "#5eead4" : "#64748b"} />
+                                <TextInput
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    onFocus={() => setIsPasswordFocused(true)}
+                                    onBlur={() => setIsPasswordFocused(false)}
+                                    secureTextEntry={!showPassword}
+                                    placeholder="Enter your account password"
+                                    placeholderTextColor="#475569"
+                                    className="flex-1 text-white px-3 py-4 pr-10 text-sm"
+                                />
 
-                                <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-                                    <Text className="text-teal-400 font-bold ml-1">
-                                        Sign Up
-                                    </Text>
+                                <TouchableOpacity
+                                    onPress={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 p-1"
+                                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff size={18} color="#5eead4" />
+                                    ) : (
+                                        <Eye size={18} color="#64748b" />
+                                    )}
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </SafeAreaView>
-                </View>
-            </ImageBackground>
 
+                        {/* Forgot Password */}
+                        <TouchableOpacity className="self-end mb-6 py-1">
+                            <Text className="text-teal-400 text-xs font-bold">
+                                Forgot Password?
+                            </Text>
+                        </TouchableOpacity>
+
+                        {/* Sign In Button */}
+                        <TouchableOpacity
+                            disabled={loading}
+                            onPress={handleLogin}
+                            activeOpacity={0.85}
+                            className="bg-teal-500 py-4 rounded-2xl items-center flex-row justify-center shadow-lg shadow-teal-500/30"
+                        >
+                            {loading ? (
+                                <ActivityIndicator color="#020617" size="small" />
+                            ) : (
+                                <>
+                                    <Text className="text-slate-950 font-black text-base mr-2">
+                                        Sign In
+                                    </Text>
+                                    <ArrowRight size={18} color="#020617" />
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Sign Up Prompt */}
+                    <View className="flex-row justify-center items-center mt-8">
+                        <Text className="text-slate-400 text-sm">
+                            Don't have a franchise account?
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("Register")}
+                            className="ml-1.5 py-1"
+                        >
+                            <Text className="text-teal-400 font-bold text-sm">
+                                Register
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
+
+            {/* Subscription Alert */}
             <SubscriptionAlert
                 visible={showSubscriptionAlert}
                 subscriptionInfo={subscriptionInfo}
@@ -263,7 +312,7 @@ const LoginScreen = ({ navigation }: any) => {
                     });
                 }}
             />
-        </>
+        </SafeAreaView>
     );
 };
 
