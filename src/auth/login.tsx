@@ -212,7 +212,7 @@ const LoginScreen = ({ navigation }: any) => {
                             backgroundColor: "#0F172A",
                             paddingHorizontal: 20,
                             paddingTop: Math.max(insets.top, 14),
-                            paddingBottom: 22,
+                            paddingBottom: 30,
                             borderBottomLeftRadius: 24,
                             borderBottomRightRadius: 24,
                         }}
@@ -474,7 +474,6 @@ const LoginScreen = ({ navigation }: any) => {
 
                     <View
                         style={{
-                            flex: 1,
                             backgroundColor: "#F8FAFC",
                             paddingHorizontal: 20,
                             paddingTop: 18,
