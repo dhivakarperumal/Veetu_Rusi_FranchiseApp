@@ -259,6 +259,10 @@ const AppNavigator = () => {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Group screenOptions={{ presentation: "modal", headerShown: false }}>
               <Stack.Screen name="Register" component={Register} />
+              <Stack.Screen
+                name="SubscriptionPlans"
+                component={SubscriptionPlansScreen}
+              />
             </Stack.Group>
           </>
         )}
