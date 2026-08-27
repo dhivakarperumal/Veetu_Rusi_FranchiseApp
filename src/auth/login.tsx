@@ -6,13 +6,13 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Alert,
-    SafeAreaView,
     StatusBar,
     ScrollView,
     KeyboardAvoidingView,
     Platform,
     Image,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login, post } from "../services/api";
@@ -32,6 +32,7 @@ import SubscriptionAlert from "../components/SubscriptionAlert";
 import { AuthContext } from "../context/AuthContext";
 
 const LoginScreen = ({ navigation }: any) => {
+    const insets = useSafeAreaInsets();
     const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -179,10 +180,10 @@ const LoginScreen = ({ navigation }: any) => {
     // ---------------------------------------------------------
 
     return (
-        <SafeAreaView
+        <View
             style={{
                 flex: 1,
-                backgroundColor: "#F8FAFC",
+                backgroundColor: "#0F172A",
             }}
         >
             <StatusBar
@@ -199,6 +200,7 @@ const LoginScreen = ({ navigation }: any) => {
                     keyboardShouldPersistTaps="handled"
                     contentContainerStyle={{
                         flexGrow: 1,
+                        backgroundColor: "#F8FAFC",
                     }}
                 >
                     {/* ================================================= */}
@@ -209,8 +211,8 @@ const LoginScreen = ({ navigation }: any) => {
                         style={{
                             backgroundColor: "#0F172A",
                             paddingHorizontal: 20,
-                            paddingTop: 10,
-                            paddingBottom: 18,
+                            paddingTop: Math.max(insets.top, 14),
+                            paddingBottom: 22,
                             borderBottomLeftRadius: 24,
                             borderBottomRightRadius: 24,
                         }}
@@ -476,7 +478,7 @@ const LoginScreen = ({ navigation }: any) => {
                             backgroundColor: "#F8FAFC",
                             paddingHorizontal: 20,
                             paddingTop: 18,
-                            paddingBottom: 16,
+                            paddingBottom: Math.max(insets.bottom, 24),
                         }}
                     >
                         {/* TITLE */}
@@ -836,45 +838,6 @@ const LoginScreen = ({ navigation }: any) => {
                         </View>
 
                         {/* ================================================= */}
-                        {/* REGISTER */}
-                        {/* ================================================= */}
-
-                        <TouchableOpacity
-                            onPress={() =>
-                                navigation.navigate("Register")
-                            }
-                            activeOpacity={0.8}
-                            style={{
-                                height: 50,
-                                borderRadius: 15,
-                                backgroundColor: "#FFFFFF",
-                                borderWidth: 1.3,
-                                borderColor: "#CBD5E1",
-                                flexDirection: "row",
-                                alignItems: "center",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <Text
-                                style={{
-                                    color: "#334155",
-                                    fontSize: 13,
-                                    fontWeight: "800",
-                                }}
-                            >
-                                Create Franchise Account
-                            </Text>
-
-                            <ArrowRight
-                                size={16}
-                                color="#0D9488"
-                                style={{
-                                    marginLeft: 8,
-                                }}
-                            />
-                        </TouchableOpacity>
-
-                        {/* ================================================= */}
                         {/* FOOTER */}
                         {/* ================================================= */}
 
@@ -934,7 +897,7 @@ const LoginScreen = ({ navigation }: any) => {
                     );
                 }}
             />
-        </SafeAreaView>
+        </View>
     );
 };
 
