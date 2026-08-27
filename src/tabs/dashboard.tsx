@@ -231,7 +231,8 @@ const Dashboard = ({ navigation }: any) => {
           statusResponse.franchiseId ||
           statusResponse.franchise_id ||
           statusResponse.subscription.franchiseId ||
-          statusResponse.subscription.franchise_id;
+          statusResponse.subscription.franchise_id ||
+          statusResponse.subscription.id;
 
         applySubscriptionStatus({
           ...statusResponse,

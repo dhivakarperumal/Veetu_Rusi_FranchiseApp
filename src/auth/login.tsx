@@ -83,7 +83,8 @@ const LoginScreen = ({ navigation }: any) => {
                         subscription?.franchise?.id ||
                         subscription?.franchise?.franchise_id ||
                         errorData.user?.franchiseId ||
-                        errorData.user?.franchise_id,
+                        errorData.user?.franchise_id ||
+                        subscription?.id,
                     isExpired: false,
                     daysRemaining: null,
                     status: "Inactive",
@@ -109,7 +110,8 @@ const LoginScreen = ({ navigation }: any) => {
                         subscription.franchise?.id ||
                         subscription.franchise?.franchise_id ||
                         errorData.user?.franchiseId ||
-                        errorData.user?.franchise_id,
+                        errorData.user?.franchise_id ||
+                        subscription.id,
                 });
                 setShowSubscriptionAlert(true);
                 return;
