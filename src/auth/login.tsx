@@ -54,8 +54,8 @@ const LoginScreen = ({ navigation }: any) => {
                 await auth?.signIn(res.token, res.user);
             }
         } catch (error: any) {
-
             const status = error?.response?.status;
+
             const message =
                 error?.response?.data?.message ||
                 error?.message ||
@@ -64,10 +64,24 @@ const LoginScreen = ({ navigation }: any) => {
             const subscription =
                 error?.response?.data?.subscriptionInfo;
 
+            // No active subscription
             if (
                 status === 403 &&
-                subscription
+                message.toLowerCase().includes("no active subscription")
             ) {
+                setSubscriptionInfo({
+                    ...(subscription || {}),
+                    isExpired: false,
+                    daysRemaining: null,
+                    status: "Inactive",
+                });
+
+                setShowSubscriptionAlert(true);
+                return;
+            }
+
+            // Existing subscription expired/inactive response
+            if (status === 403 && subscription) {
                 setSubscriptionInfo(subscription);
                 setShowSubscriptionAlert(true);
                 return;
@@ -175,10 +189,10 @@ const LoginScreen = ({ navigation }: any) => {
                                     <ActivityIndicator color="#fff" />
                                 ) : (
                                     <>
-                                    <Text className="text-slate-950 font-black text-lg mr-2">
-                                        Sign in
-                                    </Text>
-                                    <ArrowRight size={20} color="#0f172a" />
+                                        <Text className="text-slate-950 font-black text-lg mr-2">
+                                            Sign in
+                                        </Text>
+                                        <ArrowRight size={20} color="#0f172a" />
                                     </>
                                 )}
                             </TouchableOpacity>
