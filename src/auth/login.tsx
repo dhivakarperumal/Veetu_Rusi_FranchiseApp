@@ -236,9 +236,9 @@ const LoginScreen = ({ navigation }: any) => {
                             >
                                 <View
                                     style={{
-                                        width: 38,
-                                        height: 38,
-                                        borderRadius: 11,
+                                        width: 42,
+                                        height: 42,
+                                        borderRadius: 12,
                                         backgroundColor: "#FFFFFF",
                                         alignItems: "center",
                                         justifyContent: "center",
@@ -248,8 +248,8 @@ const LoginScreen = ({ navigation }: any) => {
                                     <Image
                                         source={require("../images/logo2.png")}
                                         style={{
-                                            width: 28,
-                                            height: 28,
+                                            width: 31,
+                                            height: 31,
                                         }}
                                         resizeMode="contain"
                                     />
@@ -258,7 +258,7 @@ const LoginScreen = ({ navigation }: any) => {
                                 <Text
                                     style={{
                                         color: "#FFFFFF",
-                                        fontSize: 16,
+                                        fontSize: 18,
                                         fontWeight: "800",
                                     }}
                                 >
@@ -319,7 +319,7 @@ const LoginScreen = ({ navigation }: any) => {
                                 <Text
                                     style={{
                                         color: "#5EEAD4",
-                                        fontSize: 10,
+                                        fontSize: 11,
                                         fontWeight: "800",
                                         letterSpacing: 1.2,
                                         marginBottom: 5,
@@ -331,9 +331,9 @@ const LoginScreen = ({ navigation }: any) => {
                                 <Text
                                     style={{
                                         color: "#FFFFFF",
-                                        fontSize: 27,
+                                        fontSize: 30,
                                         fontWeight: "900",
-                                        lineHeight: 31,
+                                        lineHeight: 35,
                                     }}
                                 >
                                     Welcome Back!
@@ -342,9 +342,9 @@ const LoginScreen = ({ navigation }: any) => {
                                 <Text
                                     style={{
                                         color: "#94A3B8",
-                                        fontSize: 12,
-                                        lineHeight: 17,
-                                        marginTop: 5,
+                                        fontSize: 14,
+                                        lineHeight: 20,
+                                        marginTop: 7,
                                     }}
                                 >
                                     Manage your franchise, orders and
@@ -356,9 +356,9 @@ const LoginScreen = ({ navigation }: any) => {
 
                             <View
                                 style={{
-                                    width: 68,
-                                    height: 68,
-                                    borderRadius: 19,
+                                    width: 78,
+                                    height: 78,
+                                    borderRadius: 22,
                                     backgroundColor: "#FFFFFF",
                                     alignItems: "center",
                                     justifyContent: "center",
@@ -375,8 +375,8 @@ const LoginScreen = ({ navigation }: any) => {
                                 <Image
                                     source={require("../images/logo2.png")}
                                     style={{
-                                        width: 51,
-                                        height: 51,
+                                        width: 59,
+                                        height: 59,
                                     }}
                                     resizeMode="contain"
                                 />
@@ -389,7 +389,7 @@ const LoginScreen = ({ navigation }: any) => {
                             style={{
                                 flexDirection: "row",
                                 alignItems: "center",
-                                marginTop: 13,
+                                marginTop: 18,
                             }}
                         >
                             {/* KITCHEN */}
@@ -403,8 +403,8 @@ const LoginScreen = ({ navigation }: any) => {
                             >
                                 <View
                                     style={{
-                                        width: 28,
-                                        height: 28,
+                                        width: 32,
+                                        height: 32,
                                         borderRadius: 8,
                                         backgroundColor:
                                             "rgba(45,212,191,0.12)",
@@ -413,7 +413,7 @@ const LoginScreen = ({ navigation }: any) => {
                                     }}
                                 >
                                     <ChefHat
-                                        size={14}
+                                        size={16}
                                         color="#5EEAD4"
                                     />
                                 </View>
@@ -421,7 +421,7 @@ const LoginScreen = ({ navigation }: any) => {
                                 <Text
                                     style={{
                                         color: "#94A3B8",
-                                        fontSize: 10,
+                                        fontSize: 11,
                                         marginLeft: 6,
                                     }}
                                 >
@@ -439,8 +439,8 @@ const LoginScreen = ({ navigation }: any) => {
                             >
                                 <View
                                     style={{
-                                        width: 28,
-                                        height: 28,
+                                        width: 32,
+                                        height: 32,
                                         borderRadius: 8,
                                         backgroundColor:
                                             "rgba(45,212,191,0.12)",
@@ -449,7 +449,7 @@ const LoginScreen = ({ navigation }: any) => {
                                     }}
                                 >
                                     <Sparkles
-                                        size={14}
+                                        size={16}
                                         color="#5EEAD4"
                                     />
                                 </View>
@@ -457,7 +457,7 @@ const LoginScreen = ({ navigation }: any) => {
                                 <Text
                                     style={{
                                         color: "#94A3B8",
-                                        fontSize: 10,
+                                        fontSize: 11,
                                         marginLeft: 6,
                                     }}
                                 >
