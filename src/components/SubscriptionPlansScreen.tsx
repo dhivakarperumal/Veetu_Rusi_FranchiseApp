@@ -36,32 +36,71 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
     const [selectedPlan, setSelectedPlan] = useState<any>(null);
     const [paymentProcessing, setPaymentProcessing] = useState(false);
     const [franchiseId, setFranchiseId] = useState<any>(
-        route.params?.franchiseId || route.params?.franchise_id || null
+        route.params?.franchiseId ||
+        route.params?.franchise_id ||
+        route.params?.subscriptionInfo?.franchiseId ||
+        route.params?.subscriptionInfo?.franchise_id ||
+        route.params?.subscriptionInfo?.franchise?.id ||
+        route.params?.user?.franchiseId ||
+        route.params?.user?.franchise_id ||
+        null
     );
 
     useEffect(() => {
         fetchPlans();
-        if (!franchiseId) {
-            const resolveFranchiseId = async () => {
-                try {
-                    const user = JSON.parse((await AsyncStorage.getItem("user")) || "null");
-                    const storedFranchiseId = getFranchiseId(user);
 
-                    if (storedFranchiseId) {
-                        setFranchiseId(storedFranchiseId);
+        const resolveFranchiseId = async () => {
+            if (franchiseId) return;
+
+            try {
+                // 1. Try AsyncStorage franchiseId
+                const storedFId = await AsyncStorage.getItem("franchiseId");
+                if (storedFId) {
+                    setFranchiseId(storedFId);
+                    return;
+                }
+
+                // 2. Try AsyncStorage user
+                const user = JSON.parse((await AsyncStorage.getItem("user")) || "null");
+                const storedUserFId = getFranchiseId(user);
+                if (storedUserFId) {
+                    setFranchiseId(storedUserFId);
+                    await AsyncStorage.setItem("franchiseId", String(storedUserFId));
+                    return;
+                }
+
+                // 3. Try lookup with identifier if passed
+                const identifier =
+                    route.params?.identifier ||
+                    user?.email ||
+                    user?.username ||
+                    user?.mobile ||
+                    user?.mobile_number;
+
+                if (identifier) {
+                    const lookupRes = await post<any>("/subscriptions/lookup", { identifier });
+                    const lookupFId = lookupRes?.franchiseId || lookupRes?.franchise?.id;
+                    if (lookupFId) {
+                        setFranchiseId(lookupFId);
+                        await AsyncStorage.setItem("franchiseId", String(lookupFId));
                         return;
                     }
-
-                    const response = await get<any>("/subscriptions/status");
-                    setFranchiseId(getFranchiseId(response));
-                } catch {
-                    // Payment validation below will show a clear error if no ID is available.
                 }
-            };
 
-            resolveFranchiseId();
-        }
-    }, [franchiseId]);
+                // 4. Try from /subscriptions/status
+                const response = await get<any>("/subscriptions/status");
+                const statusFId = getFranchiseId(response);
+                if (statusFId) {
+                    setFranchiseId(statusFId);
+                    await AsyncStorage.setItem("franchiseId", String(statusFId));
+                }
+            } catch (err) {
+                console.warn("Could not resolve franchise ID:", err);
+            }
+        };
+
+        resolveFranchiseId();
+    }, [franchiseId, route.params]);
 
     const fetchPlans = async () => {
         try {
@@ -88,7 +127,33 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
     };
 
     const handlePayment = async () => {
-        if (!selectedPlan || !franchiseId) {
+        let activeFranchiseId = franchiseId;
+
+        if (!activeFranchiseId) {
+            try {
+                const storedFId = await AsyncStorage.getItem("franchiseId");
+                if (storedFId) {
+                    activeFranchiseId = storedFId;
+                    setFranchiseId(storedFId);
+                } else {
+                    const user = JSON.parse((await AsyncStorage.getItem("user")) || "null");
+                    const identifier = route.params?.identifier || user?.email || user?.username;
+                    if (identifier) {
+                        const lookupRes = await post<any>("/subscriptions/lookup", { identifier });
+                        const lookupFId = lookupRes?.franchiseId || lookupRes?.franchise?.id;
+                        if (lookupFId) {
+                            activeFranchiseId = lookupFId;
+                            setFranchiseId(lookupFId);
+                            await AsyncStorage.setItem("franchiseId", String(lookupFId));
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn("Payment resolve attempt failed:", e);
+            }
+        }
+
+        if (!selectedPlan || !activeFranchiseId) {
             Alert.alert("Unable to continue", "We could not identify your franchise. Please sign in again.");
             return;
         }
@@ -96,7 +161,7 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
         try {
             setPaymentProcessing(true);
             const checkout = await post<any>("/subscriptions/checkout", {
-                franchiseId,
+                franchiseId: activeFranchiseId,
                 planId: selectedPlan.id,
             });
 
@@ -109,7 +174,7 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                     description: `${checkout.plan.name} Subscription`,
                     order_id: checkout.order.id,
                     prefill: { name: "Franchise Owner" },
-                    notes: { franchiseId: String(franchiseId), planId: String(selectedPlan.id) },
+                    notes: { franchiseId: String(activeFranchiseId), planId: String(selectedPlan.id) },
                     theme: { color: "#14B8A6" },
                 })
                 : {
@@ -119,16 +184,29 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                 };
 
             await post("/subscriptions/confirm", {
-                franchiseId,
+                franchiseId: activeFranchiseId,
                 planId: selectedPlan.id,
                 razorpay_payment_id: payment.razorpay_payment_id,
                 razorpay_order_id: payment.razorpay_order_id,
                 razorpay_signature: payment.razorpay_signature,
             });
 
-            Alert.alert("Subscription activated", checkout.key_id ? "Your payment was successful." : "Demo mode activation was recorded.", [
-                { text: "Done", onPress: () => navigation.goBack() },
-            ]);
+            Alert.alert(
+                "Subscription activated",
+                "Your subscription is now active. Please sign in to access your dashboard.",
+                [
+                    {
+                        text: "Sign In",
+                        onPress: () => {
+                            if (navigation.canGoBack()) {
+                                navigation.goBack();
+                            } else {
+                                navigation.navigate("Login");
+                            }
+                        },
+                    },
+                ]
+            );
         } catch (error: any) {
             if (error?.code !== 2) {
                 Alert.alert("Payment failed", error?.message || "Please try again.");

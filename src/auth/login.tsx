@@ -11,7 +11,7 @@ import {
     StatusBar,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { login } from "../services/api";
+import { login, post } from "../services/api";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react-native";
 import SubscriptionAlert from "../components/SubscriptionAlert";
 
@@ -63,56 +63,59 @@ const LoginScreen = ({ navigation }: any) => {
                 "Login failed";
 
             const subscription = errorData.subscriptionInfo;
-
-            // No active subscription
-            if (
+            const isSubscriptionIssue =
                 status === 403 &&
-                message.toLowerCase().includes("no active subscription")
-            ) {
+                (message.toLowerCase().includes("no active subscription") ||
+                 message.toLowerCase().includes("subscription") ||
+                 Boolean(subscription));
+
+            if (isSubscriptionIssue) {
+                let resolvedFranchiseId =
+                    errorData.franchiseId ||
+                    errorData.franchise_id ||
+                    errorData.franchise?.id ||
+                    errorData.franchise?.franchise_id ||
+                    subscription?.franchiseId ||
+                    subscription?.franchise_id ||
+                    subscription?.franchise?.id ||
+                    subscription?.franchise?.franchise_id ||
+                    errorData.user?.franchiseId ||
+                    errorData.user?.franchise_id ||
+                    subscription?.id;
+
+                if (!resolvedFranchiseId) {
+                    try {
+                        const lookupRes = await post<any>("/subscriptions/lookup", {
+                            identifier: identifier.trim(),
+                        });
+                        resolvedFranchiseId = lookupRes?.franchiseId || lookupRes?.franchise?.id;
+                    } catch (e) {
+                        console.warn("Franchise lookup failed:", e);
+                    }
+                }
+
+                if (errorData.token) {
+                    await AsyncStorage.setItem("token", errorData.token);
+                }
+                if (errorData.user) {
+                    await AsyncStorage.setItem("user", JSON.stringify(errorData.user));
+                }
+                if (resolvedFranchiseId) {
+                    await AsyncStorage.setItem("franchiseId", String(resolvedFranchiseId));
+                }
+
                 setSubscriptionInfo({
                     ...errorData,
                     ...(subscription || {}),
                     user: errorData.user,
-                    franchiseId:
-                        errorData.franchiseId ||
-                        errorData.franchise_id ||
-                        errorData.franchise?.id ||
-                        errorData.franchise?.franchise_id ||
-                        subscription?.franchiseId ||
-                        subscription?.franchise_id ||
-                        subscription?.franchise?.id ||
-                        subscription?.franchise?.franchise_id ||
-                        errorData.user?.franchiseId ||
-                        errorData.user?.franchise_id ||
-                        subscription?.id,
-                    isExpired: false,
-                    daysRemaining: null,
-                    status: "Inactive",
+                    franchise: errorData.franchise || subscription?.franchise,
+                    franchiseId: resolvedFranchiseId,
+                    identifier: identifier.trim(),
+                    isExpired: subscription?.isExpired ?? true,
+                    daysRemaining: subscription?.daysRemaining ?? 0,
+                    status: subscription?.status || "Inactive",
                 });
 
-                setShowSubscriptionAlert(true);
-                return;
-            }
-
-            // Existing subscription expired/inactive response
-            if (status === 403 && subscription) {
-                setSubscriptionInfo({
-                    ...errorData,
-                    ...subscription,
-                    user: errorData.user,
-                    franchiseId:
-                        errorData.franchiseId ||
-                        errorData.franchise_id ||
-                        errorData.franchise?.id ||
-                        errorData.franchise?.franchise_id ||
-                        subscription.franchiseId ||
-                        subscription.franchise_id ||
-                        subscription.franchise?.id ||
-                        subscription.franchise?.franchise_id ||
-                        errorData.user?.franchiseId ||
-                        errorData.user?.franchise_id ||
-                        subscription.id,
-                });
                 setShowSubscriptionAlert(true);
                 return;
             }
@@ -253,7 +256,10 @@ const LoginScreen = ({ navigation }: any) => {
                     setShowSubscriptionAlert(false);
 
                     navigation.navigate("SubscriptionPlans", {
-                        franchiseId: subscriptionInfo.franchiseId,
+                        franchiseId: subscriptionInfo?.franchiseId,
+                        identifier: identifier.trim(),
+                        subscriptionInfo,
+                        user: subscriptionInfo?.user,
                     });
                 }}
             />

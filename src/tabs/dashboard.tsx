@@ -705,7 +705,12 @@ const Dashboard = ({ navigation }: any) => {
         onBuyClick={() => {
           setShowSubscriptionAlert(false);
           navigation.navigate("SubscriptionPlans", {
-            franchiseId: subscriptionInfo?.franchiseId,
+            franchiseId:
+              subscriptionInfo?.franchiseId ||
+              subscriptionInfo?.franchise_id ||
+              subscriptionInfo?.franchise?.id ||
+              dashboard?.franchise?.id,
+            subscriptionInfo,
           });
         }}
       />
