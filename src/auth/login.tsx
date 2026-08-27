@@ -183,7 +183,7 @@ const LoginScreen = ({ navigation }: any) => {
         <View
             style={{
                 flex: 1,
-                backgroundColor: "#0F172A",
+                backgroundColor: "#F8FAFC",
             }}
         >
             <StatusBar
@@ -199,7 +199,6 @@ const LoginScreen = ({ navigation }: any) => {
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
                     contentContainerStyle={{
-                        flexGrow: 1,
                         backgroundColor: "#F8FAFC",
                     }}
                 >
@@ -476,7 +475,7 @@ const LoginScreen = ({ navigation }: any) => {
                         style={{
                             backgroundColor: "#F8FAFC",
                             paddingHorizontal: 20,
-                            paddingTop: 18,
+                            paddingTop: 24,
                             paddingBottom: Math.max(insets.bottom, 24),
                         }}
                     >
@@ -484,7 +483,7 @@ const LoginScreen = ({ navigation }: any) => {
 
                         <View
                             style={{
-                                marginBottom: 16,
+                                marginBottom: 22,
                             }}
                         >
                             <Text
@@ -514,7 +513,7 @@ const LoginScreen = ({ navigation }: any) => {
 
                         <View
                             style={{
-                                marginBottom: 11,
+                                marginBottom: 17,
                             }}
                         >
                             <Text
@@ -522,7 +521,7 @@ const LoginScreen = ({ navigation }: any) => {
                                     color: "#334155",
                                     fontSize: 10,
                                     fontWeight: "800",
-                                    marginBottom: 6,
+                                    marginBottom: 9,
                                     marginLeft: 2,
                                     letterSpacing: 0.4,
                                 }}
@@ -605,7 +604,7 @@ const LoginScreen = ({ navigation }: any) => {
 
                         <View
                             style={{
-                                marginBottom: 5,
+                                marginBottom: 11,
                             }}
                         >
                             <Text
@@ -613,7 +612,7 @@ const LoginScreen = ({ navigation }: any) => {
                                     color: "#334155",
                                     fontSize: 10,
                                     fontWeight: "800",
-                                    marginBottom: 6,
+                                    marginBottom: 9,
                                     marginLeft: 2,
                                     letterSpacing: 0.4,
                                 }}
@@ -718,7 +717,7 @@ const LoginScreen = ({ navigation }: any) => {
                             style={{
                                 alignSelf: "flex-end",
                                 paddingVertical: 7,
-                                marginBottom: 10,
+                                marginBottom: 16,
                             }}
                         >
                             <Text
