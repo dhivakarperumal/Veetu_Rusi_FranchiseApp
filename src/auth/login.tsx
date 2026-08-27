@@ -13,17 +13,21 @@ import {
     Platform,
     Image,
 } from "react-native";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login, post } from "../services/api";
+
 import {
     ArrowRight,
     Eye,
     EyeOff,
     LockKeyhole,
     UserRound,
-    Shield,
+    ShieldCheck,
     Sparkles,
+    ChefHat,
 } from "lucide-react-native";
+
 import SubscriptionAlert from "../components/SubscriptionAlert";
 import { AuthContext } from "../context/AuthContext";
 
@@ -32,9 +36,12 @@ const LoginScreen = ({ navigation }: any) => {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
     const [isIdentifierFocused, setIsIdentifierFocused] = useState(false);
     const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+
     const auth = React.useContext(AuthContext);
+
     const [showSubscriptionAlert, setShowSubscriptionAlert] = useState(false);
 
     const [subscriptionInfo, setSubscriptionInfo] = useState<any>({
@@ -42,6 +49,10 @@ const LoginScreen = ({ navigation }: any) => {
         daysRemaining: null,
         status: "Inactive",
     });
+
+    // ---------------------------------------------------------
+    // LOGIN LOGIC - KEPT SAME
+    // ---------------------------------------------------------
 
     const handleLogin = async () => {
         if (!identifier.trim()) {
@@ -75,11 +86,14 @@ const LoginScreen = ({ navigation }: any) => {
                 "Login failed";
 
             const subscription = errorData.subscriptionInfo;
+
             const isSubscriptionIssue =
                 status === 403 &&
-                (message.toLowerCase().includes("no active subscription") ||
-                 message.toLowerCase().includes("subscription") ||
-                 Boolean(subscription));
+                (
+                    message.toLowerCase().includes("no active subscription") ||
+                    message.toLowerCase().includes("subscription") ||
+                    Boolean(subscription)
+                );
 
             if (isSubscriptionIssue) {
                 let resolvedFranchiseId =
@@ -97,35 +111,57 @@ const LoginScreen = ({ navigation }: any) => {
 
                 if (!resolvedFranchiseId) {
                     try {
-                        const lookupRes = await post<any>("/subscriptions/lookup", {
-                            identifier: identifier.trim(),
-                        });
-                        resolvedFranchiseId = lookupRes?.franchiseId || lookupRes?.franchise?.id;
+                        const lookupRes = await post<any>(
+                            "/subscriptions/lookup",
+                            {
+                                identifier: identifier.trim(),
+                            }
+                        );
+
+                        resolvedFranchiseId =
+                            lookupRes?.franchiseId ||
+                            lookupRes?.franchise?.id;
                     } catch (e) {
                         console.warn("Franchise lookup failed:", e);
                     }
                 }
 
                 if (errorData.token) {
-                    await AsyncStorage.setItem("token", errorData.token);
+                    await AsyncStorage.setItem(
+                        "token",
+                        errorData.token
+                    );
                 }
+
                 if (errorData.user) {
-                    await AsyncStorage.setItem("user", JSON.stringify(errorData.user));
+                    await AsyncStorage.setItem(
+                        "user",
+                        JSON.stringify(errorData.user)
+                    );
                 }
+
                 if (resolvedFranchiseId) {
-                    await AsyncStorage.setItem("franchiseId", String(resolvedFranchiseId));
+                    await AsyncStorage.setItem(
+                        "franchiseId",
+                        String(resolvedFranchiseId)
+                    );
                 }
 
                 setSubscriptionInfo({
                     ...errorData,
                     ...(subscription || {}),
                     user: errorData.user,
-                    franchise: errorData.franchise || subscription?.franchise,
+                    franchise:
+                        errorData.franchise ||
+                        subscription?.franchise,
                     franchiseId: resolvedFranchiseId,
                     identifier: identifier.trim(),
-                    isExpired: subscription?.isExpired ?? true,
-                    daysRemaining: subscription?.daysRemaining ?? 0,
-                    status: subscription?.status || "Inactive",
+                    isExpired:
+                        subscription?.isExpired ?? true,
+                    daysRemaining:
+                        subscription?.daysRemaining ?? 0,
+                    status:
+                        subscription?.status || "Inactive",
                 });
 
                 setShowSubscriptionAlert(true);
@@ -138,178 +174,764 @@ const LoginScreen = ({ navigation }: any) => {
         }
     };
 
+    // ---------------------------------------------------------
+    // UI
+    // ---------------------------------------------------------
+
     return (
-        <SafeAreaView className="flex-1 bg-slate-950">
-            <StatusBar barStyle="light-content" backgroundColor="#020617" />
+        <SafeAreaView
+            style={{
+                flex: 1,
+                backgroundColor: "#F8FAFC",
+            }}
+        >
+            <StatusBar
+                barStyle="light-content"
+                backgroundColor="#0F172A"
+            />
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
-                className="flex-1"
+                style={{ flex: 1 }}
             >
                 <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
                     contentContainerStyle={{
                         flexGrow: 1,
-                        justifyContent: "center",
-                        paddingHorizontal: 24,
-                        paddingVertical: 32,
                     }}
-                    showsVerticalScrollIndicator={false}
                 >
-                    {/* Brand Header */}
-                    <View className="items-center mb-8">
-                        <View className="w-20 h-20 bg-slate-900 border-2 border-teal-500/30 rounded-3xl p-2 items-center justify-center mb-4 shadow-xl shadow-teal-500/10">
-                            <Image
-                                source={require("../images/logo2.png")}
-                                style={{ width: 60, height: 60 }}
-                                resizeMode="contain"
-                            />
-                        </View>
+                    {/* ================================================= */}
+                    {/* COMPACT HEADER */}
+                    {/* ================================================= */}
 
-                        <View className="flex-row items-center mb-1">
-                            <Text className="text-white text-3xl font-black tracking-tight">
-                                Veetu Rusi
-                            </Text>
-                        </View>
+                    <View
+                        style={{
+                            backgroundColor: "#0F172A",
+                            paddingHorizontal: 20,
+                            paddingTop: 10,
+                            paddingBottom: 18,
+                            borderBottomLeftRadius: 24,
+                            borderBottomRightRadius: 24,
+                        }}
+                    >
+                        {/* TOP BAR */}
 
-                        <View className="bg-teal-500/15 border border-teal-500/25 px-3.5 py-1 rounded-full flex-row items-center mt-1 mb-2">
-                            <Shield size={12} color="#5eead4" />
-                            <Text className="text-teal-300 text-xs font-black tracking-widest ml-1.5 uppercase">
-                                Franchise Portal
-                            </Text>
-                        </View>
-
-                        <Text className="text-slate-400 text-sm text-center max-w-[280px] leading-5">
-                            Sign in to manage orders, chefs, deliveries & daily revenue
-                        </Text>
-                    </View>
-
-                    {/* Main Form Card */}
-                    <View className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl shadow-black">
-                        {/* Identifier Field */}
-                        <View className="mb-5">
-                            <Text className="text-slate-300 font-semibold text-xs tracking-wider uppercase mb-2">
-                                Email / Username
-                            </Text>
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: 15,
+                            }}
+                        >
+                            {/* BRAND */}
 
                             <View
-                                className={`flex-row items-center border rounded-2xl px-4 bg-slate-950/90 ${
-                                    isIdentifierFocused
-                                        ? "border-teal-400 shadow-md shadow-teal-500/10"
-                                        : "border-slate-800"
-                                }`}
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                }}
                             >
-                                <UserRound size={18} color={isIdentifierFocused ? "#5eead4" : "#64748b"} />
-                                <TextInput
-                                    value={identifier}
-                                    onChangeText={setIdentifier}
-                                    onFocus={() => setIsIdentifierFocused(true)}
-                                    onBlur={() => setIsIdentifierFocused(false)}
-                                    placeholder="Enter your email or username"
-                                    placeholderTextColor="#475569"
-                                    autoCapitalize="none"
-                                    autoCorrect={false}
-                                    className="flex-1 text-white px-3 py-4 text-sm"
+                                <View
+                                    style={{
+                                        width: 38,
+                                        height: 38,
+                                        borderRadius: 11,
+                                        backgroundColor: "#FFFFFF",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        marginRight: 9,
+                                    }}
+                                >
+                                    <Image
+                                        source={require("../images/logo2.png")}
+                                        style={{
+                                            width: 28,
+                                            height: 28,
+                                        }}
+                                        resizeMode="contain"
+                                    />
+                                </View>
+
+                                <Text
+                                    style={{
+                                        color: "#FFFFFF",
+                                        fontSize: 16,
+                                        fontWeight: "800",
+                                    }}
+                                >
+                                    Veetu Rusi
+                                </Text>
+                            </View>
+
+                            {/* SECURE */}
+
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    backgroundColor:
+                                        "rgba(255,255,255,0.08)",
+                                    borderWidth: 1,
+                                    borderColor:
+                                        "rgba(255,255,255,0.10)",
+                                    borderRadius: 20,
+                                    paddingHorizontal: 9,
+                                    paddingVertical: 6,
+                                }}
+                            >
+                                <ShieldCheck
+                                    size={14}
+                                    color="#5EEAD4"
+                                />
+
+                                <Text
+                                    style={{
+                                        color: "#5EEAD4",
+                                        fontSize: 9,
+                                        fontWeight: "800",
+                                        marginLeft: 4,
+                                    }}
+                                >
+                                    SECURE
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* HERO CONTENT */}
+
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                            }}
+                        >
+                            {/* TEXT */}
+
+                            <View
+                                style={{
+                                    flex: 1,
+                                    paddingRight: 12,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: "#5EEAD4",
+                                        fontSize: 10,
+                                        fontWeight: "800",
+                                        letterSpacing: 1.2,
+                                        marginBottom: 5,
+                                    }}
+                                >
+                                    FRANCHISE PORTAL
+                                </Text>
+
+                                <Text
+                                    style={{
+                                        color: "#FFFFFF",
+                                        fontSize: 27,
+                                        fontWeight: "900",
+                                        lineHeight: 31,
+                                    }}
+                                >
+                                    Welcome Back!
+                                </Text>
+
+                                <Text
+                                    style={{
+                                        color: "#94A3B8",
+                                        fontSize: 12,
+                                        lineHeight: 17,
+                                        marginTop: 5,
+                                    }}
+                                >
+                                    Manage your franchise, orders and
+                                    daily operations from one place.
+                                </Text>
+                            </View>
+
+                            {/* LOGO */}
+
+                            <View
+                                style={{
+                                    width: 68,
+                                    height: 68,
+                                    borderRadius: 19,
+                                    backgroundColor: "#FFFFFF",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    elevation: 6,
+                                    shadowColor: "#000000",
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 4,
+                                    },
+                                    shadowOpacity: 0.18,
+                                    shadowRadius: 6,
+                                }}
+                            >
+                                <Image
+                                    source={require("../images/logo2.png")}
+                                    style={{
+                                        width: 51,
+                                        height: 51,
+                                    }}
+                                    resizeMode="contain"
                                 />
                             </View>
                         </View>
 
-                        {/* Password Field */}
-                        <View className="mb-3">
-                            <Text className="text-slate-300 font-semibold text-xs tracking-wider uppercase mb-2">
-                                Password
+                        {/* FEATURES */}
+
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                marginTop: 13,
+                            }}
+                        >
+                            {/* KITCHEN */}
+
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    marginRight: 18,
+                                }}
+                            >
+                                <View
+                                    style={{
+                                        width: 28,
+                                        height: 28,
+                                        borderRadius: 8,
+                                        backgroundColor:
+                                            "rgba(45,212,191,0.12)",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <ChefHat
+                                        size={14}
+                                        color="#5EEAD4"
+                                    />
+                                </View>
+
+                                <Text
+                                    style={{
+                                        color: "#94A3B8",
+                                        fontSize: 10,
+                                        marginLeft: 6,
+                                    }}
+                                >
+                                    Kitchen
+                                </Text>
+                            </View>
+
+                            {/* OPERATIONS */}
+
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <View
+                                    style={{
+                                        width: 28,
+                                        height: 28,
+                                        borderRadius: 8,
+                                        backgroundColor:
+                                            "rgba(45,212,191,0.12)",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <Sparkles
+                                        size={14}
+                                        color="#5EEAD4"
+                                    />
+                                </View>
+
+                                <Text
+                                    style={{
+                                        color: "#94A3B8",
+                                        fontSize: 10,
+                                        marginLeft: 6,
+                                    }}
+                                >
+                                    Operations
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* ================================================= */}
+                    {/* LOGIN SECTION */}
+                    {/* ================================================= */}
+
+                    <View
+                        style={{
+                            flex: 1,
+                            backgroundColor: "#F8FAFC",
+                            paddingHorizontal: 20,
+                            paddingTop: 18,
+                            paddingBottom: 16,
+                        }}
+                    >
+                        {/* TITLE */}
+
+                        <View
+                            style={{
+                                marginBottom: 16,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: "#0F172A",
+                                    fontSize: 25,
+                                    fontWeight: "900",
+                                }}
+                            >
+                                Sign in
+                            </Text>
+
+                            <Text
+                                style={{
+                                    color: "#64748B",
+                                    fontSize: 13,
+                                    marginTop: 3,
+                                }}
+                            >
+                                Enter your account details to continue
+                            </Text>
+                        </View>
+
+                        {/* ================================================= */}
+                        {/* EMAIL / USERNAME */}
+                        {/* ================================================= */}
+
+                        <View
+                            style={{
+                                marginBottom: 11,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: "#334155",
+                                    fontSize: 10,
+                                    fontWeight: "800",
+                                    marginBottom: 6,
+                                    marginLeft: 2,
+                                    letterSpacing: 0.4,
+                                }}
+                            >
+                                EMAIL OR USERNAME
                             </Text>
 
                             <View
-                                className={`relative flex-row items-center border rounded-2xl px-4 bg-slate-950/90 ${
-                                    isPasswordFocused
-                                        ? "border-teal-400 shadow-md shadow-teal-500/10"
-                                        : "border-slate-800"
-                                }`}
+                                style={{
+                                    height: 52,
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    backgroundColor: "#FFFFFF",
+                                    borderRadius: 15,
+                                    borderWidth: 1.3,
+                                    borderColor: isIdentifierFocused
+                                        ? "#14B8A6"
+                                        : "#CBD5E1",
+                                    paddingHorizontal: 12,
+                                    elevation: 2,
+                                    shadowColor: "#0F172A",
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 2,
+                                    },
+                                    shadowOpacity: 0.04,
+                                    shadowRadius: 4,
+                                }}
                             >
-                                <LockKeyhole size={18} color={isPasswordFocused ? "#5eead4" : "#64748b"} />
+                                <View
+                                    style={{
+                                        width: 34,
+                                        height: 34,
+                                        borderRadius: 10,
+                                        backgroundColor:
+                                            isIdentifierFocused
+                                                ? "#CCFBF1"
+                                                : "#F1F5F9",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <UserRound
+                                        size={17}
+                                        color={
+                                            isIdentifierFocused
+                                                ? "#0D9488"
+                                                : "#94A3B8"
+                                        }
+                                    />
+                                </View>
+
+                                <TextInput
+                                    value={identifier}
+                                    onChangeText={setIdentifier}
+                                    onFocus={() =>
+                                        setIsIdentifierFocused(true)
+                                    }
+                                    onBlur={() =>
+                                        setIsIdentifierFocused(false)
+                                    }
+                                    placeholder="Enter email or username"
+                                    placeholderTextColor="#94A3B8"
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    style={{
+                                        flex: 1,
+                                        color: "#0F172A",
+                                        fontSize: 14,
+                                        paddingHorizontal: 11,
+                                        paddingVertical: 0,
+                                    }}
+                                />
+                            </View>
+                        </View>
+
+                        {/* ================================================= */}
+                        {/* PASSWORD */}
+                        {/* ================================================= */}
+
+                        <View
+                            style={{
+                                marginBottom: 5,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: "#334155",
+                                    fontSize: 10,
+                                    fontWeight: "800",
+                                    marginBottom: 6,
+                                    marginLeft: 2,
+                                    letterSpacing: 0.4,
+                                }}
+                            >
+                                PASSWORD
+                            </Text>
+
+                            <View
+                                style={{
+                                    height: 52,
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    backgroundColor: "#FFFFFF",
+                                    borderRadius: 15,
+                                    borderWidth: 1.3,
+                                    borderColor: isPasswordFocused
+                                        ? "#14B8A6"
+                                        : "#CBD5E1",
+                                    paddingHorizontal: 12,
+                                    elevation: 2,
+                                    shadowColor: "#0F172A",
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 2,
+                                    },
+                                    shadowOpacity: 0.04,
+                                    shadowRadius: 4,
+                                }}
+                            >
+                                <View
+                                    style={{
+                                        width: 34,
+                                        height: 34,
+                                        borderRadius: 10,
+                                        backgroundColor:
+                                            isPasswordFocused
+                                                ? "#CCFBF1"
+                                                : "#F1F5F9",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <LockKeyhole
+                                        size={17}
+                                        color={
+                                            isPasswordFocused
+                                                ? "#0D9488"
+                                                : "#94A3B8"
+                                        }
+                                    />
+                                </View>
+
                                 <TextInput
                                     value={password}
                                     onChangeText={setPassword}
-                                    onFocus={() => setIsPasswordFocused(true)}
-                                    onBlur={() => setIsPasswordFocused(false)}
+                                    onFocus={() =>
+                                        setIsPasswordFocused(true)
+                                    }
+                                    onBlur={() =>
+                                        setIsPasswordFocused(false)
+                                    }
                                     secureTextEntry={!showPassword}
-                                    placeholder="Enter your account password"
-                                    placeholderTextColor="#475569"
-                                    className="flex-1 text-white px-3 py-4 pr-10 text-sm"
+                                    placeholder="Enter your password"
+                                    placeholderTextColor="#94A3B8"
+                                    autoCapitalize="none"
+                                    style={{
+                                        flex: 1,
+                                        color: "#0F172A",
+                                        fontSize: 14,
+                                        paddingHorizontal: 11,
+                                        paddingVertical: 0,
+                                    }}
                                 />
 
                                 <TouchableOpacity
-                                    onPress={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 p-1"
-                                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                    onPress={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                    style={{
+                                        padding: 6,
+                                    }}
                                 >
                                     {showPassword ? (
-                                        <EyeOff size={18} color="#5eead4" />
+                                        <EyeOff
+                                            size={19}
+                                            color="#0D9488"
+                                        />
                                     ) : (
-                                        <Eye size={18} color="#64748b" />
+                                        <Eye
+                                            size={19}
+                                            color="#94A3B8"
+                                        />
                                     )}
                                 </TouchableOpacity>
                             </View>
                         </View>
 
-                        {/* Forgot Password */}
-                        <TouchableOpacity className="self-end mb-6 py-1">
-                            <Text className="text-teal-400 text-xs font-bold">
+                        {/* FORGOT PASSWORD */}
+
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            style={{
+                                alignSelf: "flex-end",
+                                paddingVertical: 7,
+                                marginBottom: 10,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: "#0D9488",
+                                    fontSize: 11,
+                                    fontWeight: "800",
+                                }}
+                            >
                                 Forgot Password?
                             </Text>
                         </TouchableOpacity>
 
-                        {/* Sign In Button */}
+                        {/* ================================================= */}
+                        {/* SIGN IN */}
+                        {/* ================================================= */}
+
                         <TouchableOpacity
                             disabled={loading}
                             onPress={handleLogin}
                             activeOpacity={0.85}
-                            className="bg-teal-500 py-4 rounded-2xl items-center flex-row justify-center shadow-lg shadow-teal-500/30"
+                            style={{
+                                height: 52,
+                                borderRadius: 15,
+                                backgroundColor: loading
+                                    ? "#5EEAD4"
+                                    : "#0F766E",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                elevation: 4,
+                                shadowColor: "#0F766E",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 5,
+                                },
+                                shadowOpacity: 0.2,
+                                shadowRadius: 8,
+                            }}
                         >
                             {loading ? (
-                                <ActivityIndicator color="#020617" size="small" />
+                                <ActivityIndicator
+                                    color="#FFFFFF"
+                                    size="small"
+                                />
                             ) : (
                                 <>
-                                    <Text className="text-slate-950 font-black text-base mr-2">
+                                    <Text
+                                        style={{
+                                            color: "#FFFFFF",
+                                            fontSize: 15,
+                                            fontWeight: "900",
+                                            marginRight: 10,
+                                        }}
+                                    >
                                         Sign In
                                     </Text>
-                                    <ArrowRight size={18} color="#020617" />
+
+                                    <View
+                                        style={{
+                                            width: 27,
+                                            height: 27,
+                                            borderRadius: 14,
+                                            backgroundColor:
+                                                "rgba(255,255,255,0.16)",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <ArrowRight
+                                            size={16}
+                                            color="#FFFFFF"
+                                        />
+                                    </View>
                                 </>
                             )}
                         </TouchableOpacity>
-                    </View>
 
-                    {/* Sign Up Prompt */}
-                    <View className="flex-row justify-center items-center mt-8">
-                        <Text className="text-slate-400 text-sm">
-                            Don't have a franchise account?
-                        </Text>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("Register")}
-                            className="ml-1.5 py-1"
+                        {/* ================================================= */}
+                        {/* DIVIDER */}
+                        {/* ================================================= */}
+
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                marginVertical: 13,
+                            }}
                         >
-                            <Text className="text-teal-400 font-bold text-sm">
-                                Register
+                            <View
+                                style={{
+                                    flex: 1,
+                                    height: 1,
+                                    backgroundColor: "#E2E8F0",
+                                }}
+                            />
+
+                            <Text
+                                style={{
+                                    color: "#94A3B8",
+                                    fontSize: 9,
+                                    fontWeight: "800",
+                                    marginHorizontal: 10,
+                                }}
+                            >
+                                NEW TO VEETU RUSI?
                             </Text>
+
+                            <View
+                                style={{
+                                    flex: 1,
+                                    height: 1,
+                                    backgroundColor: "#E2E8F0",
+                                }}
+                            />
+                        </View>
+
+                        {/* ================================================= */}
+                        {/* REGISTER */}
+                        {/* ================================================= */}
+
+                        <TouchableOpacity
+                            onPress={() =>
+                                navigation.navigate("Register")
+                            }
+                            activeOpacity={0.8}
+                            style={{
+                                height: 50,
+                                borderRadius: 15,
+                                backgroundColor: "#FFFFFF",
+                                borderWidth: 1.3,
+                                borderColor: "#CBD5E1",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: "#334155",
+                                    fontSize: 13,
+                                    fontWeight: "800",
+                                }}
+                            >
+                                Create Franchise Account
+                            </Text>
+
+                            <ArrowRight
+                                size={16}
+                                color="#0D9488"
+                                style={{
+                                    marginLeft: 8,
+                                }}
+                            />
                         </TouchableOpacity>
+
+                        {/* ================================================= */}
+                        {/* FOOTER */}
+                        {/* ================================================= */}
+
+                        <View
+                            style={{
+                                alignItems: "center",
+                                marginTop: 12,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: "#94A3B8",
+                                    fontSize: 9,
+                                }}
+                            >
+                                Veetu Rusi Franchise Management
+                            </Text>
+
+                            <Text
+                                style={{
+                                    color: "#CBD5E1",
+                                    fontSize: 8,
+                                    marginTop: 3,
+                                }}
+                            >
+                                Secure • Simple • Smart
+                            </Text>
+                        </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
 
-            {/* Subscription Alert */}
+            {/* ================================================= */}
+            {/* SUBSCRIPTION ALERT */}
+            {/* ================================================= */}
+
             <SubscriptionAlert
                 visible={showSubscriptionAlert}
                 subscriptionInfo={subscriptionInfo}
-                onClose={() => setShowSubscriptionAlert(false)}
+                onClose={() =>
+                    setShowSubscriptionAlert(false)
+                }
                 onBuyClick={() => {
                     setShowSubscriptionAlert(false);
 
-                    navigation.navigate("SubscriptionPlans", {
-                        franchiseId: subscriptionInfo?.franchiseId,
-                        identifier: identifier.trim(),
-                        subscriptionInfo,
-                        user: subscriptionInfo?.user,
-                    });
+                    navigation.navigate(
+                        "SubscriptionPlans",
+                        {
+                            franchiseId:
+                                subscriptionInfo?.franchiseId,
+                            identifier:
+                                identifier.trim(),
+                            subscriptionInfo,
+                            user:
+                                subscriptionInfo?.user,
+                        }
+                    );
                 }}
             />
         </SafeAreaView>
