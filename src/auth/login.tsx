@@ -234,7 +234,7 @@ const LoginScreen = ({ navigation }: any) => {
                                     alignItems: "center",
                                 }}
                             >
-                                <View
+                                {/* <View
                                     style={{
                                         width: 42,
                                         height: 42,
@@ -253,7 +253,7 @@ const LoginScreen = ({ navigation }: any) => {
                                         }}
                                         resizeMode="contain"
                                     />
-                                </View>
+                                </View> */}
 
                                 <Text
                                     style={{
@@ -796,6 +796,8 @@ const LoginScreen = ({ navigation }: any) => {
                             )}
                         </TouchableOpacity>
 
+
+
                         {/* ================================================= */}
                         {/* DIVIDER */}
                         {/* ================================================= */}
@@ -834,6 +836,30 @@ const LoginScreen = ({ navigation }: any) => {
                                 }}
                             />
                         </View>
+
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("Register")}
+                            activeOpacity={0.8}
+                            style={{
+                                height: 48,
+                                borderRadius: 15,
+                                borderWidth: 1.5,
+                                borderColor: "#0D9488",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                marginTop: 12,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: "#0D9488",
+                                    fontSize: 14,
+                                    fontWeight: "900",
+                                }}
+                            >
+                                Sign Up
+                            </Text>
+                        </TouchableOpacity>
 
                         {/* ================================================= */}
                         {/* FOOTER */}
