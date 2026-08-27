@@ -55,14 +55,14 @@ const LoginScreen = ({ navigation }: any) => {
             }
         } catch (error: any) {
             const status = error?.response?.status;
+            const errorData = error?.response?.data || {};
 
             const message =
-                error?.response?.data?.message ||
+                errorData.message ||
                 error?.message ||
                 "Login failed";
 
-            const subscription =
-                error?.response?.data?.subscriptionInfo;
+            const subscription = errorData.subscriptionInfo;
 
             // No active subscription
             if (
@@ -70,12 +70,20 @@ const LoginScreen = ({ navigation }: any) => {
                 message.toLowerCase().includes("no active subscription")
             ) {
                 setSubscriptionInfo({
+                    ...errorData,
                     ...(subscription || {}),
+                    user: errorData.user,
                     franchiseId:
+                        errorData.franchiseId ||
+                        errorData.franchise_id ||
+                        errorData.franchise?.id ||
+                        errorData.franchise?.franchise_id ||
                         subscription?.franchiseId ||
                         subscription?.franchise_id ||
                         subscription?.franchise?.id ||
-                        subscription?.franchise?.franchise_id,
+                        subscription?.franchise?.franchise_id ||
+                        errorData.user?.franchiseId ||
+                        errorData.user?.franchise_id,
                     isExpired: false,
                     daysRemaining: null,
                     status: "Inactive",
@@ -88,12 +96,20 @@ const LoginScreen = ({ navigation }: any) => {
             // Existing subscription expired/inactive response
             if (status === 403 && subscription) {
                 setSubscriptionInfo({
+                    ...errorData,
                     ...subscription,
+                    user: errorData.user,
                     franchiseId:
+                        errorData.franchiseId ||
+                        errorData.franchise_id ||
+                        errorData.franchise?.id ||
+                        errorData.franchise?.franchise_id ||
                         subscription.franchiseId ||
                         subscription.franchise_id ||
                         subscription.franchise?.id ||
-                        subscription.franchise?.franchise_id,
+                        subscription.franchise?.franchise_id ||
+                        errorData.user?.franchiseId ||
+                        errorData.user?.franchise_id,
                 });
                 setShowSubscriptionAlert(true);
                 return;

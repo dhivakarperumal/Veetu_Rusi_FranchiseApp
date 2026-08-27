@@ -18,9 +18,13 @@ const getFranchiseId = (data: any) =>
     data?.franchiseId ||
     data?.franchise_id ||
     data?.franchise?.id ||
+    data?.franchise?.franchiseId ||
     data?.franchise?.franchise_id ||
     data?.subscription?.franchiseId ||
     data?.subscription?.franchise_id ||
+    data?.subscription?.franchise?.id ||
+    data?.subscription?.franchise?.franchise_id ||
+    data?.user?.franchiseId ||
     data?.user?.franchise_id ||
     null;
 
