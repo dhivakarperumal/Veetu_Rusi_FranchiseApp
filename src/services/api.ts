@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// const BASE_URL = "https://veeturusi.qtechx.com/api";
-const BASE_URL = "http://192.168.1.3:5000/api";
+const BASE_URL = "https://veeturusi.qtechx.com/api";
+// const BASE_URL = "http://192.168.1.3:5000/api";
 
 export type LoginPayload = {
   identifier: string;
@@ -34,10 +34,34 @@ async function request<T>(
     headers,
   });
 
-  const data = await response.json();
+  const contentType = response.headers?.get?.("content-type") || "";
+  let data: any = null;
+
+  try {
+    if (contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = { message: text || "Unexpected response from server." };
+      }
+    }
+  } catch (error) {
+    const fallbackMessage =
+      "Unexpected response from server. Please check the server status or contact support.";
+    const parsedError: any = new Error(fallbackMessage);
+    parsedError.response = {
+      status: response.status,
+      data: { message: fallbackMessage },
+    };
+    parsedError.status = response.status;
+    throw parsedError;
+  }
 
   if (!response.ok) {
-    const error: any = new Error(data.message || "Request Failed");
+    const error: any = new Error(data?.message || "Request Failed");
     error.response = { status: response.status, data };
     error.status = response.status;
     throw error;
