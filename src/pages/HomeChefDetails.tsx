@@ -540,44 +540,64 @@ const HomeChefDetails = () => {
               Uploaded Documents
             </Text>
           </View>
-          <View className="flex-row flex-wrap">
-            {[
-              ["Profile Photo", chef.profile_photo],
-              ["Cooking Area", chef.cooking_area_photo],
-              ["Passbook", chef.passbook_image],
-              ["Aadhaar Front", chef.aadhaar_front_url],
-              ["Aadhaar Back", chef.aadhaar_back_url],
-              ["PAN Card", chef.pan_card_url],
-              ["Identity Selfie", chef.selfie_verification_url],
-            ].map(([label, value]) => {
-              const uri = resolveDocumentUri(value, "homechefs");
+
+          {(() => {
+            const documentEntries = [
+              ["Profile Photo", chef.profile_photo ?? chef.profile_image ?? chef.profile_photo_url ?? chef.profile_image_url],
+              ["Cooking Area", chef.cooking_area_photo ?? chef.cooking_area_image ?? chef.cooking_area_url],
+              ["Passbook", chef.passbook_image ?? chef.passbook_image_url ?? chef.passbook_url],
+              ["Aadhaar Front", chef.aadhaar_front_url ?? chef.aadhaar_front ?? chef.aadhaar_front_image],
+              ["Aadhaar Back", chef.aadhaar_back_url ?? chef.aadhaar_back ?? chef.aadhaar_back_image],
+              ["PAN Card", chef.pan_card_url ?? chef.pan_card ?? chef.pan_image],
+              ["Identity Selfie", chef.selfie_verification_url ?? chef.selfie_verification ?? chef.selfie_url],
+            ].filter(([, value]) => {
+              const v = typeof value === "string" ? value.trim() : value;
+              return !!v && v !== "null" && v !== "undefined" && v !== "/";
+            });
+
+            if (!documentEntries.length) {
               return (
-                <TouchableOpacity
-                  key={label}
-                  disabled={!uri}
-                  onPress={() => uri && Linking.openURL(uri)}
-                  className="w-1/2 p-1.5"
-                >
-                  <View className="bg-slate-950 border border-white/10 rounded-xl p-2">
-                    {uri ? (
-                      <Image
-                        source={{ uri }}
-                        className="w-full h-24 rounded-lg bg-slate-800"
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View className="w-full h-24 rounded-lg bg-slate-800 items-center justify-center">
-                        <Text className="text-slate-500 text-[10px]">Not uploaded</Text>
-                      </View>
-                    )}
-                    <Text className="text-slate-300 text-[10px] font-bold mt-2" numberOfLines={1}>
-                      {label}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                <View className="bg-slate-950 border border-white/10 rounded-xl p-4 items-center justify-center">
+                  <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                    No documents uploaded
+                  </Text>
+                </View>
               );
-            })}
-          </View>
+            }
+
+            return (
+              <View className="flex-row flex-wrap">
+                {documentEntries.map(([label, value]) => {
+                  const uri = resolveDocumentUri(value, "homechefs");
+                  return (
+                    <TouchableOpacity
+                      key={label}
+                      disabled={!uri}
+                      onPress={() => uri && Linking.openURL(uri)}
+                      className="w-1/2 p-1.5"
+                    >
+                      <View className="bg-slate-950 border border-white/10 rounded-xl p-2">
+                        {uri ? (
+                          <Image
+                            source={{ uri }}
+                            className="w-full h-24 rounded-lg bg-slate-800"
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View className="w-full h-24 rounded-lg bg-slate-800 items-center justify-center">
+                            <Text className="text-slate-500 text-[10px]">Not uploaded</Text>
+                          </View>
+                        )}
+                        <Text className="text-slate-300 text-[10px] font-bold mt-2" numberOfLines={1}>
+                          {label}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            );
+          })()}
         </View>
 
         {/* 📖 Creator Story */}

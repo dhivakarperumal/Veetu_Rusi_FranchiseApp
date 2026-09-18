@@ -10,6 +10,7 @@ import {
   Modal,
   ScrollView,
   Linking,
+  Image,
 } from "react-native";
 import { Alert } from "../services/customAlert";
 import { useNavigation } from "@react-navigation/native";
@@ -38,6 +39,39 @@ import {
 import { get, patch, del } from "../services/api";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FloatingActionButton from "../components/FloatingActionButton";
+
+const resolveDocumentUri = (value: any, folderName = "homechefs") => {
+  const candidate = Array.isArray(value)
+    ? value[0]
+    : typeof value === "object"
+      ? value?.uri ?? value?.url ?? value?.path ?? value?.fileUri ?? ""
+      : value;
+
+  const rawValue = typeof candidate === "string" ? candidate.trim() : "";
+
+  if (!rawValue || ["/", ".", "null", "undefined"].includes(rawValue)) {
+    return null;
+  }
+
+  if (/^(https?:|file:|content:|blob:|data:)/i.test(rawValue)) {
+    return rawValue;
+  }
+
+  if (rawValue.startsWith("//")) {
+    return `https:${rawValue}`;
+  }
+
+  const normalized = rawValue.replace(/^\/+/, "");
+  if (!normalized || normalized === "." || normalized === "/") {
+    return null;
+  }
+
+  if (normalized.startsWith("uploads/")) {
+    return `https://veeturusi.qtechx.com/${normalized}`;
+  }
+
+  return `https://veeturusi.qtechx.com/uploads/${folderName}/${normalized.replace(/^uploads\//i, "")}`;
+};
 
 const HomeChef = () => {
   const navigation = useNavigation<any>();
@@ -788,6 +822,69 @@ const HomeChef = () => {
                   </TouchableOpacity>
                 ) : null}
               </View>
+
+              {/* Uploaded Documents */}
+              {(() => {
+                const documentEntries = [
+                  ["Profile Photo", selectedChef?.profile_photo ?? selectedChef?.profile_image ?? selectedChef?.profile_photo_url ?? selectedChef?.profile_image_url],
+                  ["Cooking Area", selectedChef?.cooking_area_photo ?? selectedChef?.cooking_area_image ?? selectedChef?.cooking_area_url],
+                  ["Passbook", selectedChef?.passbook_image ?? selectedChef?.passbook_image_url ?? selectedChef?.passbook_url],
+                  ["Aadhaar Front", selectedChef?.aadhaar_front_url ?? selectedChef?.aadhaar_front ?? selectedChef?.aadhaar_front_image],
+                  ["Aadhaar Back", selectedChef?.aadhaar_back_url ?? selectedChef?.aadhaar_back ?? selectedChef?.aadhaar_back_image],
+                  ["PAN Card", selectedChef?.pan_card_url ?? selectedChef?.pan_card ?? selectedChef?.pan_image],
+                  ["Identity Selfie", selectedChef?.selfie_verification_url ?? selectedChef?.selfie_verification ?? selectedChef?.selfie_url],
+                  ["Introduction Video", selectedChef?.introduction_video ?? selectedChef?.introduction_video_url ?? selectedChef?.intro_video ?? selectedChef?.video_url],
+                  ["Kitchen Video", selectedChef?.kitchen_videos ?? selectedChef?.kitchen_video ?? selectedChef?.kitchen_videos_url],
+                ].filter(([, value]) => {
+                  const normalized = Array.isArray(value) ? value[0] : value;
+                  const v = typeof normalized === "string" ? normalized.trim() : normalized;
+                  return !!v && v !== "null" && v !== "undefined" && v !== "/";
+                });
+
+                if (!documentEntries.length) return null;
+
+                return (
+                  <View className="bg-slate-950 rounded-2xl p-4 mb-6 border border-slate-800">
+                    <Text className="text-emerald-400 text-xs font-black uppercase tracking-wider mb-3">
+                      📄 Uploaded Documents
+                    </Text>
+                    <View className="flex-row flex-wrap">
+                      {documentEntries.map(([label, value]) => {
+                        const uri = resolveDocumentUri(value, "homechefs");
+                        const isVideo = /\.(mp4|mov|avi|m4v|webm)$/i.test(String(value || "")) || /video/i.test(String(label));
+
+                        return (
+                          <TouchableOpacity
+                            key={label}
+                            disabled={!uri}
+                            onPress={() => uri && Linking.openURL(uri)}
+                            className="w-1/2 p-1.5"
+                          >
+                            <View className="bg-slate-900 border border-slate-800 rounded-xl p-2">
+                              {uri && !isVideo ? (
+                                <Image
+                                  source={{ uri }}
+                                  className="w-full h-24 rounded-lg bg-slate-800"
+                                  resizeMode="cover"
+                                />
+                              ) : (
+                                <View className="w-full h-24 rounded-lg bg-slate-800 items-center justify-center px-2">
+                                  <Text className="text-emerald-300 text-[10px] font-black uppercase text-center">
+                                    {isVideo ? "Video" : "No preview"}
+                                  </Text>
+                                </View>
+                              )}
+                              <Text className="text-slate-300 text-[10px] font-bold mt-2" numberOfLines={1}>
+                                {label}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                );
+              })()}
 
               {/* Bank & Business Section */}
               <View className="bg-slate-950 rounded-2xl p-4 mb-6 border border-slate-800">
