@@ -1006,7 +1006,7 @@ const DeliveryPartners = () => {
             </ScrollView>
 
             {/* ================= BOTTOM ACTIONS ================= */}
-            <View className="p-4 border-t border-slate-800 bg-slate-950 flex-row gap-2">
+            <View className="p-3 border-t border-slate-800 bg-slate-950 flex-row gap-2">
 
               <TouchableOpacity
                 onPress={() => {
@@ -1018,11 +1018,11 @@ const DeliveryPartners = () => {
                     partner: target,
                   });
                 }}
-                className="px-4 bg-slate-800 py-3 rounded-2xl items-center flex-row"
+                className="w-16 bg-slate-800 py-3 rounded-2xl items-center justify-center"
               >
                 <Briefcase size={17} color="#cbd5e1" />
 
-                <Text className="text-slate-300 font-bold text-sm uppercase ml-1.5">
+                <Text className="text-slate-300 font-bold text-[10px] uppercase mt-1">
                   Edit
                 </Text>
               </TouchableOpacity>
@@ -1032,9 +1032,14 @@ const DeliveryPartners = () => {
                   onPress={() => {
                     handleStatusChange(selectedPartner, "Approved");
                   }}
-                  className="flex-1 bg-emerald-600 py-3 rounded-2xl items-center"
+                  className="flex-1 min-w-0 bg-emerald-600 py-3 rounded-2xl items-center justify-center px-1"
                 >
-                  <Text className="text-white font-black text-sm uppercase tracking-wider">
+                  <Text
+                    className="text-white font-black text-[11px] uppercase"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.75}
+                  >
                     Approve Partner
                   </Text>
                 </TouchableOpacity>
@@ -1045,9 +1050,14 @@ const DeliveryPartners = () => {
                   onPress={() => {
                     handleStatusChange(selectedPartner, "Rejected");
                   }}
-                  className="flex-1 bg-red-600 py-3 rounded-2xl items-center"
+                  className="flex-1 min-w-0 bg-red-600 py-3 rounded-2xl items-center justify-center px-1"
                 >
-                  <Text className="text-white font-black text-sm uppercase tracking-wider">
+                  <Text
+                    className="text-white font-black text-[11px] uppercase"
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.75}
+                  >
                     Reject Partner
                   </Text>
                 </TouchableOpacity>
@@ -1055,9 +1065,9 @@ const DeliveryPartners = () => {
 
               <TouchableOpacity
                 onPress={() => setIsDetailOpen(false)}
-                className="px-5 bg-slate-800 py-3 rounded-2xl items-center"
+                className="w-16 bg-slate-800 py-3 rounded-2xl items-center justify-center"
               >
-                <Text className="text-slate-300 font-bold text-sm uppercase">
+                <Text className="text-slate-300 font-bold text-[10px] uppercase">
                   Close
                 </Text>
               </TouchableOpacity>
