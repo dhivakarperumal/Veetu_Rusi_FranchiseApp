@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -110,6 +110,12 @@ const STEPS = [
 const EditHomeChef = () => {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
+  const formScrollRef = useRef<ScrollView>(null);
+  const scrollFormToFocusedField = () => {
+    setTimeout(() => {
+      formScrollRef.current?.scrollToEnd({ animated: true });
+    }, 350);
+  };
   const route = useRoute<any>();
   const { chefId, chef: initialChef } = route.params || {};
 
@@ -731,7 +737,7 @@ const EditHomeChef = () => {
   return (
     <SafeAreaView className="flex-1 bg-slate-950">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         {/* Header */}
@@ -793,7 +799,13 @@ const EditHomeChef = () => {
         </ScrollView>
 
         {/* Step Content */}
-        <ScrollView className="flex-1 p-4" contentContainerStyle={{ paddingBottom: 60 }}>
+        <ScrollView
+          ref={formScrollRef}
+          className="flex-1 p-4"
+          keyboardShouldPersistTaps="handled"
+          onFocus={scrollFormToFocusedField}
+          contentContainerStyle={{ paddingBottom: 280 }}
+        >
           {/* STEP 1: PERSONAL */}
           {currentStep === 1 && (
             <View className="gap-5">
@@ -939,6 +951,7 @@ const EditHomeChef = () => {
                   value={form.password}
                   onChangeText={(t) => updateField("password", t)}
                   secureTextEntry
+                  onFocus={scrollFormToFocusedField}
                   className="bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 text-white text-xs"
                   placeholder="New password (optional)"
                   placeholderTextColor="#64748b"

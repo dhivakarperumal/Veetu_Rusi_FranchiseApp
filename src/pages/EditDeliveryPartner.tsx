@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -98,6 +98,12 @@ const STEPS = [
 const EditDeliveryPartner = () => {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
+  const formScrollRef = useRef<ScrollView>(null);
+  const scrollFormToFocusedField = () => {
+    setTimeout(() => {
+      formScrollRef.current?.scrollToEnd({ animated: true });
+    }, 350);
+  };
   const route = useRoute<any>();
   const { partnerId, partner: initialPartner } = route.params || {};
 
@@ -528,7 +534,7 @@ const EditDeliveryPartner = () => {
   return (
     <SafeAreaView className="flex-1 bg-slate-950">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         {/* Header */}
@@ -591,8 +597,11 @@ const EditDeliveryPartner = () => {
 
         {/* Step Content */}
         <ScrollView
+          ref={formScrollRef}
           className="flex-1 px-5"
-          contentContainerStyle={{ paddingTop: 20, paddingBottom: 60 }}
+          keyboardShouldPersistTaps="handled"
+          onFocus={scrollFormToFocusedField}
+          contentContainerStyle={{ paddingTop: 20, paddingBottom: 280 }}
         >
           {/* STEP 1: PERSONAL */}
           {currentStep === 1 && (
@@ -745,6 +754,7 @@ const EditDeliveryPartner = () => {
                   value={form.password}
                   onChangeText={(t) => updateField("password", t)}
                   secureTextEntry
+                  onFocus={scrollFormToFocusedField}
                   className="bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 text-white text-xs"
                   placeholder="New password (optional)"
                   placeholderTextColor="#64748b"
