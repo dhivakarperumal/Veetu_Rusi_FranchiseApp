@@ -213,6 +213,11 @@ const AddHomeChef = () => {
     const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
     const formScrollRef = useRef<ScrollView>(null);
+    const scrollFormToFocusedField = () => {
+        setTimeout(() => {
+            formScrollRef.current?.scrollToEnd({ animated: true });
+        }, 350);
+    };
 
     const [form, setForm] = useState(emptyForm);
     const [currentStep, setCurrentStep] = useState(1);
@@ -969,14 +974,10 @@ const AddHomeChef = () => {
                     ref={formScrollRef}
                     className="flex-1"
                     keyboardShouldPersistTaps="handled"
-                    onFocus={() => {
-                        requestAnimationFrame(() =>
-                            formScrollRef.current?.scrollToEnd({ animated: true })
-                        );
-                    }}
+                    onFocus={scrollFormToFocusedField}
                     contentContainerStyle={{
                         paddingTop: 20,
-                        paddingBottom: 200,
+                        paddingBottom: 280,
                     }}
                 >
                     {/* ================================================= */}
@@ -1127,6 +1128,7 @@ const AddHomeChef = () => {
                                         placeholder="Password"
                                         placeholderTextColor="#64748b"
                                         className={`${inputClass} pr-12`}
+                                        onFocus={scrollFormToFocusedField}
                                     />
                                     <TouchableOpacity
                                         onPress={() => setShowPassword(!showPassword)}
@@ -1154,6 +1156,7 @@ const AddHomeChef = () => {
                                         placeholder="Confirm Password"
                                         placeholderTextColor="#64748b"
                                         className={`${inputClass} pr-12`}
+                                        onFocus={scrollFormToFocusedField}
                                     />
                                     <TouchableOpacity
                                         onPress={() =>

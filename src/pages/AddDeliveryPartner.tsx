@@ -241,6 +241,11 @@ const AddDeliveryPartner = () => {
     const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
     const formScrollRef = useRef<ScrollView>(null);
+    const scrollFormToFocusedField = () => {
+        setTimeout(() => {
+            formScrollRef.current?.scrollToEnd({ animated: true });
+        }, 350);
+    };
 
     const [form, setForm] = useState(emptyForm);
     const [currentStep, setCurrentStep] = useState(1);
@@ -898,14 +903,10 @@ const AddDeliveryPartner = () => {
                     ref={formScrollRef}
                     className="flex-1"
                     keyboardShouldPersistTaps="handled"
-                    onFocus={() => {
-                        requestAnimationFrame(() =>
-                            formScrollRef.current?.scrollToEnd({ animated: true })
-                        );
-                    }}
+                    onFocus={scrollFormToFocusedField}
                     contentContainerStyle={{
                         paddingTop: 20,
-                        paddingBottom: 120,
+                        paddingBottom: 280,
                     }}
                 >
                     {/* ================================================= */}
@@ -1080,6 +1081,7 @@ const AddDeliveryPartner = () => {
                                         placeholder="Password"
                                         placeholderTextColor="#64748b"
                                         className={`${inputClass} pr-12`}
+                                        onFocus={scrollFormToFocusedField}
                                     />
                                     <TouchableOpacity
                                         onPress={() => setShowPassword(!showPassword)}
@@ -1107,6 +1109,7 @@ const AddDeliveryPartner = () => {
                                         placeholder="Confirm Password"
                                         placeholderTextColor="#64748b"
                                         className={`${inputClass} pr-12`}
+                                        onFocus={scrollFormToFocusedField}
                                     />
                                     <TouchableOpacity
                                         onPress={() =>
