@@ -600,10 +600,20 @@ const HomeChef = () => {
         }
       />
 
-      <FloatingActionButton
-        onPress={() => navigation.navigate("AddHomeChef")}
-        label="Add home chef"
-      />
+      <View
+        style={{
+          position: "absolute",
+          right: 20,
+          bottom: 25,
+          zIndex: 9999,
+          elevation: 20,
+        }}
+      >
+        <FloatingActionButton
+          onPress={() => navigation.navigate("AddHomeChef")}
+          label="Add home chef"
+        />
+      </View>
 
       <Modal
         visible={!!confirmation}
