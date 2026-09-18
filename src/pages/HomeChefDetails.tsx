@@ -33,12 +33,37 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { get, patch, del } from "../services/api";
 
 const resolveDocumentUri = (value: any) => {
-  const rawValue = typeof value === "object" ? value?.uri : value;
-  if (!rawValue || typeof rawValue !== "string") return null;
-  if (rawValue.startsWith("http://") || rawValue.startsWith("https://")) {
+  const candidate =
+    typeof value === "object"
+      ? value?.uri ?? value?.url ?? value?.path ?? value?.fileUri ?? ""
+      : value;
+
+  const rawValue = typeof candidate === "string" ? candidate.trim() : "";
+
+  if (
+    !rawValue ||
+    rawValue === "/" ||
+    rawValue === "." ||
+    rawValue === "null" ||
+    rawValue === "undefined"
+  ) {
+    return null;
+  }
+
+  if (/^(https?:|file:|content:|blob:|data:)/i.test(rawValue)) {
     return rawValue;
   }
-  return `https://veeturusi.qtechx.com/${rawValue.replace(/^\/+/, "")}`;
+
+  if (rawValue.startsWith("//")) {
+    return `https:${rawValue}`;
+  }
+
+  const normalized = rawValue.replace(/^\/+/, "");
+  if (!normalized || normalized === "." || normalized === "/") {
+    return null;
+  }
+
+  return `https://veeturusi.qtechx.com/${normalized}`;
 };
 
 const HomeChefDetails = () => {
