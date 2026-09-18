@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
     View,
     Text,
@@ -240,6 +240,7 @@ const emptyForm = {
 const AddDeliveryPartner = () => {
     const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
+    const formScrollRef = useRef<ScrollView>(null);
 
     const [form, setForm] = useState(emptyForm);
     const [currentStep, setCurrentStep] = useState(1);
@@ -811,7 +812,7 @@ const AddDeliveryPartner = () => {
         <SafeAreaView className="flex-1 bg-slate-950" edges={["top", "bottom"]}>
             <KeyboardAvoidingView
                 className="flex-1"
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
             >
                 {/* ================= HEADER ================= */}
                 <View className="px-5 pt-3 pb-3 border-b border-slate-800 flex-row items-center justify-between">
@@ -894,11 +895,17 @@ const AddDeliveryPartner = () => {
                 </View>
 
                 <ScrollView
+                    ref={formScrollRef}
                     className="flex-1"
                     keyboardShouldPersistTaps="handled"
+                    onFocus={() => {
+                        requestAnimationFrame(() =>
+                            formScrollRef.current?.scrollToEnd({ animated: true })
+                        );
+                    }}
                     contentContainerStyle={{
                         paddingTop: 20,
-                        paddingBottom: 40,
+                        paddingBottom: 120,
                     }}
                 >
                     {/* ================================================= */}
