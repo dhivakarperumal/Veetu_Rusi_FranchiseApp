@@ -9,6 +9,8 @@ import {
   TextInput,
   Modal,
   ScrollView,
+  Image,
+  Linking,
 } from "react-native";
 import { Alert } from "../services/customAlert";
 import { useNavigation } from "@react-navigation/native";
@@ -32,10 +34,20 @@ import {
   ChevronDown,
   Pencil,
   Briefcase,
+  FileText,
 } from "lucide-react-native";
 
 import { get, patch, del } from "../services/api";
 import FloatingActionButton from "../components/FloatingActionButton";
+
+const resolveDocumentUri = (value: any) => {
+  const rawValue = typeof value === "object" ? value?.uri : value;
+  if (!rawValue || typeof rawValue !== "string") return null;
+  if (rawValue.startsWith("http://") || rawValue.startsWith("https://")) {
+    return rawValue;
+  }
+  return `https://veeturusi.qtechx.com/${rawValue.replace(/^\/+/, "")}`;
+};
 
 const DeliveryPartners = () => {
   const navigation = useNavigation<any>();
@@ -960,6 +972,57 @@ const DeliveryPartners = () => {
                     </Text>
                   </View>
 
+                </View>
+              </View>
+
+              {/* ================= UPLOADED DOCUMENTS ================= */}
+              <View className="bg-slate-950 rounded-2xl p-4 mb-3 border border-slate-800">
+                <View className="flex-row items-center mb-3">
+                  <FileText size={16} color="#34d399" />
+                  <Text className="text-emerald-400 text-sm font-black uppercase tracking-wider ml-2">
+                    Uploaded Documents
+                  </Text>
+                </View>
+                <View className="flex-row flex-wrap">
+                  {[
+                    ["Profile Photo", selectedPartner?.profile_photo],
+                    ["Vehicle Photo", selectedPartner?.vehicle_front_photo],
+                    ["License Front", selectedPartner?.license_front_image],
+                    ["License Back", selectedPartner?.license_back_image],
+                    ["Aadhaar Front", selectedPartner?.aadhaar_front_url],
+                    ["Aadhaar Back", selectedPartner?.aadhaar_back_url],
+                    ["PAN Card", selectedPartner?.pan_card_url],
+                    ["Identity Selfie", selectedPartner?.selfie_verification_url],
+                    ["Selfie With Vehicle", selectedPartner?.selfie_with_vehicle],
+                    ["Selfie With Aadhaar", selectedPartner?.selfie_with_aadhaar],
+                  ].map(([label, value]) => {
+                    const uri = resolveDocumentUri(value);
+                    return (
+                      <TouchableOpacity
+                        key={label}
+                        disabled={!uri}
+                        onPress={() => uri && Linking.openURL(uri)}
+                        className="w-1/2 p-1.5"
+                      >
+                        <View className="bg-slate-900 border border-slate-800 rounded-xl p-2">
+                          {uri ? (
+                            <Image
+                              source={{ uri }}
+                              className="w-full h-24 rounded-lg bg-slate-800"
+                              resizeMode="cover"
+                            />
+                          ) : (
+                            <View className="w-full h-24 rounded-lg bg-slate-800 items-center justify-center">
+                              <Text className="text-slate-500 text-[10px]">Not uploaded</Text>
+                            </View>
+                          )}
+                          <Text className="text-slate-300 text-[10px] font-bold mt-2" numberOfLines={1}>
+                            {label}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
 

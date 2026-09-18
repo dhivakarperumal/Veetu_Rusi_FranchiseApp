@@ -32,6 +32,15 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { get, patch, del } from "../services/api";
 
+const resolveDocumentUri = (value: any) => {
+  const rawValue = typeof value === "object" ? value?.uri : value;
+  if (!rawValue || typeof rawValue !== "string") return null;
+  if (rawValue.startsWith("http://") || rawValue.startsWith("https://")) {
+    return rawValue;
+  }
+  return `https://veeturusi.qtechx.com/${rawValue.replace(/^\/+/, "")}`;
+};
+
 const HomeChefDetails = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
@@ -487,6 +496,54 @@ const HomeChefDetails = () => {
                 FSSAI: {chef.fssai_available || "No"} &bull; GST: {chef.gst_available || "No"}
               </Text>
             </View>
+          </View>
+        </View>
+
+        {/* 📄 Uploaded Documents */}
+        <View className="bg-slate-900 border border-white/10 rounded-2xl p-4 mb-4">
+          <View className="flex-row items-center mb-3">
+            <FileText size={16} color="#34d399" />
+            <Text className="text-emerald-400 text-xs font-black uppercase tracking-wider ml-2">
+              Uploaded Documents
+            </Text>
+          </View>
+          <View className="flex-row flex-wrap">
+            {[
+              ["Profile Photo", chef.profile_photo],
+              ["Cooking Area", chef.cooking_area_photo],
+              ["Passbook", chef.passbook_image],
+              ["Aadhaar Front", chef.aadhaar_front_url],
+              ["Aadhaar Back", chef.aadhaar_back_url],
+              ["PAN Card", chef.pan_card_url],
+              ["Identity Selfie", chef.selfie_verification_url],
+            ].map(([label, value]) => {
+              const uri = resolveDocumentUri(value);
+              return (
+                <TouchableOpacity
+                  key={label}
+                  disabled={!uri}
+                  onPress={() => uri && Linking.openURL(uri)}
+                  className="w-1/2 p-1.5"
+                >
+                  <View className="bg-slate-950 border border-white/10 rounded-xl p-2">
+                    {uri ? (
+                      <Image
+                        source={{ uri }}
+                        className="w-full h-24 rounded-lg bg-slate-800"
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View className="w-full h-24 rounded-lg bg-slate-800 items-center justify-center">
+                        <Text className="text-slate-500 text-[10px]">Not uploaded</Text>
+                      </View>
+                    )}
+                    <Text className="text-slate-300 text-[10px] font-bold mt-2" numberOfLines={1}>
+                      {label}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
