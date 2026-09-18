@@ -1040,7 +1040,12 @@ const Orders = () => {
             <ScrollView
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ justifyContent: "center", paddingVertical: 20 }}
+              contentContainerStyle={{
+                justifyContent: "center",
+                alignItems: "center",
+                paddingVertical: 20,
+                flexGrow: 1,
+              }}
               className="w-full"
             >
               <View

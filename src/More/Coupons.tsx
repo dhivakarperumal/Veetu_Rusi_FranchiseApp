@@ -902,32 +902,43 @@ const Coupons = () => {
         statusBarTranslucent
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <View className="flex-1 bg-black/80 justify-end">
-          <View
-            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5 max-h-[88%]"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
-          >
-            {/* Modal Header */}
-            <View className="flex-row items-center justify-between mb-4">
-              <View>
-                <Text className="text-white text-lg font-black">
-                  {editingCoupon ? "Edit Coupon" : "Create New Coupon"}
-                </Text>
-                <Text className="text-slate-400 text-xs mt-0.5">
-                  Configure discount settings, scope and limits
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setIsModalOpen(false)}
-                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 32 : 0}
+          className="flex-1 bg-black/80"
+        >
+          <View className="flex-1 items-center justify-center px-4">
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ justifyContent: "center", alignItems: "center", paddingVertical: 20, flexGrow: 1 }}
+              className="w-full"
+            >
+              <View
+                className="w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl p-5"
+                style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
               >
-                <X size={17} color="#cbd5e1" />
-              </TouchableOpacity>
-            </View>
+                {/* Modal Header */}
+                <View className="flex-row items-center justify-between mb-4">
+                  <View>
+                    <Text className="text-white text-lg font-black">
+                      {editingCoupon ? "Edit Coupon" : "Create New Coupon"}
+                    </Text>
+                    <Text className="text-slate-400 text-xs mt-0.5">
+                      Configure discount settings, scope and limits
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => setIsModalOpen(false)}
+                    className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+                  >
+                    <X size={17} color="#cbd5e1" />
+                  </TouchableOpacity>
+                </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} className="space-y-4">
-              {/* Code & Name */}
-              <View className="flex-row gap-3">
+                <View className="space-y-4">
+                  {/* Code & Name */}
+                  <View className="flex-row gap-3">
                 <View className="flex-1">
                   <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                     Coupon Code *
@@ -958,10 +969,10 @@ const Coupons = () => {
                     className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-xs font-bold"
                   />
                 </View>
-              </View>
+                  </View>
 
-              {/* Description */}
-              <View>
+                  {/* Description */}
+                  <View>
                 <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                   Description
                 </Text>
@@ -976,10 +987,10 @@ const Coupons = () => {
                   numberOfLines={2}
                   className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-xs leading-5"
                 />
-              </View>
+                  </View>
 
-              {/* Discount Type & Value */}
-              <View className="flex-row gap-3">
+                  {/* Discount Type & Value */}
+                  <View className="flex-row gap-3">
                 <View className="flex-1">
                   <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                     Discount Type *
@@ -1044,10 +1055,10 @@ const Coupons = () => {
                     className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-emerald-400 text-xs font-bold"
                   />
                 </View>
-              </View>
+                  </View>
 
-              {/* Min Order Value */}
-              <View>
+                  {/* Min Order Value */}
+                  <View>
                 <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                   Min Order Value (₹)
                 </Text>
@@ -1061,10 +1072,10 @@ const Coupons = () => {
                   keyboardType="numeric"
                   className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-xs font-bold"
                 />
-              </View>
+                  </View>
 
-              {/* Start Date & Expiry Date with DatePickerModal */}
-              <View className="flex-row gap-3">
+                  {/* Start Date & Expiry Date with DatePickerModal */}
+                  <View className="flex-row gap-3">
                 {/* Start Date */}
                 <View className="flex-1">
                   <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
@@ -1124,10 +1135,10 @@ const Coupons = () => {
                     </TouchableOpacity>
                   </View>
                 </View>
-              </View>
+                  </View>
 
-              {/* Usage Limits */}
-              <View className="flex-row gap-3">
+                  {/* Usage Limits */}
+                  <View className="flex-row gap-3">
                 <View className="flex-1">
                   <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                     Global Limit
@@ -1159,10 +1170,10 @@ const Coupons = () => {
                     className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-xs font-bold"
                   />
                 </View>
-              </View>
+                  </View>
 
-              {/* Status Selector */}
-              <View>
+                  {/* Status Selector */}
+                  <View>
                 <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
                   Coupon Status
                 </Text>
@@ -1213,10 +1224,10 @@ const Coupons = () => {
                     </Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+                  </View>
 
-              {/* Coupon Scope */}
-              <View className="bg-slate-950 border border-slate-800 rounded-3xl p-4 mb-2">
+                  {/* Coupon Scope */}
+                  <View className="bg-slate-950 border border-slate-800 rounded-3xl p-4 mb-2">
                 <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">
                   Coupon Applies To
                 </Text>
@@ -1365,25 +1376,27 @@ const Coupons = () => {
                     </ScrollView>
                   </View>
                 )}
-              </View>
+                  </View>
 
-              {/* Submit Button */}
-              <TouchableOpacity
-                disabled={formSubmitting}
-                onPress={handleSubmitForm}
-                className="bg-emerald-600 rounded-2xl py-4 items-center mb-2 shadow-lg"
-              >
-                {formSubmitting ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text className="text-white font-black text-xs uppercase tracking-wider">
-                    {editingCoupon ? "Save Changes" : "Create Coupon"}
-                  </Text>
-                )}
-              </TouchableOpacity>
+                  {/* Submit Button */}
+                  <TouchableOpacity
+                    disabled={formSubmitting}
+                    onPress={handleSubmitForm}
+                    className="bg-emerald-600 rounded-2xl py-4 items-center mb-2 shadow-lg"
+                  >
+                    {formSubmitting ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text className="text-white font-black text-xs uppercase tracking-wider">
+                        {editingCoupon ? "Save Changes" : "Create Coupon"}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
             </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* ================================================= */}

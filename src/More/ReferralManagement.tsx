@@ -1193,34 +1193,42 @@ const ReferralManagement = () => {
       <Modal
         visible={showCreateModal}
         transparent
-        animationType="slide"
+        animationType="fade"
         statusBarTranslucent
         onRequestClose={() => setShowCreateModal(false)}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className="flex-1 justify-end bg-black/80"
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 32 : 0}
+          className="flex-1 bg-black/80"
         >
-          <View
-            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-6"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
-          >
-            <View className="flex-row items-center justify-between mb-4">
-              <View>
-                <Text className="text-white text-xl font-black">Create Referral Code</Text>
-                <Text className="text-slate-400 text-xs mt-0.5">
-                  Generate and assign a referral code to a user
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => setShowCreateModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-800 items-center justify-center"
+          <View className="flex-1 items-center justify-center px-4">
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ justifyContent: "center", alignItems: "center", paddingVertical: 20, flexGrow: 1 }}
+              className="w-full"
+            >
+              <View
+                className="w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl p-6"
+                style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
               >
-                <X size={15} color="#94a3b8" />
-              </TouchableOpacity>
-            </View>
+                <View className="flex-row items-center justify-between mb-4">
+                  <View>
+                    <Text className="text-white text-xl font-black">Create Referral Code</Text>
+                    <Text className="text-slate-400 text-xs mt-0.5">
+                      Generate and assign a referral code to a user
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => setShowCreateModal(false)}
+                    className="w-8 h-8 rounded-full bg-slate-800 items-center justify-center"
+                  >
+                    <X size={15} color="#94a3b8" />
+                  </TouchableOpacity>
+                </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} className="max-h-[420px]">
+                <ScrollView showsVerticalScrollIndicator={false} className="max-h-[420px]">
               {/* Type Select */}
               <Text className="text-slate-300 text-xs font-bold mb-1.5">Referral Type</Text>
               <View className="flex-row gap-2 mb-4">
@@ -1337,25 +1345,27 @@ const ReferralManagement = () => {
               />
             </ScrollView>
 
-            <View className="flex-row gap-3 pt-3 border-t border-white/10">
-              <TouchableOpacity
-                onPress={() => setShowCreateModal(false)}
-                className="flex-1 rounded-2xl border border-white/10 bg-slate-800 py-3.5 items-center justify-center"
-              >
-                <Text className="text-slate-300 font-bold text-xs">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleCreateCode}
-                disabled={creatingCode}
-                className="flex-1 rounded-2xl bg-emerald-600 py-3.5 items-center justify-center"
-              >
-                {creatingCode ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
-                ) : (
-                  <Text className="text-white font-black text-xs uppercase">Create Code</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+                <View className="flex-row gap-3 pt-3 border-t border-white/10">
+                  <TouchableOpacity
+                    onPress={() => setShowCreateModal(false)}
+                    className="flex-1 rounded-2xl border border-white/10 bg-slate-800 py-3.5 items-center justify-center"
+                  >
+                    <Text className="text-slate-300 font-bold text-xs">Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleCreateCode}
+                    disabled={creatingCode}
+                    className="flex-1 rounded-2xl bg-emerald-600 py-3.5 items-center justify-center"
+                  >
+                    {creatingCode ? (
+                      <ActivityIndicator size="small" color="#ffffff" />
+                    ) : (
+                      <Text className="text-white font-black text-xs uppercase">Create Code</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </Modal>

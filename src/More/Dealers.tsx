@@ -620,184 +620,183 @@ const Dealers = () => {
         onRequestClose={() => setShowAddModal(false)}
       >
         <KeyboardAvoidingView
-          behavior={
-            Platform.OS === "ios"
-              ? "padding"
-              : undefined
-          }
-          className="flex-1 justify-end bg-black/80"
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 32 : 0}
+          className="flex-1 bg-black/80"
         >
-
-          <View
-            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5 max-h-[88%]"
-            style={{
-              paddingBottom:
-                Math.max(insets.bottom, 20) + 16,
-            }}
-          >
-
-            {/* MODAL HEADER */}
-
-            <View className="flex-row items-center justify-between mb-5">
-
-              <View>
-                <Text className="text-white text-lg font-black">
-                  Add Dealer
-                </Text>
-
-                <Text className="text-slate-400 text-xs mt-0.5">
-                  Create a new dealer partnership
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                onPress={() => setShowAddModal(false)}
-                className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
-              >
-                <X
-                  size={17}
-                  color="#cbd5e1"
-                />
-              </TouchableOpacity>
-
-            </View>
-
+          <View className="flex-1 items-center justify-center px-4">
             <ScrollView
+              keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ justifyContent: "center", alignItems: "center", paddingVertical: 20, flexGrow: 1 }}
+              className="w-full"
             >
-
-              {/* NAME */}
-
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
-                Dealer Name *
-              </Text>
-
-              <TextInput
-                value={newDealer.name}
-                onChangeText={(text) =>
-                  setNewDealer({
-                    ...newDealer,
-                    name: text,
-                  })
-                }
-                placeholder="Enter dealer name"
-                placeholderTextColor="#64748b"
-                className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-4"
-              />
-
-              {/* CONTACT */}
-
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
-                Contact Person
-              </Text>
-
-              <TextInput
-                value={newDealer.contact}
-                onChangeText={(text) =>
-                  setNewDealer({
-                    ...newDealer,
-                    contact: text,
-                  })
-                }
-                placeholder="Enter contact person"
-                placeholderTextColor="#64748b"
-                className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-4"
-              />
-
-              {/* PHONE */}
-
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
-                Phone *
-              </Text>
-
-              <TextInput
-                value={newDealer.phone}
-                onChangeText={(text) =>
-                  setNewDealer({
-                    ...newDealer,
-                    phone: text,
-                  })
-                }
-                placeholder="Enter phone number"
-                placeholderTextColor="#64748b"
-                keyboardType="phone-pad"
-                className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-4"
-              />
-
-              {/* EMAIL */}
-
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
-                Email
-              </Text>
-
-              <TextInput
-                value={newDealer.email}
-                onChangeText={(text) =>
-                  setNewDealer({
-                    ...newDealer,
-                    email: text,
-                  })
-                }
-                placeholder="Enter email"
-                placeholderTextColor="#64748b"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-4"
-              />
-
-              {/* LOCATION */}
-
-              <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
-                Location
-              </Text>
-
-              <TextInput
-                value={newDealer.location}
-                onChangeText={(text) =>
-                  setNewDealer({
-                    ...newDealer,
-                    location: text,
-                  })
-                }
-                placeholder="Enter location"
-                placeholderTextColor="#64748b"
-                className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-5"
-              />
-
-              {/* SAVE */}
-
-              <TouchableOpacity
-                disabled={formSubmitting}
-                onPress={submitDealer}
-                className="bg-cyan-600 rounded-2xl py-4 items-center"
+              <View
+                className="w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl p-5"
+                style={{
+                  paddingBottom:
+                    Math.max(insets.bottom, 20) + 16,
+                }}
               >
 
-                {formSubmitting ? (
-                  <ActivityIndicator
-                    size="small"
-                    color="#fff"
-                  />
-                ) : (
-                  <View className="flex-row items-center">
+                {/* MODAL HEADER */}
 
-                    <Plus
-                      size={17}
-                      color="#fff"
-                    />
+                <View className="flex-row items-center justify-between mb-5">
 
-                    <Text className="text-white font-black text-xs uppercase tracking-wider ml-2">
+                  <View>
+                    <Text className="text-white text-lg font-black">
                       Add Dealer
                     </Text>
 
+                    <Text className="text-slate-400 text-xs mt-0.5">
+                      Create a new dealer partnership
+                    </Text>
                   </View>
-                )}
 
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setShowAddModal(false)}
+                    className="w-9 h-9 rounded-xl bg-slate-800 items-center justify-center"
+                  >
+                    <X
+                      size={17}
+                      color="#cbd5e1"
+                    />
+                  </TouchableOpacity>
 
+                </View>
+
+                <View className="space-y-4">
+                  {/* NAME */}
+
+                  <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
+                    Dealer Name *
+                  </Text>
+
+                  <TextInput
+                    value={newDealer.name}
+                    onChangeText={(text) =>
+                      setNewDealer({
+                        ...newDealer,
+                        name: text,
+                      })
+                    }
+                    placeholder="Enter dealer name"
+                    placeholderTextColor="#64748b"
+                    className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-4"
+                  />
+
+                  {/* CONTACT */}
+
+                  <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
+                    Contact Person
+                  </Text>
+
+                  <TextInput
+                    value={newDealer.contact}
+                    onChangeText={(text) =>
+                      setNewDealer({
+                        ...newDealer,
+                        contact: text,
+                      })
+                    }
+                    placeholder="Enter contact person"
+                    placeholderTextColor="#64748b"
+                    className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-4"
+                  />
+
+                  {/* PHONE */}
+
+                  <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
+                    Phone *
+                  </Text>
+
+                  <TextInput
+                    value={newDealer.phone}
+                    onChangeText={(text) =>
+                      setNewDealer({
+                        ...newDealer,
+                        phone: text,
+                      })
+                    }
+                    placeholder="Enter phone number"
+                    placeholderTextColor="#64748b"
+                    keyboardType="phone-pad"
+                    className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-4"
+                  />
+
+                  {/* EMAIL */}
+
+                  <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
+                    Email
+                  </Text>
+
+                  <TextInput
+                    value={newDealer.email}
+                    onChangeText={(text) =>
+                      setNewDealer({
+                        ...newDealer,
+                        email: text,
+                      })
+                    }
+                    placeholder="Enter email"
+                    placeholderTextColor="#64748b"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-4"
+                  />
+
+                  {/* LOCATION */}
+
+                  <Text className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">
+                    Location
+                  </Text>
+
+                  <TextInput
+                    value={newDealer.location}
+                    onChangeText={(text) =>
+                      setNewDealer({
+                        ...newDealer,
+                        location: text,
+                      })
+                    }
+                    placeholder="Enter location"
+                    placeholderTextColor="#64748b"
+                    className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white text-xs mb-5"
+                  />
+
+                  {/* SAVE */}
+
+                  <TouchableOpacity
+                    disabled={formSubmitting}
+                    onPress={submitDealer}
+                    className="bg-cyan-600 rounded-2xl py-4 items-center"
+                  >
+
+                    {formSubmitting ? (
+                      <ActivityIndicator
+                        size="small"
+                        color="#fff"
+                      />
+                    ) : (
+                      <View className="flex-row items-center">
+
+                        <Plus
+                          size={17}
+                          color="#fff"
+                        />
+
+                        <Text className="text-white font-black text-xs uppercase tracking-wider ml-2">
+                          Add Dealer
+                        </Text>
+
+                      </View>
+                    )}
+
+                  </TouchableOpacity>
+                </View>
+              </View>
             </ScrollView>
-
           </View>
-
         </KeyboardAvoidingView>
       </Modal>
 
