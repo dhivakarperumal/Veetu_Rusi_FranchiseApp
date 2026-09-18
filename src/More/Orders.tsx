@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   RefreshControl,
   ScrollView,
   Text,
@@ -1029,72 +1031,85 @@ const Orders = () => {
         animationType="fade"
         onRequestClose={() => setModalOrder(null)}
       >
-        <View className="flex-1 justify-end bg-black/80">
-          <View
-            className="rounded-t-3xl bg-slate-900 border-t border-white/10 p-6"
-            style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
-          >
-            <Text className="text-xl font-black text-white">
-              {modalStatus} Details
-            </Text>
-            <Text className="mt-1 text-xs text-slate-400">
-              Order #ORD-{modalOrder?.id}
-            </Text>
-
-            {modalStatus === "Shipping" ? (
-              <>
-                <TextInput
-                  value={tracking}
-                  onChangeText={setTracking}
-                  placeholder="Tracking / AWB number *"
-                  placeholderTextColor="#64748b"
-                  className="mt-4 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
-                />
-                <TextInput
-                  value={courier}
-                  onChangeText={setCourier}
-                  placeholder="Courier partner name *"
-                  placeholderTextColor="#64748b"
-                  className="mt-3 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
-                />
-              </>
-            ) : (
-              <TextInput
-                value={reason}
-                onChangeText={setReason}
-                placeholder="Cancellation reason *"
-                placeholderTextColor="#64748b"
-                multiline
-                numberOfLines={3}
-                className="mt-4 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
-              />
-            )}
-
-            <View className="mt-5 flex-row gap-3">
-              <TouchableOpacity
-                onPress={() => setModalOrder(null)}
-                className="flex-1 rounded-2xl bg-slate-800 border border-white/10 py-3.5 items-center"
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 32 : 0}
+          className="flex-1"
+        >
+          <View className="flex-1 items-center justify-center bg-black/80 px-4">
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ justifyContent: "center", paddingVertical: 20 }}
+              className="w-full"
+            >
+              <View
+                className="rounded-3xl bg-slate-900 border border-white/10 p-6"
+                style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
               >
-                <Text className="font-bold text-xs uppercase text-slate-300">
-                  Cancel
+                <Text className="text-xl font-black text-white">
+                  {modalStatus} Details
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                disabled={updating}
-                onPress={submitModal}
-                className="flex-1 rounded-2xl bg-emerald-600 py-3.5 items-center"
-              >
-                {updating ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                <Text className="mt-1 text-xs text-slate-400">
+                  Order #ORD-{modalOrder?.id}
+                </Text>
+
+                {modalStatus === "Shipping" ? (
+                  <>
+                    <TextInput
+                      value={tracking}
+                      onChangeText={setTracking}
+                      placeholder="Tracking / AWB number *"
+                      placeholderTextColor="#64748b"
+                      className="mt-4 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                    />
+                    <TextInput
+                      value={courier}
+                      onChangeText={setCourier}
+                      placeholder="Courier partner name *"
+                      placeholderTextColor="#64748b"
+                      className="mt-3 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                    />
+                  </>
                 ) : (
-                  <Text className="font-black text-xs uppercase tracking-wider text-white">
-                    Confirm
-                  </Text>
+                  <TextInput
+                    value={reason}
+                    onChangeText={setReason}
+                    placeholder="Cancellation reason *"
+                    placeholderTextColor="#64748b"
+                    multiline
+                    numberOfLines={3}
+                    className="mt-4 rounded-2xl bg-slate-950 border border-slate-800 px-4 py-3 text-white text-xs font-semibold"
+                  />
                 )}
-              </TouchableOpacity>
-            </View>
+
+                <View className="mt-5 flex-row gap-3">
+                  <TouchableOpacity
+                    onPress={() => setModalOrder(null)}
+                    className="flex-1 rounded-2xl bg-slate-800 border border-white/10 py-3.5 items-center"
+                  >
+                    <Text className="font-bold text-xs uppercase text-slate-300">
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    disabled={updating}
+                    onPress={submitModal}
+                    className="flex-1 rounded-2xl bg-emerald-600 py-3.5 items-center"
+                  >
+                    {updating ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text className="font-black text-xs uppercase tracking-wider text-white">
+                        Confirm
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <CreateOrderModal
