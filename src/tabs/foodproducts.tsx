@@ -9,9 +9,9 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-  Alert,
   ScrollView,
 } from "react-native";
+import { Alert } from "../services/customAlert";
 import {
   Utensils,
   CheckCircle,

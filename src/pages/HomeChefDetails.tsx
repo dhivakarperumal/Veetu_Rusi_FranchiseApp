@@ -5,10 +5,10 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Linking,
   Image,
 } from "react-native";
+import { Alert } from "../services/customAlert";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ArrowLeft,

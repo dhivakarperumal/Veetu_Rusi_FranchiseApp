@@ -8,10 +8,10 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-  Alert,
   ScrollView,
   Image,
 } from "react-native";
+import { Alert } from "../services/customAlert";
 import {
   Search,
   Eye,

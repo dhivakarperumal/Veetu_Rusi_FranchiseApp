@@ -8,10 +8,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
   Image,
   Modal,
 } from "react-native";
+import { Alert } from "../services/customAlert";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   MapPin,

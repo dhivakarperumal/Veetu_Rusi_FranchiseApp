@@ -25,6 +25,7 @@ import EditDeliveryPartner from "./src/pages/EditDeliveryPartner";
 import UserManagement from "./src/More/UserManagement";
 
 import SubscriptionPlansScreen from "./src/components/SubscriptionPlansScreen";
+import AppAlertHost from "./src/components/AppAlertHost";
 
 import { AuthProvider, AuthContext } from "./src/context/AuthContext";
 
@@ -276,6 +277,7 @@ export default function App() {
     <SafeAreaProvider>
       <AuthProvider>
         <AppNavigator />
+        <AppAlertHost />
       </AuthProvider>
     </SafeAreaProvider>
   );

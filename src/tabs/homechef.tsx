@@ -7,11 +7,11 @@ import {
   RefreshControl,
   TouchableOpacity,
   TextInput,
-  Alert,
   Modal,
   ScrollView,
   Linking,
 } from "react-native";
+import { Alert } from "../services/customAlert";
 import { useNavigation } from "@react-navigation/native";
 import {
   Users,

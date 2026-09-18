@@ -5,13 +5,13 @@ import {
     TextInput,
     TouchableOpacity,
     ActivityIndicator,
-    Alert,
     StatusBar,
     ScrollView,
     KeyboardAvoidingView,
     Platform,
     Image,
 } from "react-native";
+import { Alert } from "../services/customAlert";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
