@@ -32,7 +32,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { get, patch, del } from "../services/api";
 
-const resolveDocumentUri = (value: any) => {
+const resolveDocumentUri = (value: any, folderName?: string) => {
   const candidate =
     typeof value === "object"
       ? value?.uri ?? value?.url ?? value?.path ?? value?.fileUri ?? ""
@@ -61,6 +61,14 @@ const resolveDocumentUri = (value: any) => {
   const normalized = rawValue.replace(/^\/+/, "");
   if (!normalized || normalized === "." || normalized === "/") {
     return null;
+  }
+
+  if (normalized.startsWith("uploads/")) {
+    return `https://veeturusi.qtechx.com/${normalized}`;
+  }
+
+  if (folderName) {
+    return `https://veeturusi.qtechx.com/uploads/${folderName}/${normalized.replace(/^uploads\//i, "")}`;
   }
 
   return `https://veeturusi.qtechx.com/${normalized}`;
@@ -542,7 +550,7 @@ const HomeChefDetails = () => {
               ["PAN Card", chef.pan_card_url],
               ["Identity Selfie", chef.selfie_verification_url],
             ].map(([label, value]) => {
-              const uri = resolveDocumentUri(value);
+              const uri = resolveDocumentUri(value, "homechefs");
               return (
                 <TouchableOpacity
                   key={label}

@@ -40,7 +40,7 @@ import {
 import { get, patch, del } from "../services/api";
 import FloatingActionButton from "../components/FloatingActionButton";
 
-const resolveDocumentUri = (value: any) => {
+const resolveDocumentUri = (value: any, folderName?: string) => {
   const candidate =
     typeof value === "object"
       ? value?.uri ?? value?.url ?? value?.path ?? value?.fileUri ?? ""
@@ -69,6 +69,14 @@ const resolveDocumentUri = (value: any) => {
   const normalized = rawValue.replace(/^\/+/, "");
   if (!normalized || normalized === "." || normalized === "/") {
     return null;
+  }
+
+  if (normalized.startsWith("uploads/")) {
+    return `https://veeturusi.qtechx.com/${normalized}`;
+  }
+
+  if (folderName) {
+    return `https://veeturusi.qtechx.com/uploads/${folderName}/${normalized.replace(/^uploads\//i, "")}`;
   }
 
   return `https://veeturusi.qtechx.com/${normalized}`;
@@ -1021,7 +1029,7 @@ const DeliveryPartners = () => {
                     ["Selfie With Vehicle", selectedPartner?.selfie_with_vehicle],
                     ["Selfie With Aadhaar", selectedPartner?.selfie_with_aadhaar],
                   ].map(([label, value]) => {
-                    const uri = resolveDocumentUri(value);
+                    const uri = resolveDocumentUri(value, "deliverypartners");
                     return (
                       <TouchableOpacity
                         key={label}
