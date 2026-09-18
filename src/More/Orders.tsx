@@ -1044,7 +1044,7 @@ const Orders = () => {
               className="w-full"
             >
               <View
-                className="rounded-3xl bg-slate-900 border border-white/10 p-6"
+                className="w-full max-w-md rounded-3xl bg-slate-900 border border-white/10 p-6"
                 style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
               >
                 <Text className="text-xl font-black text-white">
