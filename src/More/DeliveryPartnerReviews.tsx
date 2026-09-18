@@ -824,10 +824,10 @@ const DeliveryPartnerReviews = () => {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className="flex-1 justify-end bg-black/80"
+          className="flex-1 items-center justify-center bg-black/80 px-4"
         >
           <View
-            className="bg-slate-900 border-t border-white/10 rounded-t-3xl p-5 max-h-[85%]"
+            className="w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl p-5 max-h-[85%]"
             style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
           >
             <View className="flex-row items-center justify-between mb-4">
