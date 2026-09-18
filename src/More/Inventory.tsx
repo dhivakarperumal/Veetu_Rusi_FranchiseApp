@@ -17,8 +17,21 @@ import {
   AlertTriangle,
 } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import InnerHeader from "../components/InnerHeader";
 import { get } from "../services/api";
+
+const normalizeArrayResponse = (response: any): any[] => {
+  if (Array.isArray(response)) return response;
+  if (!response || typeof response !== "object") return [];
+
+  if (Array.isArray(response.data)) return response.data;
+  if (Array.isArray(response.value)) return response.value;
+  if (response.data && Array.isArray(response.data.data)) return response.data.data;
+  if (response.value && Array.isArray(response.value.data)) return response.value.data;
+
+  return [];
+};
 
 const Inventory = () => {
   const navigation: any = useNavigation();
@@ -33,24 +46,27 @@ const Inventory = () => {
 
   const fetchStats = async () => {
     try {
+      const userData = await AsyncStorage.getItem("user");
+      let franchiseUserId = "";
+      if (userData) {
+        const user = JSON.parse(userData);
+        franchiseUserId = user?.franchise_user_id || user?.user_id || user?.id || "";
+      }
+
+      const categoryUrl = franchiseUserId ? `/categories?franchise_user_id=${franchiseUserId}` : "/categories";
+
       const [prodRes, comboRes, catRes] = await Promise.allSettled([
         get<any[]>("/franchise-products"),
         get<any[]>("/combos"),
-        get<any[]>("/categories"),
+        get<any[]>(categoryUrl),
       ]);
 
       const products =
-        prodRes.status === "fulfilled" && Array.isArray(prodRes.value)
-          ? prodRes.value
-          : [];
+        prodRes.status === "fulfilled" ? normalizeArrayResponse(prodRes.value) : [];
       const combos =
-        comboRes.status === "fulfilled" && Array.isArray(comboRes.value)
-          ? comboRes.value
-          : [];
+        comboRes.status === "fulfilled" ? normalizeArrayResponse(comboRes.value) : [];
       const categories =
-        catRes.status === "fulfilled" && Array.isArray(catRes.value)
-          ? catRes.value
-          : [];
+        catRes.status === "fulfilled" ? normalizeArrayResponse(catRes.value) : [];
 
       const lowStock = products.filter(
         (p: any) => Number(p.total_stock || p.stock || 0) < 10
