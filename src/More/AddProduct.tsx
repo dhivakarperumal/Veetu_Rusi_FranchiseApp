@@ -531,7 +531,7 @@ const AddProduct = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingTop: 16,
-            paddingBottom: 60,
+            paddingBottom: Math.max(insets.bottom, 24) + 280,
           }}
           keyboardShouldPersistTaps="handled"
         >
