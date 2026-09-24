@@ -1,4 +1,7 @@
 {
   "name": "FranchiseApp",
-  "displayName": "Franchise Owner"
+  "displayName": "Franchise Owner",
+  "plugins": [
+    "expo-asset"
+  ]
 }
