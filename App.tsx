@@ -22,6 +22,8 @@ import Profile from "./src/pages/Profile";
 import Register from "./src/auth/register";
 import AddDeliveryPartner from "./src/pages/AddDeliveryPartner";
 import EditDeliveryPartner from "./src/pages/EditDeliveryPartner";
+import DeliveryPartnerAttendance from "./src/pages/DeliveryPartnerAttendance";
+import HomeChefAttendance from "./src/pages/HomeChefAttendance";
 import UserManagement from "./src/More/UserManagement";
 
 import SubscriptionPlansScreen from "./src/components/SubscriptionPlansScreen";
@@ -139,6 +141,8 @@ const AppNavigator = () => {
               <Stack.Screen name="HomeChefDetails" component={HomeChefDetails} />
               <Stack.Screen name="AddDeliveryPartner" component={AddDeliveryPartner} />
               <Stack.Screen name="EditDeliveryPartner" component={EditDeliveryPartner} />
+              <Stack.Screen name="DeliveryPartnerAttendance" component={DeliveryPartnerAttendance} />
+              <Stack.Screen name="HomeChefAttendance" component={HomeChefAttendance} />
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen
                 name="UserManagement"

@@ -34,6 +34,7 @@ import {
   ExternalLink,
   ChevronDown,
   Pencil,
+  CalendarDays,
 } from "lucide-react-native";
 
 import { get, patch, del } from "../services/api";
@@ -330,6 +331,13 @@ const HomeChef = () => {
                 <ChefHat size={20} color="#34d399" />
               </View>
             </View>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("HomeChefAttendance")}
+              className="mb-5 flex-row items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 py-3"
+            >
+              <CalendarDays size={17} color="#6ee7b7" />
+              <Text className="text-sm font-bold text-emerald-300">View attendance</Text>
+            </TouchableOpacity>
 
             {/* ================= SUMMARY CARDS ================= */}
             <View className="flex-row gap-2 mb-5">
