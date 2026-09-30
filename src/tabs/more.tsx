@@ -19,14 +19,30 @@ import {
   Tag,
   Share2,
   Store,
+  CalendarDays,
+  Bike,
+  ChefHat,
+  X,
 } from "lucide-react-native";
 
 import { useNavigation } from "@react-navigation/native";
+import { useState } from "react";
+import { Modal } from "react-native";
 
 const More = () => {
   const navigation = useNavigation<any>();
+  const [attendanceMenuOpen, setAttendanceMenuOpen] = useState(false);
 
   const menuItems = [
+    {
+      id: "attendance",
+      label: "Attendance",
+      description: "View delivery partner or home chef attendance",
+      icon: CalendarDays,
+      color: "#10b981",
+      bgColor: "#d1fae5",
+      onPress: () => setAttendanceMenuOpen(true),
+    },
     {
       id: "user-management",
       label: "User Management",
@@ -222,6 +238,58 @@ const More = () => {
           );
         })}
       </ScrollView>
+
+      <Modal
+        visible={attendanceMenuOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setAttendanceMenuOpen(false)}
+      >
+        <View className="flex-1 justify-end bg-black/70">
+          <View className="rounded-t-3xl border-t border-white/10 bg-slate-900 p-5 pb-8">
+            <View className="mb-5 flex-row items-center justify-between">
+              <Text className="text-lg font-black text-white">Choose attendance</Text>
+              <TouchableOpacity
+                onPress={() => setAttendanceMenuOpen(false)}
+                accessibilityLabel="Close attendance options"
+                className="h-9 w-9 items-center justify-center rounded-xl bg-slate-800"
+              >
+                <X size={18} color="#cbd5e1" />
+              </TouchableOpacity>
+            </View>
+            {[
+              {
+                label: "Delivery Partner Attendance",
+                icon: Bike,
+                route: "DeliveryPartnerAttendance",
+              },
+              {
+                label: "Home Chef Attendance",
+                icon: ChefHat,
+                route: "HomeChefAttendance",
+              },
+            ].map((option) => {
+              const Icon = option.icon;
+              return (
+                <TouchableOpacity
+                  key={option.route}
+                  onPress={() => {
+                    setAttendanceMenuOpen(false);
+                    navigation.navigate(option.route);
+                  }}
+                  className="mb-3 flex-row items-center rounded-2xl border border-white/10 bg-slate-950 p-4"
+                >
+                  <View className="mr-3 h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/15">
+                    <Icon size={21} color="#6ee7b7" />
+                  </View>
+                  <Text className="flex-1 text-sm font-bold text-white">{option.label}</Text>
+                  <ArrowRight size={17} color="#94a3b8" />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

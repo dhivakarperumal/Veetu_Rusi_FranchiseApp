@@ -324,7 +324,9 @@ const AttendanceScreen = ({ kind }: AttendanceScreenProps) => {
                   <Text className="max-w-36 text-xs font-bold text-slate-300" numberOfLines={1}>{personFilter === "all" ? "All people" : people.find(([key]) => key === personFilter)?.[1] || "Person"}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={refreshAttendance} disabled={loading || refreshing} accessibilityLabel="Refresh attendance" className="ml-auto h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-slate-950">
-                  <RefreshCw size={15} color="#cbd5e1" />
+                  {loading || refreshing
+                    ? <ActivityIndicator size="small" color="#34d399" />
+                    : <RefreshCw size={15} color="#cbd5e1" />}
                 </TouchableOpacity>
               </View>
               {dateFilter === "custom" && (
