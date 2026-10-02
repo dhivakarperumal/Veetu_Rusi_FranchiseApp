@@ -38,6 +38,23 @@ const getFranchiseId = (data: any) =>
     data?.user?.franchise_id ||
     null;
 
+const getSubscriptionRazorpayKey = (response: any) => {
+    const keys = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+            ? response.data
+            : Array.isArray(response?.data?.data)
+                ? response.data.data
+                : [];
+
+    return keys.find((key: any) =>
+        String(key?.status || "").toLowerCase() === "active" &&
+        String(key?.key_usage || "").toLowerCase() === "franchise subscription" &&
+        typeof key?.key_id === "string" &&
+        key.key_id.trim().length > 0
+    );
+};
+
 const formatDisplayDate = (dateStr: any) => {
     if (!dateStr) return "";
     try {
@@ -252,28 +269,41 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
 
         try {
             setPaymentProcessing(true);
+            const razorpayKeysResponse = await get<any>(
+                "/superadmin/franchise-subscription-razorpay-keys"
+            );
+            const subscriptionRazorpayKey = getSubscriptionRazorpayKey(razorpayKeysResponse);
+
+            if (!subscriptionRazorpayKey?.key_id) {
+                throw new Error(
+                    "No active Razorpay key is configured for franchise subscriptions. Please contact support."
+                );
+            }
+
+            if (!/^rzp_(test|live)_[a-zA-Z0-9]{14,}$/i.test(subscriptionRazorpayKey.key_id)) {
+                throw new Error("The configured Razorpay key is invalid. Please contact support.");
+            }
+
             const checkout = await post<any>("/subscriptions/checkout", {
                 franchiseId: activeFranchiseId,
                 planId: selectedPlan.id,
             });
 
-            const payment = checkout.key_id
-                ? await RazorpayCheckout.open({
-                    key: checkout.key_id,
-                    amount: checkout.order.amount,
-                    currency: checkout.plan.currency,
-                    name: "Veetu Rusi",
-                    description: `${checkout.plan.name} Subscription`,
-                    order_id: checkout.order.id,
-                    prefill: { name: "Franchise Owner" },
-                    notes: { franchiseId: String(activeFranchiseId), planId: String(selectedPlan.id) },
-                    theme: { color: "#14B8A6" },
-                })
-                : {
-                    razorpay_payment_id: `TEST_PAYMENT_${Date.now()}`,
-                    razorpay_order_id: checkout.order.id,
-                    razorpay_signature: "",
-                };
+            if (!checkout?.order?.id || !checkout?.order?.amount) {
+                throw new Error("Could not create a Razorpay order. Please try again.");
+            }
+
+            const payment = await RazorpayCheckout.open({
+                key: subscriptionRazorpayKey.key_id,
+                amount: checkout.order.amount,
+                currency: checkout.plan?.currency || selectedPlan.currency || "INR",
+                name: "Veetu Rusi",
+                description: `${checkout.plan?.name || selectedPlan.name} Subscription`,
+                order_id: checkout.order.id,
+                prefill: { name: "Franchise Owner" },
+                notes: { franchiseId: String(activeFranchiseId), planId: String(selectedPlan.id) },
+                theme: { color: "#14B8A6" },
+            });
 
             const confirmRes = await post<any>("/subscriptions/confirm", {
                 franchiseId: activeFranchiseId,
