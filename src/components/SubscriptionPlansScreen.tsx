@@ -292,17 +292,23 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                 planId: selectedPlan.id,
             });
 
-            if (!checkout?.order?.id || !checkout?.order?.amount) {
+            const amount = Number(checkout?.order?.amount);
+            const orderId =
+                typeof checkout?.order?.id === "string" && checkout.order.id.trim()
+                    ? checkout.order.id.trim()
+                    : undefined;
+
+            if (!Number.isFinite(amount) || amount <= 0) {
                 throw new Error("Could not create a Razorpay order. Please try again.");
             }
 
             const payment = await RazorpayCheckout.open({
                 key: keyId,
-                amount: checkout.order.amount,
-                currency: checkout.plan?.currency || selectedPlan.currency || "INR",
+                amount,
+                currency: checkout.order.currency || checkout.plan?.currency || selectedPlan.currency || "INR",
                 name: "Veetu Rusi",
                 description: `${checkout.plan?.name || selectedPlan.name} Subscription`,
-                order_id: checkout.order.id,
+                ...(orderId ? { order_id: orderId } : {}),
                 prefill: { name: "Franchise Owner" },
                 notes: { franchiseId: String(activeFranchiseId), planId: String(selectedPlan.id) },
                 theme: { color: "#14B8A6" },
@@ -312,7 +318,7 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
                 franchiseId: activeFranchiseId,
                 planId: selectedPlan.id,
                 razorpay_payment_id: payment.razorpay_payment_id,
-                razorpay_order_id: payment.razorpay_order_id,
+                razorpay_order_id: payment.razorpay_order_id || orderId || null,
                 razorpay_signature: payment.razorpay_signature,
             });
 
