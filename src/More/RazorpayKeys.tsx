@@ -21,7 +21,6 @@ import {
   ChevronDown,
   KeyRound,
   Pencil,
-  Plus,
   Power,
   Search,
   ShieldCheck,
@@ -32,6 +31,7 @@ import {
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import InnerHeader from '../components/InnerHeader';
+import FloatingActionButton from '../components/FloatingActionButton';
 import { Alert } from '../services/customAlert';
 import { del, get, patch, post, put } from '../services/api';
 
@@ -377,15 +377,6 @@ const RazorpayKeys = () => {
                   Manage payment accounts and user assignments.
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={openAdd}
-                className="h-11 flex-row items-center rounded-xl bg-emerald-500 px-3"
-              >
-                <Plus size={18} color="#052e24" />
-                <Text className="ml-1 text-xs font-black text-emerald-950">
-                  Add Key
-                </Text>
-              </TouchableOpacity>
             </View>
 
             <View className="mb-4 flex-row">
@@ -466,10 +457,19 @@ const RazorpayKeys = () => {
         }
       />
 
+      <View
+        style={[
+          styles.floatingButton,
+          { bottom: Math.max(insets.bottom, 16) + 12 },
+        ]}
+      >
+        <FloatingActionButton onPress={openAdd} label="Add Razorpay Key" />
+      </View>
+
       <Modal
         visible={modalOpen}
         transparent
-        animationType="slide"
+        animationType="fade"
         statusBarTranslucent
         onRequestClose={() => {
           if (activeSelect) setActiveSelect(null);
@@ -477,242 +477,250 @@ const RazorpayKeys = () => {
         }}
       >
         <KeyboardAvoidingView
-          className="flex-1"
+          className="flex-1 bg-black/80"
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
         >
-          <View className="flex-1 justify-end bg-black/70">
-            <View
-              className="rounded-t-3xl border-t border-white/10 bg-slate-900"
-              style={styles.sheet}
+          <View className="flex-1 items-center justify-center px-4">
+            <ScrollView
+              className="w-full"
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.modalScrollContent}
             >
-              <View className="flex-row items-start justify-between border-b border-white/10 px-5 py-4">
-                <View className="mr-3 flex-1">
-                  <Text className="text-lg font-black text-white">
-                    {editingKey ? 'Edit Razorpay Key' : 'Add Razorpay Key'}
-                  </Text>
-                  <Text className="mt-1 text-xs text-slate-400">
-                    Key secret stays private to the backend.
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => setModalOpen(false)}
-                  accessibilityLabel="Close form"
-                  className="h-9 w-9 items-center justify-center rounded-xl bg-slate-800"
-                >
-                  <X size={18} color="#cbd5e1" />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView
-                className="flex-1"
-                keyboardShouldPersistTaps="handled"
-                keyboardDismissMode="on-drag"
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.formContent}
-              >
-                <Text className="mb-2 text-xs font-bold text-slate-300">
-                  Key Name *
-                </Text>
-                <TextInput
-                  value={form.key_name}
-                  onChangeText={value =>
-                    setForm(prev => ({ ...prev, key_name: value }))
-                  }
-                  placeholder="e.g. Franchise Payments"
-                  placeholderTextColor="#64748b"
-                  maxLength={150}
-                  className="mb-4 rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white"
-                />
-
-                <Text className="mb-2 text-xs font-bold text-slate-300">
-                  Razorpay Key ID *
-                </Text>
-                <TextInput
-                  value={form.key_id}
-                  onChangeText={value =>
-                    setForm(prev => ({ ...prev, key_id: value }))
-                  }
-                  placeholder="rzp_live_..."
-                  placeholderTextColor="#64748b"
-                  autoCapitalize="none"
-                  className="mb-4 rounded-xl border border-white/10 bg-slate-950 px-3 py-3 font-mono text-sm text-white"
-                />
-
-                <Text className="mb-2 text-xs font-bold text-slate-300">
-                  Razorpay Key Secret (optional)
-                </Text>
-                <TextInput
-                  value={form.key_secret}
-                  onChangeText={value =>
-                    setForm(prev => ({ ...prev, key_secret: value }))
-                  }
-                  placeholder={
-                    editingKey
-                      ? 'Leave blank to keep current secret'
-                      : 'Enter secret'
-                  }
-                  placeholderTextColor="#64748b"
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  className="mb-4 rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white"
-                />
-
-                <Text className="mb-2 text-xs font-bold text-slate-300">
-                  Account / Business Name
-                </Text>
-                <TextInput
-                  value={form.business_name}
-                  onChangeText={value =>
-                    setForm(prev => ({ ...prev, business_name: value }))
-                  }
-                  placeholder="Business or account name"
-                  placeholderTextColor="#64748b"
-                  maxLength={255}
-                  className="mb-4 rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white"
-                />
-
-                <Text className="mb-2 text-xs font-bold text-slate-300">
-                  Razorpay Usage *
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setActiveSelect('usage');
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Razorpay Usage: ${
-                    form.key_usage || 'Select Razorpay Usage'
-                  }`}
-                  className="mb-4 h-14 flex-row items-center justify-between rounded-xl border border-white/10 bg-slate-950 px-4"
-                >
-                  <Text
-                    className={`text-sm ${
-                      form.key_usage ? 'text-white' : 'text-slate-500'
-                    }`}
-                  >
-                    {form.key_usage || 'Select Razorpay Usage'}
-                  </Text>
-                  <ChevronDown size={19} color="#94a3b8" />
-                </TouchableOpacity>
-
-                <Text className="mb-2 text-xs font-bold text-slate-300">
-                  Status
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setActiveSelect('status');
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Status: ${form.status}`}
-                  className="h-14 flex-row items-center justify-between rounded-xl border border-white/10 bg-slate-950 px-4"
-                >
-                  <Text className="text-sm text-white">{form.status}</Text>
-                  <ChevronDown size={19} color="#94a3b8" />
-                </TouchableOpacity>
-              </ScrollView>
-
               <View
-                className="flex-row border-t border-white/10 px-5 pt-4"
-                style={{ paddingBottom: Math.max(insets.bottom, 12) + 8 }}
+                className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900 p-5"
+                style={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}
               >
-                <TouchableOpacity
-                  disabled={saving}
-                  onPress={() => setModalOpen(false)}
-                  className="mr-3 flex-1 items-center rounded-xl border border-white/10 bg-slate-800 py-3.5"
-                >
-                  <Text className="text-sm font-bold text-slate-200">
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  disabled={saving}
-                  onPress={() => submit()}
-                  className="flex-1 flex-row items-center justify-center rounded-xl bg-emerald-500 py-3.5"
-                >
-                  {saving ? (
-                    <ActivityIndicator size="small" color="#052e24" />
-                  ) : (
-                    <Text className="text-sm font-black text-emerald-950">
-                      {editingKey ? 'Save Changes' : 'Add Key'}
+                <View className="mb-4 flex-row items-center justify-between">
+                  <View className="mr-3 flex-1">
+                    <Text className="text-xl font-black text-white">
+                      {editingKey ? 'Edit Razorpay Key' : 'Add Razorpay Key'}
                     </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-            {activeSelect ? (
-              <View className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center bg-black/75 px-6">
-                <TouchableOpacity
-                  onPress={() => setActiveSelect(null)}
-                  activeOpacity={1}
-                  accessibilityLabel="Close options"
-                  className="absolute bottom-0 left-0 right-0 top-0"
-                />
-                <View className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-slate-900">
-                  <View className="flex-row items-center justify-between border-b border-white/10 px-5 py-4">
-                    <View>
-                      <Text className="text-base font-black text-white">
-                        {activeSelect === 'usage'
-                          ? 'Razorpay Usage'
-                          : 'Key Status'}
-                      </Text>
-                      <Text className="mt-1 text-xs text-slate-400">
-                        Choose an option
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => setActiveSelect(null)}
-                      accessibilityLabel="Close options"
-                      className="h-9 w-9 items-center justify-center rounded-xl bg-slate-800"
-                    >
-                      <X size={17} color="#cbd5e1" />
-                    </TouchableOpacity>
+                    <Text className="mt-1 text-xs text-slate-400">
+                      Key secret stays private to the backend.
+                    </Text>
                   </View>
-                  {(activeSelect === 'usage'
-                    ? USAGE_OPTIONS
-                    : ['Active', 'Inactive']
-                  ).map(option => {
-                    const selected =
-                      activeSelect === 'usage'
-                        ? form.key_usage === option
-                        : form.status === option;
-                    return (
+                  <TouchableOpacity
+                    onPress={() => setModalOpen(false)}
+                    accessibilityLabel="Close form"
+                    className="h-9 w-9 items-center justify-center rounded-full bg-slate-800"
+                  >
+                    <X size={17} color="#cbd5e1" />
+                  </TouchableOpacity>
+                </View>
+
+                <ScrollView
+                  nestedScrollEnabled
+                  keyboardShouldPersistTaps="handled"
+                  keyboardDismissMode="on-drag"
+                  showsVerticalScrollIndicator={false}
+                  style={styles.fieldsScroll}
+                  contentContainerStyle={styles.formContent}
+                >
+                  <Text className="mb-2 text-xs font-bold text-slate-300">
+                    Key Name *
+                  </Text>
+                  <TextInput
+                    value={form.key_name}
+                    onChangeText={value =>
+                      setForm(prev => ({ ...prev, key_name: value }))
+                    }
+                    placeholder="e.g. Franchise Payments"
+                    placeholderTextColor="#64748b"
+                    maxLength={150}
+                    className="mb-4 rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white"
+                  />
+
+                  <Text className="mb-2 text-xs font-bold text-slate-300">
+                    Razorpay Key ID *
+                  </Text>
+                  <TextInput
+                    value={form.key_id}
+                    onChangeText={value =>
+                      setForm(prev => ({ ...prev, key_id: value }))
+                    }
+                    placeholder="rzp_live_..."
+                    placeholderTextColor="#64748b"
+                    autoCapitalize="none"
+                    className="mb-4 rounded-xl border border-white/10 bg-slate-950 px-3 py-3 font-mono text-sm text-white"
+                  />
+
+                  <Text className="mb-2 text-xs font-bold text-slate-300">
+                    Razorpay Key Secret (optional)
+                  </Text>
+                  <TextInput
+                    value={form.key_secret}
+                    onChangeText={value =>
+                      setForm(prev => ({ ...prev, key_secret: value }))
+                    }
+                    placeholder={
+                      editingKey
+                        ? 'Leave blank to keep current secret'
+                        : 'Enter secret'
+                    }
+                    placeholderTextColor="#64748b"
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    className="mb-4 rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white"
+                  />
+
+                  <Text className="mb-2 text-xs font-bold text-slate-300">
+                    Account / Business Name
+                  </Text>
+                  <TextInput
+                    value={form.business_name}
+                    onChangeText={value =>
+                      setForm(prev => ({ ...prev, business_name: value }))
+                    }
+                    placeholder="Business or account name"
+                    placeholderTextColor="#64748b"
+                    maxLength={255}
+                    className="mb-4 rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white"
+                  />
+
+                  <Text className="mb-2 text-xs font-bold text-slate-300">
+                    Razorpay Usage *
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setActiveSelect('usage');
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Razorpay Usage: ${
+                      form.key_usage || 'Select Razorpay Usage'
+                    }`}
+                    className="mb-4 h-14 flex-row items-center justify-between rounded-xl border border-white/10 bg-slate-950 px-4"
+                  >
+                    <Text
+                      className={`text-sm ${
+                        form.key_usage ? 'text-white' : 'text-slate-500'
+                      }`}
+                    >
+                      {form.key_usage || 'Select Razorpay Usage'}
+                    </Text>
+                    <ChevronDown size={19} color="#94a3b8" />
+                  </TouchableOpacity>
+
+                  <Text className="mb-2 text-xs font-bold text-slate-300">
+                    Status
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setActiveSelect('status');
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Status: ${form.status}`}
+                    className="h-14 flex-row items-center justify-between rounded-xl border border-white/10 bg-slate-950 px-4"
+                  >
+                    <Text className="text-sm text-white">{form.status}</Text>
+                    <ChevronDown size={19} color="#94a3b8" />
+                  </TouchableOpacity>
+                </ScrollView>
+
+                <View className="flex-row gap-3 border-t border-white/10 pt-3">
+                  <TouchableOpacity
+                    disabled={saving}
+                    onPress={() => setModalOpen(false)}
+                    className="flex-1 items-center justify-center rounded-2xl border border-white/10 bg-slate-800 py-3.5"
+                  >
+                    <Text className="text-xs font-bold text-slate-300">
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    disabled={saving}
+                    onPress={() => submit()}
+                    className="flex-1 items-center justify-center rounded-2xl bg-emerald-600 py-3.5"
+                  >
+                    {saving ? (
+                      <ActivityIndicator size="small" color="#ffffff" />
+                    ) : (
+                      <Text className="text-xs font-black uppercase text-white">
+                        {editingKey ? 'Save Changes' : 'Add Key'}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {activeSelect ? (
+                <View className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center bg-black/75 px-6">
+                  <TouchableOpacity
+                    onPress={() => setActiveSelect(null)}
+                    activeOpacity={1}
+                    accessibilityLabel="Close options"
+                    className="absolute bottom-0 left-0 right-0 top-0"
+                  />
+                  <View className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-slate-900">
+                    <View className="flex-row items-center justify-between border-b border-white/10 px-5 py-4">
+                      <View>
+                        <Text className="text-base font-black text-white">
+                          {activeSelect === 'usage'
+                            ? 'Razorpay Usage'
+                            : 'Key Status'}
+                        </Text>
+                        <Text className="mt-1 text-xs text-slate-400">
+                          Choose an option
+                        </Text>
+                      </View>
                       <TouchableOpacity
-                        key={option}
-                        onPress={() => {
-                          if (activeSelect === 'usage') {
-                            setForm(prev => ({ ...prev, key_usage: option }));
-                          } else {
-                            setForm(prev => ({
-                              ...prev,
-                              status: option as 'Active' | 'Inactive',
-                            }));
-                          }
-                          setActiveSelect(null);
-                        }}
-                        className={`mx-3 my-1 flex-row items-center justify-between rounded-xl px-4 py-4 ${
-                          selected
-                            ? 'border border-emerald-400/30 bg-emerald-500/10'
-                            : 'bg-slate-800/70'
-                        }`}
+                        onPress={() => setActiveSelect(null)}
+                        accessibilityLabel="Close options"
+                        className="h-9 w-9 items-center justify-center rounded-xl bg-slate-800"
                       >
-                        <Text
-                          className={`text-sm font-semibold ${
-                            selected ? 'text-emerald-300' : 'text-slate-200'
+                        <X size={17} color="#cbd5e1" />
+                      </TouchableOpacity>
+                    </View>
+                    {(activeSelect === 'usage'
+                      ? USAGE_OPTIONS
+                      : ['Active', 'Inactive']
+                    ).map(option => {
+                      const selected =
+                        activeSelect === 'usage'
+                          ? form.key_usage === option
+                          : form.status === option;
+                      return (
+                        <TouchableOpacity
+                          key={option}
+                          onPress={() => {
+                            if (activeSelect === 'usage') {
+                              setForm(prev => ({ ...prev, key_usage: option }));
+                            } else {
+                              setForm(prev => ({
+                                ...prev,
+                                status: option as 'Active' | 'Inactive',
+                              }));
+                            }
+                            setActiveSelect(null);
+                          }}
+                          className={`mx-3 my-1 flex-row items-center justify-between rounded-xl px-4 py-4 ${
+                            selected
+                              ? 'border border-emerald-400/30 bg-emerald-500/10'
+                              : 'bg-slate-800/70'
                           }`}
                         >
-                          {option}
-                        </Text>
-                        {selected ? <Check size={18} color="#6ee7b7" /> : null}
-                      </TouchableOpacity>
-                    );
-                  })}
-                  <View style={{ height: Math.max(insets.bottom, 12) }} />
+                          <Text
+                            className={`text-sm font-semibold ${
+                              selected ? 'text-emerald-300' : 'text-slate-200'
+                            }`}
+                          >
+                            {option}
+                          </Text>
+                          {selected ? (
+                            <Check size={18} color="#6ee7b7" />
+                          ) : null}
+                        </TouchableOpacity>
+                      );
+                    })}
+                    <View style={{ height: Math.max(insets.bottom, 12) }} />
+                  </View>
                 </View>
-              </View>
-            ) : null}
+              ) : null}
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -722,7 +730,19 @@ const RazorpayKeys = () => {
 
 const styles = StyleSheet.create({
   listContent: { paddingBottom: 100 },
-  sheet: { maxHeight: '94%', flexShrink: 1 },
+  floatingButton: {
+    position: 'absolute',
+    right: 20,
+    zIndex: 9999,
+    elevation: 20,
+  },
+  modalScrollContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexGrow: 1,
+    paddingVertical: 20,
+  },
+  fieldsScroll: { maxHeight: 420 },
   formContent: {
     paddingHorizontal: 20,
     paddingVertical: 16,
