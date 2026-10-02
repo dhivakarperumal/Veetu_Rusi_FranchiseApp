@@ -38,24 +38,6 @@ const getFranchiseId = (data: any) =>
     data?.user?.franchise_id ||
     null;
 
-const getFranchiseSubscriptionKeyId = (response: any): string | null => {
-    const keys = Array.isArray(response)
-        ? response
-        : Array.isArray(response?.data)
-            ? response.data
-            : Array.isArray(response?.data?.data)
-                ? response.data.data
-                : [];
-    const key = keys.find((item: any) =>
-        String(item?.status || "").trim().toLowerCase() === "active" &&
-        String(item?.key_usage || "").trim().toLowerCase() === "franchise subscription"
-    );
-
-    return typeof key?.key_id === "string" && key.key_id.trim()
-        ? key.key_id.trim()
-        : null;
-};
-
 const formatDisplayDate = (dateStr: any) => {
     if (!dateStr) return "";
     try {
@@ -270,27 +252,14 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
 
         try {
             setPaymentProcessing(true);
-            const keyResponse = await get<any>(
-                "/superadmin/franchise-subscription-razorpay-keys"
-            );
-            const keyId = getFranchiseSubscriptionKeyId(keyResponse);
-
-            if (!keyId) {
-                throw new Error(
-                    "No active Razorpay key is configured for franchise subscriptions. Please contact support."
-                );
-            }
-
-            if (!/^rzp_(test|live)_[a-zA-Z0-9]{14,}$/i.test(keyId)) {
-                throw new Error(
-                    "The configured Razorpay key is invalid. Please contact support."
-                );
-            }
-
             const checkout = await post<any>("/subscriptions/checkout", {
                 franchiseId: activeFranchiseId,
                 planId: selectedPlan.id,
             });
+            const keyId =
+                typeof checkout?.key_id === "string"
+                    ? checkout.key_id.trim()
+                    : "";
 
             const amount = Number(checkout?.order?.amount);
             const orderId =
@@ -300,6 +269,18 @@ const SubscriptionPlansScreen = ({ navigation }: any) => {
 
             if (!Number.isFinite(amount) || amount <= 0) {
                 throw new Error("Could not create a Razorpay order. Please try again.");
+            }
+
+            if (!keyId) {
+                throw new Error(
+                    "The subscription checkout response did not include a Razorpay Key ID. Please contact support."
+                );
+            }
+
+            if (!/^rzp_(test|live)_[a-zA-Z0-9]{14,}$/i.test(keyId)) {
+                throw new Error(
+                    "The configured Razorpay key is invalid. Please contact support."
+                );
             }
 
             const payment = await RazorpayCheckout.open({
