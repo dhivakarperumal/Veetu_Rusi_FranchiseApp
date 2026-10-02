@@ -23,6 +23,7 @@ import {
   Bike,
   ChefHat,
   X,
+  KeyRound,
 } from "lucide-react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -105,6 +106,15 @@ const More = () => {
       color: "#f59e0b",
       bgColor: "#fef3c7",
       onPress: () => navigation.navigate("WalletAndEarnings"),
+    },
+    {
+      id: "razorpay-keys",
+      label: "Razorpay Keys",
+      description: "Manage payment accounts and keys",
+      icon: KeyRound,
+      color: "#10b981",
+      bgColor: "#d1fae5",
+      onPress: () => navigation.navigate("RazorpayKeys"),
     },
     {
       id: "dealers",

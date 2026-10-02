@@ -50,6 +50,7 @@ import Coupons from "./src/More/Coupons";
 import ReferralManagement from "./src/More/ReferralManagement";
 import WalletAndEarnings from "./src/More/WalletAndEarnings";
 import Dealers from "./src/More/Dealers";
+import RazorpayKeys from "./src/More/RazorpayKeys";
 
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
@@ -251,6 +252,11 @@ const AppNavigator = () => {
               <Stack.Screen
                 name="Wallet"
                 component={WalletAndEarnings}
+              />
+
+              <Stack.Screen
+                name="RazorpayKeys"
+                component={RazorpayKeys}
               />
 
               <Stack.Screen
